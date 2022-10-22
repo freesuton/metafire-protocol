@@ -15,7 +15,7 @@ library DataTypes {
     uint128 currentVariableBorrowRate;
     uint40 lastUpdateTimestamp;
     //tokens addresses
-    address bTokenAddress;
+    address mTokenAddress;
     address debtTokenAddress;
     //address of the interest rate strategy
     address interestRateAddress;
@@ -26,7 +26,7 @@ library DataTypes {
   struct NftData {
     //stores the nft configuration
     NftConfigurationMap configuration;
-    //address of the bNFT contract
+    //address of the mNFT contract
     address bNftAddress;
     //the id of the nft. Represents the position in the list of the active nfts
     uint8 id;
