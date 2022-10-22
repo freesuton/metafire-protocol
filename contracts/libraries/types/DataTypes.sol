@@ -27,7 +27,7 @@ library DataTypes {
     //stores the nft configuration
     NftConfigurationMap configuration;
     //address of the mNFT contract
-    address bNftAddress;
+    address mNftAddress;
     //the id of the nft. Represents the position in the list of the active nfts
     uint8 id;
     uint256 maxSupply;
