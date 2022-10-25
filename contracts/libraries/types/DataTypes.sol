@@ -13,10 +13,16 @@ library DataTypes {
     uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
+    //the current stable borrow rate. Expressed in ray
+    uint128 currentStableBorrowRate;
+    //timestamp of last update
     uint40 lastUpdateTimestamp;
     //tokens addresses
     address mTokenAddress;
-    address debtTokenAddress;
+    //stableDebtToken address
+    address stableDebtTokenAddress;
+    //variableDebtToken address
+    address variableDebtTokenAddress;
     //address of the interest rate strategy
     address interestRateAddress;
     //the id of the reserve. Represents the position in the list of the active reserves
