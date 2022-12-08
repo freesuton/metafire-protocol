@@ -17,6 +17,7 @@ interface ILendPool {
     address user,
     address indexed reserve,
     uint256 amount,
+    uint256 borrowRateMode,
     address indexed onBehalfOf,
     uint16 indexed referral
     );

@@ -2,6 +2,7 @@
 pragma solidity 0.8.17;
 
 library DataTypes {
+
   struct ReserveData {
     //stores the reserve configuration
     ReserveConfigurationMap configuration;
@@ -42,7 +43,7 @@ library DataTypes {
     uint256 maxTokenId;
   }
 
-    struct ReserveConfigurationMap {
+  struct ReserveConfigurationMap {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
     //bit 32-47: Liq. bonus
@@ -56,12 +57,21 @@ library DataTypes {
     uint256 data;
   }
 
-    struct NftConfigurationMap {
+  struct NftConfigurationMap {
     //bit 0-15: LTV
     //bit 16-31: Liq. threshold
     //bit 32-47: Liq. bonus
     //bit 56: NFT is active
     //bit 57: NFT is frozen
     uint256 data;
+  }
+
+  struct ExecuteDepositParams {
+    address initiator;
+    address asset;
+    uint256 amount;
+    uint256 interestRateMode;
+    address onBehalfOf;
+    uint16 referralCode;
   }
 }

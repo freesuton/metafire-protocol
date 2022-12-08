@@ -3,6 +3,7 @@ pragma solidity 0.8.17;
 
 import {ERC721HolderUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/utils/ERC721HolderUpgradeable.sol";
 import {IERC721Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC721/IERC721Upgradeable.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import {Errors} from "../libraries/helpers/Errors.sol";
@@ -11,7 +12,7 @@ import {IWETHGateway} from "../interfaces/IWETHGateway.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 import {ILendPool} from "../interfaces/ILendPool.sol";
 
-contract WETHGateway  {
+contract WETHGateway is ReentrancyGuard,ContextUpgradeable {
     ILendPoolAddressesProvider internal _addressProvider;
 
     IWETH internal WETH;
@@ -24,7 +25,7 @@ contract WETHGateway  {
     );
   }
 
-    function depositETH(address onBehalfOf, uint256 interestRateMode uint16 referralCode) external payable nonReentrant {
+    function depositETH(address onBehalfOf, uint256 interestRateMode, uint16 referralCode) external payable nonReentrant {
         _checkValidCallerAndOnBehalfOf(onBehalfOf);
 
         ILendPool cachedPool = _getLendPool();
