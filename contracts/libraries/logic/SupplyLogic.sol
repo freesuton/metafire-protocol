@@ -16,7 +16,13 @@ library SupplyLogic {
         address indexed onBehalfOf,
         uint16 indexed referral
     );
-    function executeDeposit(){
+    function executeDeposit(       
+        mapping(address => DataTypes.ReserveData) storage reservesData,
+        DataTypes.ExecuteDepositParams memory params
+    ) external {
+        require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
 
+        DataTypes.ReserveData storage reserve = reservesData[params.asset];
+        
     }
 }

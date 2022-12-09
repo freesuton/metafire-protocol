@@ -6,4 +6,5 @@ import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvid
 
 contract LendPoolStorage {
     mapping(address => DataTypes.ReserveData) internal _reserves;
+    mapping(address => DataTypes.NftData) internal _nfts;
 }
