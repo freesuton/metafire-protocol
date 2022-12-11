@@ -46,11 +46,13 @@ contract BToken is Initializable {
         if (address(_getIncentivesController()) != address(0)) {
             uint256 currentTotalSupply = super.totalSupply();
             _getIncentivesController().handleAction(sender, currentTotalSupply, oldSenderBalance);
-            
+
             if (sender != recipient) {
                 _getIncentivesController().handleAction(recipient, currentTotalSupply, oldRecipientBalance);
             }
         }
     }
+
+    
 
 }
