@@ -14,70 +14,71 @@ abstract contract IncentivizedERC20 is Initializable, IERC20MetadataUpgradeable,
     uint8 private _customDecimals;
 
     function __IncentivizedERC20_init(
-    string memory name_,
-    string memory symbol_,
-    uint8 decimals_
+        string memory name_,
+        string memory symbol_,
+        uint8 decimals_
     ) internal initializer {
-    __ERC20_init(name_, symbol_);
+        __ERC20_init(name_, symbol_);
 
-    _customDecimals = decimals_;
+        _customDecimals = decimals_;    
     }
 
     /**
     * @dev Returns the decimals of the token.
     */
     function decimals() public view virtual override(ERC20Upgradeable, IERC20MetadataUpgradeable) returns (uint8) {
-    return _customDecimals;
+        return _customDecimals;
     }
 
     /**
     * @return Abstract function implemented by the child mToken/debtToken.
-    * Done this way in order to not break compatibility with previous versions of bTokens/debtTokens
+    * Done this way in order to not break compatibility with previous versions of mTokens/debtTokens
     **/
     function _getIncentivesController() internal view virtual returns (IIncentivesController);
 
     function _getUnderlyingAssetAddress() internal view virtual returns (address);
 
-      function _transfer(
-    address sender,
-    address recipient,
-    uint256 amount
-  ) internal virtual override {
-    uint256 oldSenderBalance = super.balanceOf(sender);
-    uint256 oldRecipientBalance = super.balanceOf(recipient);
+    function _transfer(
+        address sender,
+        address recipient,
+        uint256 amount
+    ) internal virtual override {
+        uint256 oldSenderBalance = super.balanceOf(sender);
+        uint256 oldRecipientBalance = super.balanceOf(recipient);
 
-    super._transfer(sender, recipient, amount);
+        super._transfer(sender, recipient, amount);
 
-    if (address(_getIncentivesController()) != address(0)) {
-      uint256 currentTotalSupply = super.totalSupply();
-      _getIncentivesController().handleAction(sender, currentTotalSupply, oldSenderBalance);
-      if (sender != recipient) {
-        _getIncentivesController().handleAction(recipient, currentTotalSupply, oldRecipientBalance);
-      }
+        if (address(_getIncentivesController()) != address(0)) {
+            uint256 currentTotalSupply = super.totalSupply();
+            _getIncentivesController().handleAction(sender, currentTotalSupply, oldSenderBalance);
+            if (sender != recipient) {
+            _getIncentivesController().handleAction(recipient, currentTotalSupply, oldRecipientBalance);
+            }
+        }
     }
-  }
 
-  function _mint(address account, uint256 amount) internal virtual override {
-    uint256 oldTotalSupply = super.totalSupply();
-    uint256 oldAccountBalance = super.balanceOf(account);
+    function _mint(address account, uint256 amount) internal virtual override {
+        uint256 oldTotalSupply = super.totalSupply();
+        uint256 oldAccountBalance = super.balanceOf(account);
 
-    super._mint(account, amount);
+        super._mint(account, amount);
 
-    if (address(_getIncentivesController()) != address(0)) {
-      _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
+        if (address(_getIncentivesController()) != address(0)) {
+            _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
+        }
     }
-  }
 
-  function _burn(address account, uint256 amount) internal virtual override {
-    uint256 oldTotalSupply = super.totalSupply();
-    uint256 oldAccountBalance = super.balanceOf(account);
+    function _burn(address account, uint256 amount) internal virtual override {
+        uint256 oldTotalSupply = super.totalSupply();
+        uint256 oldAccountBalance = super.balanceOf(account);
 
-    super._burn(account, amount);
+        super._burn(account, amount);
 
-    if (address(_getIncentivesController()) != address(0)) {
-      _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
+        if (address(_getIncentivesController()) != address(0)) {
+            _getIncentivesController().handleAction(account, oldTotalSupply, oldAccountBalance);
+        }
     }
-  }
 
-  uint256[45] private __gap;
+
+    uint256[45] private __gap;
 }
