@@ -8,7 +8,7 @@ import {IScaledBalanceToken} from "./IScaledBalanceToken.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/extensions/IERC20MetadataUpgradeable.sol";
 
-interface ImToken is IScaledBalanceToken, IERC20Upgradeable, IERC20MetadataUpgradeable {
+interface IMToken is IScaledBalanceToken, IERC20Upgradeable, IERC20MetadataUpgradeable {
     /**
     * @dev Emitted when an mToken is initialized
     * @param underlyingAsset The address of the underlying asset
