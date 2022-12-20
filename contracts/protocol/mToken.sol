@@ -15,7 +15,11 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
 
-contract MToken {
+/**
+ * @title ERC20 MToken
+ * @dev Implementation of the interest bearing token for the Metafire protocol
+ */
+contract MToken is Initializable, IMToken, IncentivizedERC20 {
 
     using WadRayMath for uint256;
     using SafeERC20Upgradeable for IERC20Upgradeable;
@@ -29,10 +33,15 @@ contract MToken {
         _;
     }
 
+    modifier onlyLendPoolConfigurator() {
+        require(_msgSender() == address(_getLendPoolConfigurator()), Errors.LP_CALLER_NOT_LEND_POOL_CONFIGURATOR);
+        _;
+    }
+
     /**
     * @dev Initializes the mToken
     * @param addressProvider The address of the address provider where this mToken will be used
-    * @param treasury The address of the Bend treasury, receiving the fees on this mToken
+    * @param treasury The address of the Metafire treasury, receiving the fees on this mToken
     * @param underlyingAsset The address of the underlying asset of this mToken
     */
     function initialize(
@@ -84,6 +93,14 @@ contract MToken {
         return previousBalance == 0;
     }
 
+    /**
+    * @dev Burns mTokens from `user` and sends the equivalent amount of underlying to `receiverOfUnderlying`
+    * - Only callable by the LendPool, as extra state updates there need to be managed
+    * @param user The owner of the mTokens, getting them burned
+    * @param receiverOfUnderlying The address that will receive the underlying
+    * @param amount The amount being burned
+    * @param index The new liquidity index of the reserve
+    **/
     function burn(
         address user,
         address receiverOfUnderlying,
@@ -178,7 +195,7 @@ contract MToken {
     }
 
     /**
-    * @dev Returns the address of the Bend treasury, receiving the fees on this mToken
+    * @dev Returns the address of the metafire treasury, receiving the fees on this mToken
     **/
     function RESERVE_TREASURY_ADDRESS() public view returns (address) {
         return _treasury;
@@ -280,6 +297,4 @@ contract MToken {
     ) internal override {
         _transfer(from, to, amount, true);
     }
-
-
 }

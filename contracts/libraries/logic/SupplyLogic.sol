@@ -1,12 +1,19 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.17;
 
+import {IMToken} from "../../interfaces/IMToken.sol";
+
 import {Errors} from "../helpers/Errors.sol";
 import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
+
+import {ReserveLogic} from "./ReserveLogic.sol";
+import {ValidationLogic} from "./ValidationLogic.sol";
 library SupplyLogic {
+    using SafeERC20Upgradeable for IERC20Upgradeable;
+    using ReserveLogic for DataTypes.ReserveData;
 
     event Deposit(
         address user,
