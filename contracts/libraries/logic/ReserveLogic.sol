@@ -2,9 +2,10 @@
 pragma solidity 0.8.17;
 
 import {IMToken} from "../../interfaces/IMToken.sol";
-
-
-
+import {IDebtToken} from "../../interfaces/IDebtToken.sol";
+import {IInterestRate} from "../../interfaces/IInterestRate.sol";
+import {ReserveConfiguration} from "../configuration/ReserveConfiguration.sol";
+import {MathUtils} from "../math/MathUtils.sol";
 import {WadRayMath} from "../math/WadRayMath.sol";
 import {PercentageMath} from "../math/PercentageMath.sol";
 import {Errors} from "../helpers/Errors.sol";
@@ -40,5 +41,32 @@ library ReserveLogic {
     );
 
     using ReserveLogic for DataTypes.ReserveData;
-    
+
+    /**
+    * @dev Updates the liquidity cumulative index and the variable borrow index.
+    * @param reserve the reserve object
+    **/
+    function updateState(DataTypes.ReserveData storage reserve) internal {
+        uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
+        uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
+        uint256 previousLiquidityIndex = reserve.liquidityIndex;
+        uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
+
+        (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
+            reserve,
+            scaledVariableDebt,
+            previousLiquidityIndex,
+            previousVariableBorrowIndex,
+            lastUpdatedTimestamp
+        );
+
+        _mintToTreasury(
+            reserve,
+            scaledVariableDebt,
+            previousVariableBorrowIndex,
+            newLiquidityIndex,
+            newVariableBorrowIndex,
+            lastUpdatedTimestamp
+        );
+    }
 }
