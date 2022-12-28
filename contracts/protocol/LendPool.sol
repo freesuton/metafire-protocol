@@ -26,7 +26,6 @@ contract LendPool is ContextUpgradeable, ReentrancyGuard{
             initiator: _msgSender(),
             asset: asset,
             amount: amount,
-            interestRateMode: interestRateMode,
             onBehalfOf: onBehalfOf,
             referralCode: referralCode
             })

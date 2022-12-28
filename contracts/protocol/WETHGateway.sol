@@ -25,12 +25,12 @@ contract WETHGateway is ReentrancyGuard,ContextUpgradeable {
     );
   }
 
-    function depositETH(address onBehalfOf, uint256 interestRateMode, uint16 referralCode) external payable nonReentrant {
+    function depositETH(address onBehalfOf, uint16 referralCode) external payable nonReentrant {
         _checkValidCallerAndOnBehalfOf(onBehalfOf);
 
         ILendPool cachedPool = _getLendPool();
         WETH.deposit{value: msg.value}();
-        cachedPool.deposit(address(WETH), msg.value, interestRateMode, onBehalfOf, referralCode);
+        cachedPool.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
     }
 
     function _getLendPool() internal view returns (ILendPool) {

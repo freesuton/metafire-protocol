@@ -30,6 +30,19 @@ library SupplyLogic {
         require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
 
         DataTypes.ReserveData storage reserve = reservesData[params.asset];
-        
+        address mToken = reserve.mTokenAddress;
+        require(mToken != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+
+        ValidationLogic.validateDeposit(reserve, params.amount);
+
+        reserve.updateState();
+        reserve.updateInterestRates(params.asset, mToken, params.amount, 0);
+
+        IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, mToken, params.amount);
+
+        IBToken(bToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndex);
+
+        emit Deposit(params.initiator, params.asset, params.amount, params.onBehalfOf, params.referralCode);
+
     }
 }

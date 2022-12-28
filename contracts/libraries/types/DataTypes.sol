@@ -6,28 +6,17 @@ library DataTypes {
   struct ReserveData {
     //stores the reserve configuration
     ReserveConfigurationMap configuration;
-    // //the variable liquidity index. Expressed in ray
-    // uint128 vLiquidityIndex;
-    // //the 4 months liquidity index. Expressed in ray
-    // uint128 fourMonthLiquidityIndex;
-    // //the 7 months liquidity index. Expressed in ray
-    // uint128 sevenMonthLiquidityIndex;
-    // //the 10 months liquidity index. Expressed in ray
-    // uint128 tenMonthLiquidityIndex;
-    // //the 13 months liquidity index. Expressed in ray
-    // uint128 thirteenMonthLiquidityIndex;
-
-    // interest mode -> liquidity index
-    mapping(uint256 => uint128) liquidityIndexList;
+    //the liquidity index. Expressed in ray
+    uint128 liquidityIndex;
     //variable borrow index. Expressed in ray
     uint128 variableBorrowIndex;
     //the current supply rate. Expressed in ray
-    uint128 currentBaseLiquidityRate;
+    uint128 currentLiquidityRate;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
     uint40 lastUpdateTimestamp;
-    // interest mode -> mToken address
-    mapping(uint256 => address) mTokenList;
+    //tokens addresses
+    address mTokenAddress;
     address debtTokenAddress;
     //address of the interest rate strategy
     address interestRateAddress;
