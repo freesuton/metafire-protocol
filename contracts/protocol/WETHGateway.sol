@@ -92,12 +92,56 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
         Errors.CALLER_NOT_ONBEHALFOF_OR_IN_WHITELIST
       );
     }
+
     function depositETH(address onBehalfOf, uint16 referralCode) external payable nonReentrant {
         _checkValidCallerAndOnBehalfOf(onBehalfOf);
 
         ILendPool cachedPool = _getLendPool();
+
         WETH.deposit{value: msg.value}();
         cachedPool.deposit(address(WETH), msg.value, onBehalfOf, referralCode);
     }
+
+    function withdrawETH(uint256 amount, address to) external override nonReentrant {
+      _checkValidCallerAndOnBehalfOf(to);
+
+      ILendPool cachedPool = _getLendPool();
+      IMToken mWETH = IMToken(cachedPool.getReserveData(address(WETH)).mTokenAddress);
+
+      uint256 userBalance = bWETH.balanceOf(msg.sender);
+      uint256 amountToWithdraw = amount;
+
+      // if amount is equal to uint(-1), the user wants to redeem everything
+      if (amount == type(uint256).max) {
+        amountToWithdraw = userBalance;
+      }
+
+      mWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
+      cachedPool.withdraw(address(WETH), amountToWithdraw, address(this));
+      WETH.withdraw(amountToWithdraw);
+      _safeTransferETH(to, amountToWithdraw);
+    }
+
+    function borrowETH(
+      uint256 amount,
+      address nftAsset,
+      uint256 nftTokenId,
+      address onBehalfOf,
+      uint16 referralCode
+    ) external override nonReentrant {
+      _checkValidCallerAndOnBehalfOf(onBehalfOf);
+
+      ILendPool cachedPool = _getLendPool();
+      ILendPoolLoan cachedPoolLoan = _getLendPoolLoan();
+
+      uint256 loanId = cachedPoolLoan.getCollateralLoanId(nftAsset, nftTokenId);
+      if (loanId == 0) {
+        IERC721Upgradeable(nftAsset).safeTransferFrom(msg.sender, address(this), nftTokenId);
+      }
+      cachedPool.borrow(address(WETH), amount, nftAsset, nftTokenId, onBehalfOf, referralCode);
+      WETH.withdraw(amount);
+      _safeTransferETH(onBehalfOf, amount);
+    }
+
 
 }
