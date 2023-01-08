@@ -11,10 +11,19 @@ import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ER
 
 import {ReserveLogic} from "./ReserveLogic.sol";
 import {ValidationLogic} from "./ValidationLogic.sol";
+
 library SupplyLogic {
     using SafeERC20Upgradeable for IERC20Upgradeable;
     using ReserveLogic for DataTypes.ReserveData;
 
+    /**
+    * @dev Emitted on deposit()
+    * @param user The address initiating the deposit
+    * @param amount The amount deposited
+    * @param reserve The address of the underlying asset of the reserve
+    * @param onBehalfOf The beneficiary of the deposit, receiving the bTokens
+    * @param referral The referral code used
+    **/
     event Deposit(
         address user,
         address indexed reserve,
@@ -43,6 +52,5 @@ library SupplyLogic {
         IBToken(bToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndex);
 
         emit Deposit(params.initiator, params.asset, params.amount, params.onBehalfOf, params.referralCode);
-
     }
 }
