@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.4;
 
 /**
  * @title Errors library
- * @author Bend
- * @notice Defines the error messages emitted by the different contracts of the Bend protocol
+ * @author MetaFire
+ * @notice Defines the error messages emitted by the different contracts of the MetaFire protocol
  */
 library Errors {
   enum ReturnCode {

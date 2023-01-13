@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.4;
 
 /**
  * @title IInterestRate interface
  * @dev Interface for the calculation of the interest rates
- * @author Metafire
+ * @author MetaFire
  */
 interface IInterestRate {
   function baseVariableBorrowRate() external view returns (uint256);

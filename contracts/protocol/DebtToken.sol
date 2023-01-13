@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.4;
 
 import {IDebtToken} from "../interfaces/IDebtToken.sol";
 import {ILendPool} from "../interfaces/ILendPool.sol";
@@ -15,7 +15,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 /**
  * @title DebtToken
  * @notice Implements a debt token to track the borrowing positions of users
- * @author Metafire
+ * @author MetaFire
  **/
 contract DebtToken is Initializable, IDebtToken, IncentivizedERC20 {
   using WadRayMath for uint256;
@@ -172,7 +172,7 @@ contract DebtToken is Initializable, IDebtToken, IncentivizedERC20 {
   }
 
   /**
-   * @dev Returns the address of the underlying asset of this bToken
+   * @dev Returns the address of the underlying asset of this mToken
    **/
   function UNDERLYING_ASSET_ADDRESS() public view returns (address) {
     return _underlyingAsset;

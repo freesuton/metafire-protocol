@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.4;
 
 library DataTypes {
   struct ReserveData {
@@ -26,8 +26,8 @@ library DataTypes {
   struct NftData {
     //stores the nft configuration
     NftConfigurationMap configuration;
-    //address of the mNFT contract
-    address mNftAddress;
+    //address of the bNFT contract
+    address bNftAddress;
     //the id of the nft. Represents the position in the list of the active nfts
     uint8 id;
     uint256 maxSupply;
