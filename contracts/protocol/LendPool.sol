@@ -684,7 +684,7 @@ contract LendPool is
     balanceToBefore;
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    require(_msgSender() == reserve.mTokenAddress, Errors.LP_CALLER_MUST_BE_AN_BTOKEN);
+    require(_msgSender() == reserve.mTokenAddress, Errors.LP_CALLER_MUST_BE_AN_MTOKEN);
 
     ValidationLogic.validateTransfer(from, reserve);
   }
