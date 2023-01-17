@@ -86,7 +86,15 @@ describe("Lend Protocol", function () {
     })
   })
 
-  it("Deploy Proxy Admin", async function () {
+  it("Deploy Address Provider", async function () {
+    const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+    const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+    console.log("Address Provider Address: "+ lendPoolAddressesProvider.address);
+  })
 
+  it("Deploy Address Provider Registry", async function () {
+    const LendPoolAddressesProviderRegistry = await ethers.getContractFactory("LendPoolAddressesProviderRegistry");
+    const lendPoolAddressesProviderRegistry = await LendPoolAddressesProviderRegistry.deploy();
+    console.log("Address Provider Registry Address: "+ lendPoolAddressesProviderRegistry.address);
   })
 })
