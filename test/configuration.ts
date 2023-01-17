@@ -81,8 +81,21 @@ describe("MetaFire Protocol Deployment", function () {
       expect(admin).to.equal(metaFireProxyAdmin.address);
       // console.log("admin Address: "+ admin1);
     });
+  })
 
+  describe("Init Lend Pool", async function () {
+    it("Set Proxy Admin", async function () {
+      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
 
+      const LendPoolAddressesProviderRegistry = await ethers.getContractFactory("LendPoolAddressesProviderRegistry");
+      const lendPoolAddressesProviderRegistry = await LendPoolAddressesProviderRegistry.deploy();
+
+      await lendPoolAddressesProviderRegistry.registerAddressesProvider(lendPoolAddressesProvider.address, 1);
+      const registeredProvider = await lendPoolAddressesProviderRegistry.getAddressesProvidersList();
+      console.log(registeredProvider[0]);
+      expect(registeredProvider[0]).to.equal(lendPoolAddressesProvider.address);
+    })
   })
 
 
