@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.4;
 
 /**
  * @title Errors library
- * @author Bend
- * @notice Defines the error messages emitted by the different contracts of the Bend protocol
+ * @author MetaFire
+ * @notice Defines the error messages emitted by the different contracts of the MetaFire protocol
  */
 library Errors {
   enum ReturnCode {
@@ -58,7 +58,7 @@ library Errors {
   string public constant LP_INVALIED_USER_NFT_AMOUNT = "407";
   string public constant LP_INCONSISTENT_PARAMS = "408";
   string public constant LP_NFT_IS_NOT_USED_AS_COLLATERAL = "409";
-  string public constant LP_CALLER_MUST_BE_AN_BTOKEN = "410";
+  string public constant LP_CALLER_MUST_BE_AN_MTOKEN = "410";
   string public constant LP_INVALIED_NFT_AMOUNT = "411";
   string public constant LP_NFT_HAS_USED_AS_COLLATERAL = "412";
   string public constant LP_DELEGATE_CALL_FAILED = "413";

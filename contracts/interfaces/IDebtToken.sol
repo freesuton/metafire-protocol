@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity 0.8.17;
+pragma solidity 0.8.4;
 
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 import {IIncentivesController} from "./IIncentivesController.sol";
@@ -10,7 +10,7 @@ import {IERC20MetadataUpgradeable} from "@openzeppelin/contracts-upgradeable/tok
 
 /**
  * @title IDebtToken
- * @author Metafire
+ * @author MetaFire
  * @notice Defines the basic interface for a debt token.
  **/
 interface IDebtToken is IScaledBalanceToken, IERC20Upgradeable, IERC20MetadataUpgradeable {
