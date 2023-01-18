@@ -3,6 +3,7 @@ import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { ContractFunction } from "hardhat/internal/hardhat-network/stack-traces/model";
+import { any } from "hardhat/internal/core/params/argumentTypes";
 
 
 
@@ -13,6 +14,7 @@ describe("MetaFire Protocol Deployment", function () {
   const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
   const ONE_GWEI = 1_000_000_000;
 
+  // Libraries
   let validationLogic: any;
   let supplyLogic: any;
   let borrowLogic: any;
@@ -21,6 +23,12 @@ describe("MetaFire Protocol Deployment", function () {
   let nftLogic: any;
   let configuratorLogic: any;
 
+  // Contracts
+  let lendPool: any;
+  let metaFireUpgradeableProxy: any;
+  let metaFireProxyAdmin: any;
+  let LendPoolAddressesProvider: any;
+  
   this.beforeEach(async () => {
     
 
@@ -48,12 +56,20 @@ describe("MetaFire Protocol Deployment", function () {
     const ConfiguratorLogic = await ethers.getContractFactory("ConfiguratorLogic");
     configuratorLogic = await ConfiguratorLogic.deploy();
 
+    describe("Deploy needed contracts", async function () {
+      it("", async function () {
+        
+        console.log("depoloy ");
+      })
+    })
+
   })
 
+  describe("Set Address to Address Provider", async function () {
+    it("", async function () {
 
-
-
-
+    })
+  })
 
   describe("Init Reserve and NFT", async function () {
     it("", async function () {
