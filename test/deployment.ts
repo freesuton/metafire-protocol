@@ -190,10 +190,4 @@ describe("Lend Protocol", function () {
       console.log("LendPoolConfigurator contract Address: "+ lendPoolConfigurator.address);
     })
   })
-
-
-
-
-
-
 })
