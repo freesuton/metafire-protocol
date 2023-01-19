@@ -26,12 +26,12 @@ contract LendPoolAddressesProvider is Ownable, ILendPoolAddressesProvider {
   bytes32 private constant EMERGENCY_ADMIN = "EMERGENCY_ADMIN";
   bytes32 private constant RESERVE_ORACLE = "RESERVE_ORACLE";
   bytes32 private constant NFT_ORACLE = "NFT_ORACLE";
-  bytes32 private constant MetaFire_ORACLE = "MetaFire_ORACLE";
+  bytes32 private constant METAFIRE_ORACLE = "METAFIRE_ORACLE";
   bytes32 private constant LEND_POOL_LOAN = "LEND_POOL_LOAN";
   bytes32 private constant BNFT_REGISTRY = "BNFT_REGISTRY";
   bytes32 private constant LEND_POOL_LIQUIDATOR = "LEND_POOL_LIQUIDATOR";
   bytes32 private constant INCENTIVES_CONTROLLER = "INCENTIVES_CONTROLLER";
-  bytes32 private constant MetaFire_DATA_PROVIDER = "MetaFire_DATA_PROVIDER";
+  bytes32 private constant METAFIRE_DATA_PROVIDER = "METAFIRE_DATA_PROVIDER";
   bytes32 private constant UI_DATA_PROVIDER = "UI_DATA_PROVIDER";
   bytes32 private constant WALLET_BALANCE_PROVIDER = "WALLET_BALANCE_PROVIDER";
 
@@ -222,11 +222,11 @@ contract LendPoolAddressesProvider is Ownable, ILendPoolAddressesProvider {
   }
 
   function getMetaFireDataProvider() external view override returns (address) {
-    return getAddress(MetaFire_DATA_PROVIDER);
+    return getAddress(METAFIRE_DATA_PROVIDER);
   }
 
   function setMetaFireDataProvider(address provider) external override onlyOwner {
-    _addresses[MetaFire_DATA_PROVIDER] = provider;
+    _addresses[METAFIRE_DATA_PROVIDER] = provider;
     emit MetaFireDataProviderUpdated(provider);
   }
 

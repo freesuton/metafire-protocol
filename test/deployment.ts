@@ -190,4 +190,17 @@ describe("Lend Protocol", function () {
       console.log("LendPoolConfigurator contract Address: "+ lendPoolConfigurator.address);
     })
   })
+
+  describe("Deploy and Init Token", async function () {
+    it("Deploy Interest Rate Strategy Contract", async function () {
+      const DebtToken = await ethers.getContractFactory("DebtToken");
+      const debtToken = await DebtToken.deploy();
+  
+      const MToken = await ethers.getContractFactory("MToken");
+      const mToken = await MToken.deploy();
+      console.log("DebtToken  contract Address: "+ debtToken.address);
+      console.log("MToken contract Address: "+ mToken.address);
+    })
+  })
+
 })
