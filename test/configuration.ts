@@ -57,32 +57,37 @@ describe("MetaFire Protocol Deployment", function () {
     const ConfiguratorLogic = await ethers.getContractFactory("ConfiguratorLogic");
     configuratorLogic = await ConfiguratorLogic.deploy();
 
+    const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+    lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
 
+    const LendPool = await ethers.getContractFactory("LendPool", {
+      libraries: {
+        SupplyLogic: supplyLogic.address,
+        BorrowLogic: borrowLogic.address,
+        LiquidateLogic: liquidateLogic.address,
+        ReserveLogic: reserveLogic.address,
+        NftLogic: nftLogic.address
+      },
+    });
+    lendPool = await LendPool.deploy();
+    await lendPool.initialize(lendPoolAddressesProvider.address);
+
+    const LendPoolConfigurator = await ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: configuratorLogic.address,
+      },
+    });
+    lendPoolConfigurator = await LendPoolConfigurator.deploy();
+    await lendPoolConfigurator.initialize(lendPoolAddressesProvider.address);
 
   })
 
   describe("Set Address to Address Provider", async function () {
-    it("", async function () {
-      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
-      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+    it("Address Setting", async function () {
 
-      const LendPool = await ethers.getContractFactory("LendPool", {
-        libraries: {
-          SupplyLogic: supplyLogic.address,
-          BorrowLogic: borrowLogic.address,
-          LiquidateLogic: liquidateLogic.address,
-          ReserveLogic: reserveLogic.address,
-          NftLogic: nftLogic.address
-        },
-      });
-      lendPool = await LendPool.deploy();
-      await lendPool.initialize(lendPoolAddressesProvider.address);
-      const LendPoolConfigurator = await ethers.getContractFactory("LendPoolConfigurator", {
-        libraries: {
-          ConfiguratorLogic: configuratorLogic.address,
-        },
-      });
-      lendPoolConfigurator = await LendPoolConfigurator.deploy();
+
+
+
 
       // address needed for deposit
       await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
@@ -99,31 +104,11 @@ describe("MetaFire Protocol Deployment", function () {
   })
 
   describe("Init Reserve and NFT", async function () {
+    
     it("Init Reserve", async function () {
+      
       const [owner, addr1] = await ethers.getSigners();
 
-      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
-      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
-
-      const LendPool = await ethers.getContractFactory("LendPool", {
-        libraries: {
-          SupplyLogic: supplyLogic.address,
-          BorrowLogic: borrowLogic.address,
-          LiquidateLogic: liquidateLogic.address,
-          ReserveLogic: reserveLogic.address,
-          NftLogic: nftLogic.address
-        },
-      });
-      lendPool = await LendPool.deploy();
-      await lendPool.initialize(lendPoolAddressesProvider.address);
-      
-      const LendPoolConfigurator = await ethers.getContractFactory("LendPoolConfigurator", {
-        libraries: {
-          ConfiguratorLogic: configuratorLogic.address,
-        },
-      });
-      lendPoolConfigurator = await LendPoolConfigurator.deploy();
-      await lendPoolConfigurator.initialize(lendPoolAddressesProvider.address);
 
       const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
       const debtTokenImpl = await DebtTokenImpl.deploy();
@@ -151,9 +136,62 @@ describe("MetaFire Protocol Deployment", function () {
     it("Init NFT", async function () {
       const [owner, addr1] = await ethers.getSigners();
 
-      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
-      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
 
+      const LendPoolLoan = await ethers.getContractFactory("LendPoolLoan");
+      const lendPoolLoan = await LendPoolLoan.deploy();
+      await lendPoolLoan.initialize(lendPoolAddressesProvider.address);
+
+      const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
+      const debtTokenImpl = await DebtTokenImpl.deploy();
+  
+      const MTokenImpl = await ethers.getContractFactory("MToken");
+      const mTokenimpl = await MTokenImpl.deploy();
+
+      const InterestRate = await ethers.getContractFactory("InterestRate");
+      const interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(100).mul(8),ray.div(100).mul(10),ray);
+      
+      const WETH9Mocked = await ethers.getContractFactory("WETH9Mocked");
+      const wETH9Mocked = await WETH9Mocked.deploy();
+
+      const BNFT = await ethers.getContractFactory("BNFT");
+      const bNFT = await BNFT.deploy();
+
+      const BNFTRegistry = await ethers.getContractFactory("BNFTRegistry");
+      const bNFTRegistry = await BNFTRegistry.deploy();
+
+      const MintableERC721 = await ethers.getContractFactory("MintableERC721");
+      const mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
+
+      // address needed to address provider
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("BNFT_REGISTRY"), bNFTRegistry.address);
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
+      
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+      const lendPoolAddress = await lendPoolAddressesProvider.getLendPool();
+      
+      // Init BNFT Registry
+      await bNFTRegistry.initialize(bNFT.address,"M","M");
+      // Create Proxy and init IMPL
+      await bNFTRegistry.createBNFT(mintableERC721.address);
+
+      const initNftInput = [[mintableERC721.address]];
+      await lendPoolConfigurator.batchInitNft(initNftInput);
+
+    })
+  })
+
+  describe("TTTTTTT", async function () {
+    const x= 1111;
+    it("111111", async function () {
+      console.log(x);
+ 
+    })
+    it("22222", async function () {
+
+      console.log(x);
     })
   })
 })

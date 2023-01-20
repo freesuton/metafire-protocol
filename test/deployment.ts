@@ -51,40 +51,6 @@ describe("Lend Protocol", function () {
 
   })
 
-  describe("Deploy and Init LendPool", async function () {
-
-    it("Deploy LendPool", async function () {
-      const LendPool = await ethers.getContractFactory("LendPool", {
-        libraries: {
-          SupplyLogic: supplyLogic.address,
-          BorrowLogic: borrowLogic.address,
-          LiquidateLogic: liquidateLogic.address,
-          ReserveLogic: reserveLogic.address,
-          NftLogic: nftLogic.address
-        },
-      });
-      const lendPool = await LendPool.deploy();
-      await lendPool.deployed();
-
-      console.log("LendPool Address: "+ lendPool.address);
-    });
-
-    it("Init LendPool", async function () {
-      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
-      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
-      const LendPool = await ethers.getContractFactory("LendPool", {
-        libraries: {
-          SupplyLogic: supplyLogic.address,
-          BorrowLogic: borrowLogic.address,
-          LiquidateLogic: liquidateLogic.address,
-          ReserveLogic: reserveLogic.address,
-          NftLogic: nftLogic.address
-        },
-      });
-      const lendPool = await LendPool.deploy();
-      await lendPool.initialize(lendPoolAddressesProvider.address);
-    })
-  })
 
   describe("Deploy and Init Proxy contracts", async function () {
     it("Deploy Proxy", async function () {
@@ -142,6 +108,52 @@ describe("Lend Protocol", function () {
       // console.log("admin Address: "+ admin1);
     });
   })
+
+  describe("Deploy and Init LendPool", async function () {
+
+    it("Deploy LendPool", async function () {
+      const LendPool = await ethers.getContractFactory("LendPool", {
+        libraries: {
+          SupplyLogic: supplyLogic.address,
+          BorrowLogic: borrowLogic.address,
+          LiquidateLogic: liquidateLogic.address,
+          ReserveLogic: reserveLogic.address,
+          NftLogic: nftLogic.address
+        },
+      });
+      const lendPool = await LendPool.deploy();
+      await lendPool.deployed();
+
+      console.log("LendPool Address: "+ lendPool.address);
+    });
+
+    it("Init LendPool", async function () {
+      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+      const LendPool = await ethers.getContractFactory("LendPool", {
+        libraries: {
+          SupplyLogic: supplyLogic.address,
+          BorrowLogic: borrowLogic.address,
+          LiquidateLogic: liquidateLogic.address,
+          ReserveLogic: reserveLogic.address,
+          NftLogic: nftLogic.address
+        },
+      });
+      const lendPool = await LendPool.deploy();
+      await lendPool.initialize(lendPoolAddressesProvider.address);
+    })
+
+    it("Deploy and Init LendPool", async function () {
+      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+      const LendPoolLoan = await ethers.getContractFactory("LendPoolLoan");
+      const lendPoolLoan = await LendPoolLoan.deploy();
+
+
+      await lendPoolLoan.initialize(lendPoolAddressesProvider.address);
+    })
+  })
+
 
   describe("Deploy and Init Address Provider", async function () {
     it("Deploy Address Provider Contract", async function () {
