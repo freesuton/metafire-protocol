@@ -179,7 +179,6 @@ describe("MetaFire Protocol Deployment", async function () {
       // position 58
       await lendPoolConfigurator.setActiveFlagOnReserve(assets, true);
       const configuration = await lendPool.getReserveConfiguration(wETH.address);
-      console.log(configuration);
       expect(configuration.data).to.equal(ethers.BigNumber.from("72057594037927936"));
     })
 
@@ -191,11 +190,10 @@ describe("MetaFire Protocol Deployment", async function () {
 
       const assets = [wETH.address];
 
-      // position 58
-      await lendPoolConfigurator.setReserveFactor(assets,1);
+      // position 64. 1% -> 100
+      await lendPoolConfigurator.setReserveFactor(assets,100);
       const configuration = await lendPool.getReserveConfiguration(wETH.address);
-      console.log(configuration);
-      // expect(configuration.data).to.equal(ethers.BigNumber.from("72057594037927936"));
+      expect(configuration.data).to.equal(ethers.BigNumber.from("1844674407370955161600"));
     })
 
   })
