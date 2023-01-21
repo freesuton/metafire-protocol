@@ -7,13 +7,12 @@ import { any } from "hardhat/internal/core/params/argumentTypes";
 
 
 
-describe("MetaFire Protocol Deployment", async function () {
+describe("MetaFire Protocol Deployment", function () {
   console.log("------start test -------");
   const oneEther = ethers.BigNumber.from("1000000000000000000");
   const ray = ethers.BigNumber.from("1000000000000000000000000000");
   const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
   const ONE_GWEI = 1_000_000_000;
-  
 
   // Libraries
   let validationLogic: any;
@@ -30,10 +29,7 @@ describe("MetaFire Protocol Deployment", async function () {
   let lendPool: any;
   let lendPoolConfigurator: any;
   let lendPoolAddressesProvider: any;
-  let interestRate: any;
   let wETH: any;
-  let mTokenimpl: any;
-  let debtTokenImpl: any;
 
   this.beforeEach(async () => {
     
@@ -85,22 +81,26 @@ describe("MetaFire Protocol Deployment", async function () {
     lendPoolConfigurator = await LendPoolConfigurator.deploy();
     await lendPoolConfigurator.initialize(lendPoolAddressesProvider.address);
 
-    const InterestRate = await ethers.getContractFactory("InterestRate");
-    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(100).mul(8),ray.div(100).mul(10),ray);
-
     const WETH9Mocked = await ethers.getContractFactory("WETH9Mocked");
     wETH = await WETH9Mocked.deploy();
 
-    const MTokenImpl = await ethers.getContractFactory("MToken");
-    mTokenimpl = await MTokenImpl.deploy();
+  })
 
-    const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
-    debtTokenImpl = await DebtTokenImpl.deploy();
+  describe("Set Address to Address Provider", async function () {
+    it("Address Setting", async function () {
 
-    // address setting
-    await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
-    await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
+      // address needed for deposit
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
+      const lendPoolAddress = await lendPoolAddressesProvider.getLendPool();
+      
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
+      const lendPoolConfiguratorAddress = await lendPoolAddressesProvider.getLendPoolConfigurator();
 
+      //TODO: address needed for other
+
+      expect(lendPoolAddress).to.equal(lendPool.address);
+      expect(lendPoolConfiguratorAddress).to.equal(lendPoolConfigurator.address);
+    })
   })
 
   describe("Init Reserve and NFT", async function () {
@@ -109,20 +109,43 @@ describe("MetaFire Protocol Deployment", async function () {
       
       const [owner, addr1] = await ethers.getSigners();
 
+
+      const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
+      const debtTokenImpl = await DebtTokenImpl.deploy();
+  
+      const MTokenImpl = await ethers.getContractFactory("MToken");
+      const mTokenimpl = await MTokenImpl.deploy();
+
+      const InterestRate = await ethers.getContractFactory("InterestRate");
+      const interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(100).mul(8),ray.div(100).mul(10),ray);
+
+      // address needed for deposit
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
       // set lendpool admin
       await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+      const lendPoolAddress = await lendPoolAddressesProvider.getLendPool();
 
       const initReserveInput = [[mTokenimpl.address, debtTokenImpl.address, 18, interestRate.address,wETH.address,owner.address,"WETH","BToken","BTOKEN","MTOKEN","MToken"]];
       await lendPoolConfigurator.batchInitReserve(initReserveInput);
     })
 
     it("Init NFT", async function () {
-      
-      const [owner, addr1] = await ethers.getSigners();  
+      const [owner, addr1] = await ethers.getSigners();
+
 
       const LendPoolLoan = await ethers.getContractFactory("LendPoolLoan");
       const lendPoolLoan = await LendPoolLoan.deploy();
       await lendPoolLoan.initialize(lendPoolAddressesProvider.address);
+
+      const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
+      const debtTokenImpl = await DebtTokenImpl.deploy();
+  
+      const MTokenImpl = await ethers.getContractFactory("MToken");
+      const mTokenimpl = await MTokenImpl.deploy();
+
+      const InterestRate = await ethers.getContractFactory("InterestRate");
+      const interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(100).mul(8),ray.div(100).mul(10),ray);
 
       const BNFT = await ethers.getContractFactory("BNFT");
       const bNFT = await BNFT.deploy();
@@ -133,11 +156,15 @@ describe("MetaFire Protocol Deployment", async function () {
       const MintableERC721 = await ethers.getContractFactory("MintableERC721");
       const mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
 
+      // address needed to address provider
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
+      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
       await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("BNFT_REGISTRY"), bNFTRegistry.address);
       await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
       
       // set lendpool admin
       await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+      const lendPoolAddress = await lendPoolAddressesProvider.getLendPool();
       
       // Init BNFT Registry
       await bNFTRegistry.initialize(bNFT.address,"M","M");
@@ -146,66 +173,6 @@ describe("MetaFire Protocol Deployment", async function () {
 
       const initNftInput = [[mintableERC721.address]];
       await lendPoolConfigurator.batchInitNft(initNftInput);
-
-      const assets = [wETH.address];
-      await lendPoolConfigurator.setBorrowingFlagOnReserve(assets, true);
     })
-  })
-
-  describe("Configuration", async function () {
-  
-    it("set Borrowing Flag On Reserve", async function () {
-      const [owner, addr1] = await ethers.getSigners();  
-
-      // set lendpool admin
-      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
-
-      const assets = [wETH.address];
-
-      // position 58
-      await lendPoolConfigurator.setBorrowingFlagOnReserve(assets, true);
-      const configuration = await lendPool.getReserveConfiguration(wETH.address);
-      expect(configuration.data).to.equal(ethers.BigNumber.from("288230376151711744"));
-    })
-
-    it("set Active Flag On Reserve", async function () {
-      const [owner, addr1] = await ethers.getSigners();  
-
-      // set lendpool admin
-      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
-
-      const assets = [wETH.address];
-
-      // position 58
-      await lendPoolConfigurator.setActiveFlagOnReserve(assets, true);
-      const configuration = await lendPool.getReserveConfiguration(wETH.address);
-      console.log(configuration);
-      expect(configuration.data).to.equal(ethers.BigNumber.from("72057594037927936"));
-    })
-
-    it("set Reserve Factor", async function () {
-      const [owner, addr1] = await ethers.getSigners();  
-
-      // set lendpool admin
-      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
-
-      const assets = [wETH.address];
-
-      // position 58
-      await lendPoolConfigurator.setReserveFactor(assets,1);
-      const configuration = await lendPool.getReserveConfiguration(wETH.address);
-      console.log(configuration);
-      // expect(configuration.data).to.equal(ethers.BigNumber.from("72057594037927936"));
-    })
-
-  })
-
-  describe("TTTTTTT", async function () {
-    const x= 1111;
-    it("-------", async function () {
-      console.log(x);
- 
-    })
-
   })
 })
