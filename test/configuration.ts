@@ -34,6 +34,7 @@ describe("MetaFire Protocol Deployment", async function () {
   let wETH: any;
   let mTokenimpl: any;
   let debtTokenImpl: any;
+  let mintableERC721: any;
 
   this.beforeEach(async () => {
     
@@ -90,6 +91,9 @@ describe("MetaFire Protocol Deployment", async function () {
 
     const WETH9Mocked = await ethers.getContractFactory("WETH9Mocked");
     wETH = await WETH9Mocked.deploy();
+
+    const MintableERC721 = await ethers.getContractFactory("MintableERC721");
+    mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
 
     const MTokenImpl = await ethers.getContractFactory("MToken");
     mTokenimpl = await MTokenImpl.deploy();
@@ -194,6 +198,33 @@ describe("MetaFire Protocol Deployment", async function () {
       await lendPoolConfigurator.setReserveFactor(assets,100);
       const configuration = await lendPool.getReserveConfiguration(wETH.address);
       expect(configuration.data).to.equal(ethers.BigNumber.from("1844674407370955161600"));
+    })
+
+    it("set Reserve Interest Rate Address", async function () {
+      const [owner, addr1] = await ethers.getSigners();  
+
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+      const assets = [wETH.address];
+
+      await lendPoolConfigurator.setReserveInterestRateAddress(assets,interestRate.address);
+      const reserveData = await lendPool.getReserveData(wETH.address);
+      expect(reserveData.interestRateAddress).to.equal(interestRate.address);
+    })
+
+    it("configure Nft As Collateral", async function () {
+      const [owner, addr1] = await ethers.getSigners();  
+
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+      
+
+      const assets = [mintableERC721.address];
+      // 1% -> 100     ltv, liquidationThreshold, liquidationBonus
+      await lendPoolConfigurator.configureNftAsCollateral(assets,5000, 7000, 500);
+      const nftData = await lendPool.getNftData(mintableERC721.address);
+      expect(nftData.configuration.data).to.equal(ethers.BigNumber.from("2147942405000"));
     })
 
   })
