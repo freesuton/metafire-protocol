@@ -241,6 +241,42 @@ describe("MetaFire Protocol Deployment", async function () {
       expect(nftData.configuration.data).to.equal(ethers.BigNumber.from("121119698274498429470113792"));
     })
 
+    it("set Nft Redeem Threshold", async function () {
+      const [owner, addr1] = await ethers.getSigners(); 
+
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+      const assets = [mintableERC721.address];
+      // duration unit is hour max = 255; 1% -> 100  
+      await lendPoolConfigurator.configureNftAsAuction(assets, 24, 48, 100);
+      const nftData = await lendPool.getNftData(mintableERC721.address);
+      expect(nftData.configuration.data).to.equal(ethers.BigNumber.from("121119698274498429470113792"));
+    })
+
+    it("set Nft Min Bid Fine", async function () {
+      const [owner, addr1] = await ethers.getSigners(); 
+
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+      const assets = [mintableERC721.address];
+      // 1% -> 100  
+      await lendPoolConfigurator.setNftMinBidFine(assets, 100);
+      const nftData = await lendPool.getNftData(mintableERC721.address);
+      expect(nftData.configuration.data).to.equal(ethers.BigNumber.from("519229685853482762853049632922009600"));
+    })
+
+    it("set Nft Max Supply And TokenId", async function () {
+      const [owner, addr1] = await ethers.getSigners(); 
+
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+      const assets = [mintableERC721.address];
+      await lendPoolConfigurator.setNftMaxSupplyAndTokenId(assets, 100, 1);
+      const nftData = await lendPool.getNftData(mintableERC721.address);
+    })
   })
 
 
