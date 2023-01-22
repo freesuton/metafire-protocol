@@ -12,6 +12,8 @@ describe("MetaFire Protocol Deployment", async function () {
   const oneEther = ethers.BigNumber.from("1000000000000000000");
   const ray = ethers.BigNumber.from("1000000000000000000000000000");
   const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
+  const ONE_DAY = 3600 * 24;
+  const ONE_MONTH = 3600 * 24 * 30;
   const ONE_GWEI = 1_000_000_000;
   
 
@@ -219,7 +221,6 @@ describe("MetaFire Protocol Deployment", async function () {
       // set lendpool admin
       await lendPoolAddressesProvider.setPoolAdmin(owner.address);
       
-
       const assets = [mintableERC721.address];
       // 1% -> 100     ltv, liquidationThreshold, liquidationBonus
       await lendPoolConfigurator.configureNftAsCollateral(assets,5000, 7000, 500);
@@ -227,14 +228,20 @@ describe("MetaFire Protocol Deployment", async function () {
       expect(nftData.configuration.data).to.equal(ethers.BigNumber.from("2147942405000"));
     })
 
-  })
+    it("configure Nft As Auction", async function () {
+      const [owner, addr1] = await ethers.getSigners(); 
 
-  describe("TTTTTTT", async function () {
-    const x= 1111;
-    it("-------", async function () {
-      console.log(x);
- 
+      // set lendpool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+      const assets = [mintableERC721.address];
+      // duration unit is hour max = 255
+      await lendPoolConfigurator.configureNftAsAuction(assets, 24, 48, 100);
+      const nftData = await lendPool.getNftData(mintableERC721.address);
+      expect(nftData.configuration.data).to.equal(ethers.BigNumber.from("121119698274498429470113792"));
     })
 
   })
+
+
 })
