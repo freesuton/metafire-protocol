@@ -15,8 +15,11 @@ describe("MetaFire Protocol Deployment", async function () {
   const ONE_DAY = 3600 * 24;
   const ONE_MONTH = 3600 * 24 * 30;
   const ONE_GWEI = 1_000_000_000;
-  
 
+  let owner: any;
+  let addr1: any;
+  let addr2: any;
+  
   // Libraries
   let validationLogic: any;
   let supplyLogic: any;
@@ -39,12 +42,12 @@ describe("MetaFire Protocol Deployment", async function () {
   let mintableERC721: any;
 
   this.beforeEach(async () => {
-    
 
+    [owner, addr1] = await ethers.getSigners();
+    
     const ValidationLogic = await ethers.getContractFactory("ValidationLogic");
     validationLogic = await ValidationLogic.deploy();
     
-
     const SupplyLogic = await ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: validationLogic.address }});
     supplyLogic = await SupplyLogic.deploy();
     
@@ -107,55 +110,39 @@ describe("MetaFire Protocol Deployment", async function () {
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
 
+    // set lendpool admin
+    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+    //init reserve
+    const initReserveInput = [[mTokenimpl.address, debtTokenImpl.address, 18, interestRate.address,wETH.address,owner.address,"WETH","BToken","BTOKEN","MTOKEN","MToken"]];
+    await lendPoolConfigurator.batchInitReserve(initReserveInput);
+
   })
 
-  describe("Init Reserve and NFT", async function () {
-    
-    it("Init Reserve", async function () {
+  describe("Deposit", async function () {
+
+    let x;
+    let y = 1;
+    console.log("---------")
+    let reserveData;
+
+    it("Deposit and Withdraw", async function () {
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      await wETH.mint(oneEther);
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddress,oneEther.mul(100));
+      // await wETH.transferFrom(owner.address, lendPool.address, oneEther.div(10));
+      // await wETH.safeTransferFrom(owner.address, reserveData.mTokenAddress, oneEther.div(10));
       
-      const [owner, addr1] = await ethers.getSigners();
-
-      // set lendpool admin
-      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
-
-      const initReserveInput = [[mTokenimpl.address, debtTokenImpl.address, 18, interestRate.address,wETH.address,owner.address,"WETH","BToken","BTOKEN","MTOKEN","MToken"]];
-      await lendPoolConfigurator.batchInitReserve(initReserveInput);
+      console.log(await wETH.balanceOf(reserveData.mTokenAddress));
+      console.log(await wETH.balanceOf(owner.address));
+      console.log("allow"+ await wETH.allowance(owner.address, lendPool.address));
+      await lendPool.deposit(wETH.address, oneEther, owner.address,0);
     })
 
-    it("Init NFT", async function () {
-      
-      const [owner, addr1] = await ethers.getSigners();  
 
-      const LendPoolLoan = await ethers.getContractFactory("LendPoolLoan");
-      const lendPoolLoan = await LendPoolLoan.deploy();
-      await lendPoolLoan.initialize(lendPoolAddressesProvider.address);
-
-      const BNFT = await ethers.getContractFactory("BNFT");
-      const bNFT = await BNFT.deploy();
-
-      const BNFTRegistry = await ethers.getContractFactory("BNFTRegistry");
-      const bNFTRegistry = await BNFTRegistry.deploy();
-
-      const MintableERC721 = await ethers.getContractFactory("MintableERC721");
-      const mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
-
-      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("BNFT_REGISTRY"), bNFTRegistry.address);
-      await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
-      
-      // set lendpool admin
-      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
-      
-      // Init BNFT Registry
-      await bNFTRegistry.initialize(bNFT.address,"M","M");
-      // Create Proxy and init IMPL
-      await bNFTRegistry.createBNFT(mintableERC721.address);
-
-      const initNftInput = [[mintableERC721.address]];
-      await lendPoolConfigurator.batchInitNft(initNftInput);
-
-      const assets = [wETH.address];
-      await lendPoolConfigurator.setBorrowingFlagOnReserve(assets, true);
-    })
   })
 
 })

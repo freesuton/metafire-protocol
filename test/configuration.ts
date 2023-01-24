@@ -278,4 +278,5 @@ describe("MetaFire Protocol Deployment", async function () {
       const nftData = await lendPool.getNftData(mintableERC721.address);
     })
   })
+
 })
