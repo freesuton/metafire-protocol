@@ -153,8 +153,6 @@ describe("MetaFire Protocol Deployment", async function () {
       const initNftInput = [[mintableERC721.address]];
       await lendPoolConfigurator.batchInitNft(initNftInput);
 
-      const assets = [wETH.address];
-      await lendPoolConfigurator.setBorrowingFlagOnReserve(assets, true);
     })
   })
 
