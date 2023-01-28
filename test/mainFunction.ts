@@ -204,6 +204,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     })
     // it(" Borrow", async function () {
 
+
     //   await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
     //   await lendPoolConfigurator.setActiveFlagOnReserve(erc20Assets, true);
     //   // position 64. 1% -> 100
