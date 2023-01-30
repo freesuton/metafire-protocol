@@ -137,7 +137,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
     //  init reserve
-    const initReserveInput = [[mTokenimpl.address, debtTokenImpl.address, 18, interestRate.address,wETH.address,owner.address,"WETH","BToken","BTOKEN","MTOKEN","MToken"]];
+    const initReserveInput = [[mTokenimpl.address, debtTokenImpl.address, 18, interestRate.address,wETH.address,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
     await lendPoolConfigurator.batchInitReserve(initReserveInput);
 
     // init NFT
@@ -159,7 +159,37 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     let reserveData;
     let nftData;
-    it(" Borrow", async function () {
+    it("Deposit and Withdraw", async function () {
+
+      const assets = [wETH.address];
+      // set reserve interest rate address
+      await lendPoolConfigurator.setReserveInterestRateAddress(assets,interestRate.address);
+      await lendPoolConfigurator.setReserveFactor(erc20Assets,1000);
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+      // instantiate mtoken proxy contract
+      const proxy = mTokenimpl.attach(reserveData.mTokenAddress);
+      
+      
+
+      await wETH.mint(oneEther.mul(10));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddress,oneEther.mul(100));
+      // await wETH.transferFrom(owner.address, lendPool.address, oneEther);
+
+      console.log("balance "+ await wETH.balanceOf(owner.address))
+      await lendPool.deposit(wETH.address, oneEther, owner.address,0);
+      const deposited = await proxy.balanceOf(owner.address);
+      console.log("balance after deposited"+ await wETH.balanceOf(owner.address))
+      expect(deposited).to.equal(oneEther);
+
+      await lendPool.withdraw(wETH.address, oneEther, owner.address);
+      const withdrawed = await wETH.balanceOf(owner.address);
+      // expect(withdrawed).to.equal(oneEther.mul(99).div(100).add(oneEther.mul(9)));
+      console.log("withdrawed: "+ withdrawed);
+    })
+
+    it("Deposit and Borrow", async function () {
 
       const MockNFTOracle = await ethers.getContractFactory("MockNFTOracle");
       const mockNFTOracle = await MockNFTOracle.deploy();
@@ -202,64 +232,10 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.borrow(wETH.address, 1, mintableERC721.address, 0, owner.address,0 );
 
     })
-    // it(" Borrow", async function () {
 
 
-    //   await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
-    //   await lendPoolConfigurator.setActiveFlagOnReserve(erc20Assets, true);
-    //   // position 64. 1% -> 100
-    //   await lendPoolConfigurator.setReserveFactor(erc20Assets,100);
-    //   await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
-    //   // 1% -> 100     ltv, liquidationThreshold, liquidationBonus
-    //   await lendPoolConfigurator.configureNftAsCollateral(nftAssets,5000, 7000, 500);
-
-    //   reserveData = await lendPool.getReserveData(wETH.address);
-    //   await wETH.mint(oneEther.mul(10));
-    //   await wETH.approve(lendPool.address,oneEther.mul(100));
-    //   await wETH.approve(reserveData.mTokenAddress,oneEther.mul(100));
-
-    //   await lendPool.deposit(wETH.address, oneEther, owner.address,0);
-    //   // address asset,
-    //   // uint256 amount,
-    //   // address nftAsset,
-    //   // uint256 nftTokenId,
-    //   // address onBehalfOf,
-    //   // uint16 referralCode
-    //   await lendPool.borrow(wETH.address, 1, mintableERC721.address, 0, owner.address,0 );
-    //   reserveData = await lendPool.getReserveData(wETH.address);
-    //   console.log(reserveData);
-
-    //   await ethers.provider.send("evm_increaseTime", [3600*24*365]);
-    //   await ethers.provider.send("evm_mine");
-
-    //   await lendPool.deposit(wETH.address, oneEther, owner.address,0);
-    //   reserveData = await lendPool.getReserveData(wETH.address);
-    //   console.log(reserveData);
-    // })
 
 
-    it("Deposit and Withdraw", async function () {
-
-      const assets = [wETH.address];
-      // set reserve interest rate address
-      await lendPoolConfigurator.setReserveInterestRateAddress(assets,interestRate.address);
-
-      reserveData = await lendPool.getReserveData(wETH.address);
-
-
-      // await wETH.mint(oneEther.mul(10));
-      // await wETH.approve(lendPool.address,oneEther.mul(100));
-      // await wETH.approve(reserveData.mTokenAddress,oneEther.mul(100));
-      // await wETH.transferFrom(owner.address, lendPool.address, oneEther.div(10));
-      // await wETH.safeTransferFrom(owner.address, reserveData.mTokenAddress, oneEther.div(10));
-
-      // console.log(reserveData);
-      
-      // console.log(await wETH.balanceOf(reserveData.mTokenAddress));
-      // console.log(await wETH.balanceOf(owner.address));
-      // console.log("allow"+ await wETH.allowance(owner.address, lendPool.address));
-      // await lendPool.deposit(wETH.address, oneEther, owner.address,0);
-    })
 
 
   })
