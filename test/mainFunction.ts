@@ -109,7 +109,7 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     const InterestRate = await ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
-    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(100).mul(8),ray.div(100).mul(10),ray);
+    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray);
 
     const WETH9Mocked = await ethers.getContractFactory("WETH9Mocked");
     wETH = await WETH9Mocked.deploy();
@@ -167,16 +167,14 @@ describe("MetaFire Protocol Main Functions", async function () {
     await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
     // set reserve interest rate address
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
-    await lendPoolConfigurator.setReserveFactor(erc20Assets,1000);
     await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,50,0);
     await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
     await lendPoolConfigurator.setActiveFlagOnReserve(erc20Assets, true);
     // position 64. 1% -> 100
-    await lendPoolConfigurator.setReserveFactor(erc20Assets,100);
+    await lendPoolConfigurator.setReserveFactor(erc20Assets,3000);
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
-    // 1% -> 100     ltv, liquidationThreshold, liquidationBonus
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets,5000, 7000, 500);
-
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 6000, 6000, 500);
 
     //}
 
@@ -209,10 +207,29 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     it("Interest calculation of Deposit and Borrow", async function () {
 
+      // configuration set
+      // deposit 2 ethers
+      // borrow 0.2 ethers
+      // threashhold 0.7
+      // ltv 0.5
+      //--->
+      // U = 1 / 2 = 5%
+
+      // expect
+      
+
+      // set nft oracle price to 2 ethers
       await mockNFTOracle.setAssets(nftAssets);
-      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
+      const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
+      expect(nftPrice).to.equal(oneEther.mul(2));
+      
+      // set reserve asset price 1 ether
+      const price = await mockReserveOracle.getAssetPrice(wETH.address);
+      expect(price).to.equal(oneEther);
 
       reserveData = await lendPool.getReserveData(wETH.address);
+      // console.log(reserveData);
 
       // mint ETH
       await wETH.mint(oneEther.mul(10));
@@ -223,9 +240,11 @@ describe("MetaFire Protocol Main Functions", async function () {
       await mintableERC721.mint(0);
       await mintableERC721.approve(lendPool.address, 0);
 
-      await lendPool.deposit(wETH.address, oneEther, owner.address,0);
-      await lendPool.borrow(wETH.address, 1, mintableERC721.address, 0, owner.address,0 );
-
+      await lendPool.deposit(wETH.address, oneEther.mul(1), owner.address,0);
+      // await lendPool.borrow(wETH.address, oneEther.div(10).mul(8), mintableERC721.address, 0, owner.address,0 );
+      await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
+      reserveData = await lendPool.getReserveData(wETH.address);
+      console.log(reserveData);
     })
 
   })
