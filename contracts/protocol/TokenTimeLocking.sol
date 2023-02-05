@@ -4,14 +4,43 @@ pragma solidity 0.8.4;
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
+import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import {CountersUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
+import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
+
+
 /**
  * @title TokenLocking
  * @notice Lock token for 4 period time: 1 months, 3 months, 6months, 9months
  * @author MetaFire
  **/
 
-contract TokenTimelock {
-    // using SafeERC20Upgradeable for IERC20Upgradeable;
+contract TokenTimelock is Initializable, ContextUpgradeable{
+  using SafeERC20Upgradeable for IERC20Upgradeable;
+  using CountersUpgradeable for CountersUpgradeable.Counter;
+
+  CountersUpgradeable.Counter private _loanIdTracker;
+
+  // user -> mToken address -> LockingData
+  mapping(address => mapping(address => LockingData)) stakingLists;
+
+  struct LockingData{
+    address staker;
+    address mTokenAddress;
+    uint256 mTokenAmount;
+    uint256 releaseTime;
+    uint256 id;
+  }
+  // called once by the factory at time of deployment
+  function initialize(ILendPoolAddressesProvider provider) external initializer {
+    __Context_init();
+
+    _addressesProvider = provider;
+
+    // Avoid having loanId = 0
+    _loanIdTracker.increment();
+  }
+
 
     // // ERC20 basic token contract being held
     // IERC20Upgradeable private immutable _token;

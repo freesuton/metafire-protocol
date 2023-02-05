@@ -175,7 +175,6 @@ describe("MetaFire Protocol Main Functions", async function () {
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
     await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 6000, 6000, 500);
-
     //}
 
   })
