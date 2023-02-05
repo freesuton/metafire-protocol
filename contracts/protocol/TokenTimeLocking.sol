@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.4;
 
+import {Errors} from "../libraries/helpers/Errors.sol";
+
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
 
@@ -22,15 +24,44 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
   CountersUpgradeable.Counter private _loanIdTracker;
 
   // user -> mToken address -> LockingData
-  mapping(address => mapping(address => LockingData)) stakingLists;
+  mapping(address => mapping(address => LockingData)) _lockList;
 
-  struct LockingData{
-    address staker;
-    address mTokenAddress;
-    uint256 mTokenAmount;
+  struct LockData{
+    address locker;
+    address asset;
+    uint256 amount;
     uint256 releaseTime;
     uint256 id;
   }
+
+  event Lock(
+    address indexed user,
+    address indexed asset,
+    uint256 amount,
+    uint256 releaseTime,
+  )
+
+    /**
+   * @dev Prevents a contract from calling itself, directly or indirectly.
+   * Calling a `nonReentrant` function from another `nonReentrant`
+   * function is not supported. It is possible to prevent this from happening
+   * by making the `nonReentrant` function external, and making it call a
+   * `private` function that does the actual work.
+   */
+  modifier nonReentrant() {
+    // On the first call to nonReentrant, _notEntered will be true
+    require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+
+    // Any calls to nonReentrant after this point will fail
+    _status = _ENTERED;
+
+    _;
+
+    // By storing the original value once again, a refund is triggered (see
+    // https://eips.ethereum.org/EIPS/eip-2200)
+    _status = _NOT_ENTERED;
+  }
+
   // called once by the factory at time of deployment
   function initialize(ILendPoolAddressesProvider provider) external initializer {
     __Context_init();
@@ -41,59 +72,30 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
     _loanIdTracker.increment();
   }
 
+  function lock(
+    address asset,
+    uint256 amount,
+    uint256 lockDuration,
+    address onBehalfOf
+  ) external nonReentrant {
+    require(onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
+    require(asset != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
 
-    // // ERC20 basic token contract being held
-    // IERC20Upgradeable private immutable _token;
+    LockData storage lockData = _lockList[onBehalfOf][asset];
+    uint256 releaseTime = block.timestamp + lockDuration;
+    
+    // TODO add error type
+    require(lockData.releaseTime < releaseTime, "TODO") ;
 
-    // // beneficiary of tokens after they are released
-    // address private immutable _beneficiary;
+    IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, bToken, params.amount);
 
-    // // timestamp when token release is enabled
-    // uint256 private immutable _releaseTime;
+    // Save Info
+    lockData.locker = onBehalfOf;
+    lockData.asset = asset;
+    lockData.amount += amount;
+    lockData.releaseTime = releaseTime;
 
-    // /**
-    //  * @dev Deploys a timelock instance that is able to hold the token specified, and will only release it to
-    //  * `beneficiary_` when {release} is invoked after `releaseTime_`. The release time is specified as a Unix timestamp
-    //  * (in seconds).
-    //  */
-    // constructor(IERC20 token_, address beneficiary_, uint256 releaseTime_) {
-    //     require(releaseTime_ > block.timestamp, "TokenTimelock: release time is before current time");
-    //     _token = token_;
-    //     _beneficiary = beneficiary_;
-    //     _releaseTime = releaseTime_;
-    // }
+    emit Lock(onBehalfOf, asset, amount, releaseTime);
+  }
 
-    // /**
-    //  * @dev Returns the token being held.
-    //  */
-    // function token() public view virtual returns (IERC20) {
-    //     return _token;
-    // }
-
-    // /**
-    //  * @dev Returns the beneficiary that will receive the tokens.
-    //  */
-    // function beneficiary() public view virtual returns (address) {
-    //     return _beneficiary;
-    // }
-
-    // /**
-    //  * @dev Returns the time when the tokens are released in seconds since Unix epoch (i.e. Unix timestamp).
-    //  */
-    // function releaseTime() public view virtual returns (uint256) {
-    //     return _releaseTime;
-    // }
-
-    // /**
-    //  * @dev Transfers tokens held by the timelock to the beneficiary. Will only succeed if invoked after the release
-    //  * time.
-    //  */
-    // function release() public virtual {
-    //     require(block.timestamp >= releaseTime(), "TokenTimelock: current time is before release time");
-
-    //     uint256 amount = token().balanceOf(address(this));
-    //     require(amount > 0, "TokenTimelock: no tokens to release");
-
-    //     token().safeTransfer(beneficiary(), amount);
-    // }
 }
