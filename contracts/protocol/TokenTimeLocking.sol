@@ -41,6 +41,13 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
     uint256 releaseTime,
   )
 
+  event unlock(
+    address indexed user,
+    address indexed asset,
+    uint256 amount,
+    uint256 unlockTime,
+  )
+
     /**
    * @dev Prevents a contract from calling itself, directly or indirectly.
    * Calling a `nonReentrant` function from another `nonReentrant`
@@ -83,11 +90,11 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
 
     LockData storage lockData = _lockList[onBehalfOf][asset];
     uint256 releaseTime = block.timestamp + lockDuration;
-    
-    // TODO add error type
-    require(lockData.releaseTime < releaseTime, "TODO") ;
 
-    IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, bToken, params.amount);
+    // TODO add error type
+    require(lockData.releaseTime < releaseTime, "Token has already been locked for longer time") ;
+
+    IERC20Upgradeable(params.asset).safeTransferFrom(onBehalfOf, asset, amount);
 
     // Save Info
     lockData.locker = onBehalfOf;
@@ -96,6 +103,23 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
     lockData.releaseTime = releaseTime;
 
     emit Lock(onBehalfOf, asset, amount, releaseTime);
+  }
+
+  function unlock(
+    address asset,
+    address onBehalfOf
+  ) external nonReentrant {
+    require(onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
+    require(asset != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+
+    LockData storage lockData = _lockList[onBehalfOf][asset];
+    // TODO add error type
+    require(lockData.releaseTime < block.timestamp, "Token has not been unlocked");
+    uint256 balance = lockData.amount;
+    lockData.amount = 0;
+    IERC20Upgradeable(params.asset).safeTransferFrom(onBehalfOf, asset, balance);
+
+    emit Unlock(onBehalfOf, asset, balance, block.timestamp);
   }
 
 }
