@@ -204,7 +204,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       expect(withdrawed).to.equal(oneEther.mul(10));
     })
 
-    it("Interest calculation of Deposit and Borrow", async function () {
+    it("Interest calculation of Deposit, Borrow, Repay", async function () {
 
       // set nft oracle price to 2 ethers
       await mockNFTOracle.setAssets(nftAssets);
@@ -231,12 +231,24 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.deposit(wETH.address, oneEther.mul(1), owner.address,0);
       // await lendPool.borrow(wETH.address, oneEther.div(10).mul(8), mintableERC721.address, 0, owner.address,0 );
       await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
+      
       reserveData = await lendPool.getReserveData(wETH.address);
-      console.log(reserveData);
+      let liquidityRate = reserveData[3].mul(100).div(ray);
+      let borrowRate = reserveData[4].mul(100).div(ray);
+      expect(liquidityRate).to.equal(5);
+      expect(borrowRate).to.equal(16);
+
+      await lendPool.repay(mintableERC721.address, 0, oneEther.div(10000000));
+      let balanceofNFT = await mintableERC721.balanceOf(owner.address);
+      expect(balanceofNFT).to.equal(0);
+
+      await lendPool.repay(mintableERC721.address, 0, oneEther);
+      balanceofNFT = await mintableERC721.balanceOf(owner.address);
+      expect(balanceofNFT).to.equal(1);
     })
 
-    it("", async function () {
-
+    it("Auction and Liquidate", async function () {
+      
     })
 
   })
