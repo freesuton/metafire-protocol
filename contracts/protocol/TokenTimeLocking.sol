@@ -3,9 +3,10 @@ pragma solidity 0.8.4;
 
 import {Errors} from "../libraries/helpers/Errors.sol";
 
+import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
+
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 import {SafeERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/utils/SafeERC20Upgradeable.sol";
-
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {CountersUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/CountersUpgradeable.sol";
 import {ContextUpgradeable} from "@openzeppelin/contracts-upgradeable/utils/ContextUpgradeable.sol";
@@ -21,10 +22,15 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
   using SafeERC20Upgradeable for IERC20Upgradeable;
   using CountersUpgradeable for CountersUpgradeable.Counter;
 
+  ILendPoolAddressesProvider internal _addressesProvider;
   CountersUpgradeable.Counter private _loanIdTracker;
 
+  uint256 internal constant _NOT_ENTERED = 0;
+  uint256 internal constant _ENTERED = 1;
+  uint256 internal _status;
+
   // user -> mToken address -> LockingData
-  mapping(address => mapping(address => LockingData)) _lockList;
+  mapping(address => mapping(address => LockData)) _lockList;
 
   struct LockData{
     address locker;
@@ -38,15 +44,15 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
     address indexed user,
     address indexed asset,
     uint256 amount,
-    uint256 releaseTime,
-  )
+    uint256 releaseTime
+  );
 
-  event unlock(
+  event Unlock(
     address indexed user,
     address indexed asset,
     uint256 amount,
-    uint256 unlockTime,
-  )
+    uint256 unlockTime
+  );
 
     /**
    * @dev Prevents a contract from calling itself, directly or indirectly.
@@ -94,7 +100,7 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
     // TODO add error type
     require(lockData.releaseTime < releaseTime, "Token has already been locked for longer time") ;
 
-    IERC20Upgradeable(params.asset).safeTransferFrom(onBehalfOf, asset, amount);
+    IERC20Upgradeable(asset).safeTransferFrom(onBehalfOf, asset, amount);
 
     // Save Info
     lockData.locker = onBehalfOf;
@@ -117,7 +123,7 @@ contract TokenTimelock is Initializable, ContextUpgradeable{
     require(lockData.releaseTime < block.timestamp, "Token has not been unlocked");
     uint256 balance = lockData.amount;
     lockData.amount = 0;
-    IERC20Upgradeable(params.asset).safeTransferFrom(onBehalfOf, asset, balance);
+    IERC20Upgradeable(asset).safeTransferFrom(onBehalfOf, asset, balance);
 
     emit Unlock(onBehalfOf, asset, balance, block.timestamp);
   }

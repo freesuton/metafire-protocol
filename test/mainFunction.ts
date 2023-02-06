@@ -206,17 +206,6 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     it("Interest calculation of Deposit and Borrow", async function () {
 
-      // configuration set
-      // deposit 2 ethers
-      // borrow 0.2 ethers
-      // threashhold 0.7
-      // ltv 0.5
-      //--->
-      // U = 1 / 2 = 5%
-
-      // expect
-      
-
       // set nft oracle price to 2 ethers
       await mockNFTOracle.setAssets(nftAssets);
       await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
@@ -244,6 +233,10 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
       reserveData = await lendPool.getReserveData(wETH.address);
       console.log(reserveData);
+    })
+
+    it("", async function () {
+
     })
 
   })
