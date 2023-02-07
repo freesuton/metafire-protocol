@@ -174,7 +174,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     await lendPoolConfigurator.setReserveFactor(erc20Assets,3000);
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 6000, 6000, 500);
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
     //}
 
   })
@@ -248,6 +248,49 @@ describe("MetaFire Protocol Main Functions", async function () {
     })
 
     it("Auction and Liquidate", async function () {
+      // set nft oracle price to 2 ethers
+      await mockNFTOracle.setAssets(nftAssets);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(1));
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // mint ETH
+      await wETH.mint(oneEther.mul(10));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddress,oneEther.mul(100));
+
+      // mint ETH
+      await wETH.connect(addr1).mint(oneEther.mul(10));
+      await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(100));
+      await wETH.connect(addr1).approve(reserveData.mTokenAddress,oneEther.mul(100));
+
+      // mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
+
+      //deposit 2 ether
+      await lendPool.deposit(wETH.address, oneEther.mul(2), owner.address,0);
+      // borrow 50% of collateral
+      await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
+
+      let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      let healthFactor = nftDebtData[5];
+      expect(healthFactor).to.equal(oneEther);
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*365]);
+      await ethers.provider.send("evm_mine");
+
+      nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      healthFactor = nftDebtData[5];
+      expect(healthFactor).lessThan(oneEther);
+      
+      // auction
+      await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther, addr1.address);
+      let auctionData = await lendPool.getNftAuctionData(mintableERC721.address, 0);
+      let nftAuctionEndTime = await lendPool.getNftAuctionEndTime(mintableERC721.address, 0);
+      console.log("------");
+      console.log(auctionData);
+      console.log(nftAuctionEndTime);
       
     })
 
