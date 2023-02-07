@@ -291,7 +291,13 @@ describe("MetaFire Protocol Main Functions", async function () {
       console.log("------");
       console.log(auctionData);
       console.log(nftAuctionEndTime);
-      
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*2]);
+      await ethers.provider.send("evm_mine");
+
+      await lendPool.liquidate(mintableERC721.address, 0, 0);
+      const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
+      expect(addr1NftBalance).to.equal(1);
     })
 
   })
