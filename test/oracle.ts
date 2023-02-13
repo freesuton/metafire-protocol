@@ -1,5 +1,9 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
+import '@typechain/hardhat';
+import '@nomiclabs/hardhat-ethers';
+import '@nomiclabs/hardhat-waffle';
+
 
 
 
