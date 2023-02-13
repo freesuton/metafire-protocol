@@ -1,8 +1,8 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 
-import {MockMetaFireOracle} from "../typechain-types/contracts/mock/MockMetaFireOracle"
-
+import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../typechain-types/contracts/mock"
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 
 describe("Lend Protocol", function () {
@@ -13,15 +13,15 @@ describe("Lend Protocol", function () {
   const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
   const ONE_GWEI = 1_000_000_000;
 
-  let owner: any;
-  let addr1: any;
-  let addr2: any;
+  let owner: SignerWithAddress;
+  let addr1: SignerWithAddress;
+  let addr2: SignerWithAddress;
 
-  let wETH: any;
+  let wETH: WETH9Mocked;
   let mockMetaFireOracle: MockMetaFireOracle;
-  let mockNFTOracle: any;
-  let mockReserveOracle: any;
-  let mintableERC721: any;
+  let mockNFTOracle: MockNFTOracle;
+  let mockReserveOracle: MockReserveOracle;
+  let mintableERC721: MintableERC721;
 
 
   this.beforeEach(async () => {
