@@ -19,7 +19,8 @@
   "homepage": "https://github.com/MetaLandFinancial/metafire-protocol#readme",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
-    "hardhat": "^2.11.1"
+    "hardhat": "^2.11.1",
+    "typechain": "^8.1.1"
   },
   "dependencies": {
     "@chainlink/contracts": "^0.6.0",
