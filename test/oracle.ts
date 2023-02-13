@@ -1,9 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import '@typechain/hardhat';
-import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
 
+import {MockMetaFireOracle} from "../typechain-types/contracts/mock/MockMetaFireOracle"
 
 
 
@@ -20,7 +18,7 @@ describe("Lend Protocol", function () {
   let addr2: any;
 
   let wETH: any;
-  let mockMetaFireOracle: any;
+  let mockMetaFireOracle: MockMetaFireOracle;
   let mockNFTOracle: any;
   let mockReserveOracle: any;
   let mintableERC721: any;
