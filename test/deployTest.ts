@@ -1,6 +1,9 @@
+import { time, loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { anyValue } from "@nomicfoundation/hardhat-chai-matchers/withArgs";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-
+import { ContractFunction } from "hardhat/internal/hardhat-network/stack-traces/model";
+import { any } from "hardhat/internal/core/params/argumentTypes";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../typechain-types/contracts/mock";
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../typechain-types/contracts/libraries/logic"
@@ -178,7 +181,7 @@ describe("MetaFire Protocol Main Functions", async function () {
 
   })
 
-  describe("Deposit, Borrow, Repay, Auction, Liquidate", async function () {
+  describe("Deposit and Borrow", async function () {
 
     let reserveData;
     let nftData;
@@ -299,30 +302,6 @@ describe("MetaFire Protocol Main Functions", async function () {
       expect(addr1NftBalance).to.equal(1);
     })
 
-  })
-
-  describe("Call function by Proxy and Proxy Admin", async function () {
-
-    let impleReserveData;
-    let proxyReserveData;
-    // let nftData;
-    it("Deploy Proxy and Proxy Admin", async function () {
-      const MetaFireProxyAdmin = await ethers.getContractFactory("MetaFireProxyAdmin");
-      metaFireProxyAdmin = await MetaFireProxyAdmin.deploy();
-
-      const MetaFireUpgradeableProxy = await ethers.getContractFactory("MetaFireUpgradeableProxy");
-      metaFireUpgradeableProxy = await MetaFireUpgradeableProxy.deploy(lendPool.address,metaFireProxyAdmin.address,"0x");
-
-      // Attach Contract ABI to Proxy Address
-      const proxy2 = await lendPool.attach(metaFireUpgradeableProxy.address);
-      impleReserveData = await lendPool.getReserveData(wETH.address);
-      proxyReserveData = await proxy2.getReserveData(wETH.address);
-      
-      console.log("reserve data ------");
-      console.log(impleReserveData);
-      console.log(proxyReserveData);
-    })
-  
   })
 
 })
