@@ -87,7 +87,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     configuratorLogic = await ConfiguratorLogic.deploy();
 
     const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
-    lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+    lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("GenesisMarket");
 
    
     /*
@@ -155,7 +155,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     const lendPoolProxy = await MetaFireUpgradeableProxy.deploy(lendPool.address,metaFireProxyAdmin.address,"0x");
     const lendPoolLoanProxy = await MetaFireUpgradeableProxy.deploy(lendPoolLoan.address,metaFireProxyAdmin.address,"0x");
     const lendPoolConfiguratorProxy = await MetaFireUpgradeableProxy.deploy(lendPoolConfigurator.address,metaFireProxyAdmin.address,"0x");
-    const lendPoolAddressesProviderProxy = await MetaFireUpgradeableProxy.deploy(lendPoolAddressesProvider.address,metaFireProxyAdmin.address,"0x");
+    // const lendPoolAddressesProviderProxy = await MetaFireUpgradeableProxy.deploy(lendPoolAddressesProvider.address,metaFireProxyAdmin.address,"0x");
     const bNFTRegistryProxy = await MetaFireUpgradeableProxy.deploy(bNFTRegistry.address,metaFireProxyAdmin.address,"0x");
     const mockNFTOracleProxy = await MetaFireUpgradeableProxy.deploy(mockNFTOracle.address,metaFireProxyAdmin.address,"0x");
     const mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(mockReserveOracle.address,metaFireProxyAdmin.address,"0x");
@@ -166,20 +166,23 @@ describe("MetaFire Protocol Main Functions", async function () {
     aLendPoolProxy = await lendPool.attach(lendPoolProxy.address);
     aLendPoolLoanProxy = await lendPoolLoan.attach(lendPoolLoanProxy.address);
     aLendPoolConfiguratorProxy = await lendPoolConfigurator.attach(lendPoolConfiguratorProxy.address);
-    aLendPoolAddressesProviderProxy = await lendPoolAddressesProvider.attach(lendPoolAddressesProviderProxy.address);
+    // aLendPoolAddressesProviderProxy = await lendPoolAddressesProvider.attach(lendPoolAddressesProviderProxy.address);
     aBNFTRegistryProxy = await bNFTRegistry.attach(bNFTRegistryProxy.address);
     aMockNFTOracleProxy = await mockNFTOracle.attach(mockNFTOracleProxy.address);
     aMockReserveOracleProxy = await mockReserveOracle.attach(mockReserveOracleProxy.address);
 
     /**
-     * Init contract from proxy
+     * Init contract 
      */
-    const marketId = ethers.utils.formatBytes32String("GenesisMarket");
-    await lendPoolAddressesProvider.setAddress(marketId, aLendPoolAddressesProviderProxy.address);
-    console.log("addressesProvider: " + aLendPoolAddressesProviderProxy.address);
-    let gmAddressesProviderAddress = await lendPoolAddressesProvider.getAddress(marketId);
-    console.log("addressesProvider: " + gmAddressesProviderAddress);
-    await aLendPoolProxy.initialize(gmAddressesProviderAddress);
+    // Init addressesProvider
+    // const marketId = ethers.utils.formatBytes32String("GenesisMarket");
+    // await lendPoolAddressesProvider.setAddress(marketId, aLendPoolAddressesProviderProxy.address);
+    // let gMarketAddressesProviderAddress = await lendPoolAddressesProvider.getAddress(marketId);
+
+    await aLendPoolProxy.initialize(lendPoolAddressesProvider.address);
+    await aLendPoolLoanProxy.initialize(lendPoolAddressesProvider.address);
+    await aLendPoolConfiguratorProxy.initialize(lendPoolAddressesProvider.address);
+
     // Init BNFT Registry
     await aBNFTRegistryProxy.initialize(bNFT.address,"M","M");
     // Create Proxy and init IMPL
@@ -190,12 +193,12 @@ describe("MetaFire Protocol Main Functions", async function () {
     /**
      * Address provider setting
      */
-     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
-     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
-     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("BNFT_REGISTRY"), bNFTRegistry.address);
-     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
-     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("RESERVE_ORACLE"), mockReserveOracle.address)
-     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("NFT_ORACLE"), mockNFTOracle.address)
+     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), aLendPoolProxy.address)
+     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), aLendPoolConfiguratorProxy.address)
+     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("BNFT_REGISTRY"), aBNFTRegistryProxy.address);
+     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_LOAN"), aLendPoolLoanProxy.address)
+     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("RESERVE_ORACLE"), aMockReserveOracleProxy.address)
+     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("NFT_ORACLE"), aMockNFTOracleProxy.address)
      // set lendpool admin
      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
