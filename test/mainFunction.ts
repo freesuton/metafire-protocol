@@ -314,10 +314,10 @@ describe("MetaFire Protocol Main Functions", async function () {
       metaFireUpgradeableProxy = await MetaFireUpgradeableProxy.deploy(lendPool.address,metaFireProxyAdmin.address,"0x");
 
       // Attach Contract ABI to Proxy Address
-      const proxy2 = await lendPool.attach(metaFireUpgradeableProxy.address);
+      const attachedProxy = await lendPool.attach(metaFireUpgradeableProxy.address);
       impleReserveData = await lendPool.getReserveData(wETH.address);
-      proxyReserveData = await proxy2.getReserveData(wETH.address);
-      
+      proxyReserveData = await attachedProxy.getReserveData(wETH.address);
+
       console.log("reserve data ------");
       console.log(impleReserveData);
       console.log(proxyReserveData);
