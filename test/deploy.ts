@@ -35,13 +35,18 @@ describe("MetaFire Protocol Main Functions", async function () {
   // Contracts; 'a' means "attached"
   let metaFireProxyAdmin: MetaFireProxyAdmin;
   let metaFireUpgradeableProxy: MetaFireUpgradeableProxy;
+
   let aLendPoolProxy: LendPool;
   let aLendPoolLoanProxy: LendPoolLoan;
   let aLendPoolConfiguratorProxy: LendPoolConfigurator;
   let aLendPoolAddressesProviderProxy: LendPoolAddressesProvider;
+
   let aBNFTRegistryProxy: any;
   let aMockNFTOracleProxy: MockNFTOracle;
   let aMockReserveOracleProxy: MockReserveOracle;
+
+  let aDebtTokenProxy: DebtToken;
+  let aMTokenProxy: MToken;
   
   let lendPool: LendPool;
   let lendPoolLoan: LendPoolLoan;
@@ -49,8 +54,8 @@ describe("MetaFire Protocol Main Functions", async function () {
   let lendPoolAddressesProvider: LendPoolAddressesProvider;
   let interestRate: InterestRate;
   let wETH: WETH9Mocked;
-  let mTokenimpl: MToken;
-  let debtTokenImpl: DebtToken;
+  let mToken: MToken;
+  let debtToken: DebtToken;
   let mintableERC721: MintableERC721;
   let bNFT: any;
   let bNFTRegistry: any;
@@ -134,13 +139,13 @@ describe("MetaFire Protocol Main Functions", async function () {
     wETH = await WETH9Mocked.deploy();
 
     const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
-    debtTokenImpl = await DebtTokenImpl.deploy();
+    debtToken = await DebtTokenImpl.deploy();
 
     const MintableERC721 = await ethers.getContractFactory("MintableERC721");
     mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
 
-    const MTokenImpl = await ethers.getContractFactory("MToken");
-    mTokenimpl = await MTokenImpl.deploy();
+    const MToken = await ethers.getContractFactory("MToken");
+    mToken = await MToken.deploy();
 
     const BNFT = await ethers.getContractFactory("BNFT");
     bNFT = await BNFT.deploy();
@@ -159,7 +164,8 @@ describe("MetaFire Protocol Main Functions", async function () {
     const bNFTRegistryProxy = await MetaFireUpgradeableProxy.deploy(bNFTRegistry.address,metaFireProxyAdmin.address,"0x");
     const mockNFTOracleProxy = await MetaFireUpgradeableProxy.deploy(mockNFTOracle.address,metaFireProxyAdmin.address,"0x");
     const mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(mockReserveOracle.address,metaFireProxyAdmin.address,"0x");
-
+    const debtTokenProxy = await MetaFireUpgradeableProxy.deploy(debtToken.address,metaFireProxyAdmin.address, "0x");
+    const mTokenProxy = await MetaFireUpgradeableProxy.deploy(mToken.address,metaFireProxyAdmin.address, "0x");
     /**
      * Attach implementation contracts to proxies
      */
@@ -170,6 +176,8 @@ describe("MetaFire Protocol Main Functions", async function () {
     aBNFTRegistryProxy = await bNFTRegistry.attach(bNFTRegistryProxy.address);
     aMockNFTOracleProxy = await mockNFTOracle.attach(mockNFTOracleProxy.address);
     aMockReserveOracleProxy = await mockReserveOracle.attach(mockReserveOracleProxy.address);
+    // aDebtTokenProxy = await debtToken.attach(debtTokenProxy.address);
+    // aMTokenProxy = await mToken.attach(mTokenProxy.address);
 
     /**
      * Init contract 
@@ -187,8 +195,9 @@ describe("MetaFire Protocol Main Functions", async function () {
     await aBNFTRegistryProxy.initialize(bNFT.address,"M","M");
     // Create Proxy and init IMPL
     await aBNFTRegistryProxy.createBNFT(mintableERC721.address);
-    await aMockNFTOracleProxy.initialize(owner.address,oneEther.div(10).mul(2),oneEther.div(10),30,10,600);
-    await aMockReserveOracleProxy.initialize(wETH.address);
+    // await aMockNFTOracleProxy.initialize(owner.address,oneEther.div(10).mul(2),oneEther.div(10),30,10,600);
+    // await aMockReserveOracleProxy.initialize(wETH.address);
+
 
     /**
      * Address provider setting
@@ -203,10 +212,32 @@ describe("MetaFire Protocol Main Functions", async function () {
      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
 
-    /**
-     * LendPool contract configuration setting
-     */
+    // init reserve
+    const initReserveInput: any = [[mToken.address, debtToken.address, 18, interestRate.address,wETH.address,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+    await aLendPoolConfiguratorProxy.batchInitReserve(initReserveInput);
 
+    // init NFT
+    const initNftInput: any = [[mintableERC721.address]];
+    await aLendPoolConfiguratorProxy.batchInitNft(initNftInput);
+
+
+    /**
+     * Lend Pool Configuration
+     */
+    erc20Assets = [wETH.address];
+    nftAssets = [mintableERC721.address];
+
+    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    // set reserve interest rate address
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,50,0);
+    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
+    // position 64. 1% -> 100
+    await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
 
   })
    
@@ -215,7 +246,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     it("", async function () {
       let impleReserveData;
       impleReserveData = await aLendPoolProxy.getReserveData(wETH.address);
-      // console.log(impleReserveData);
+      console.log(impleReserveData);
 
     })
 
