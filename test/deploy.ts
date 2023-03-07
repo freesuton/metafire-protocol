@@ -119,6 +119,10 @@ describe("MetaFire Protocol Main Functions", async function () {
     });
     lendPoolConfigurator = await LendPoolConfigurator.deploy();
 
+
+    /**
+     * Deploy sub contracts
+     */
     const BNFTRegistry = await ethers.getContractFactory("BNFTRegistry");
     bNFTRegistry = await BNFTRegistry.deploy();
 
@@ -128,9 +132,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     const MockReserveOracle = await ethers.getContractFactory("MockReserveOracle");
     mockReserveOracle = await MockReserveOracle.deploy();
 
-    /**
-     * Deploy sub contracts
-     */
+
     const InterestRate = await ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray);
