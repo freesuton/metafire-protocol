@@ -308,5 +308,28 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     _transfer(from, to, amount, true);
   }
 
+  function canTransfer(address sender, uint256 amount) public view returns (bool) {
+    uint256 unlockedAmount;
+    if(sender != address(0)){
+      for (uint256 i = 0; i < _deposits[sender].length; i++) {
+          Deposit memory deposit = _deposits[sender][i];
+          if (block.timestamp >= deposit.timestamp + LOCK_PERIOD) {
+              unlockedAmount = unlockedAmount + deposit.amount;
+          }
+      }
+      return balanceOf(sender) -  amount>= unlockedAmount;
+    }else{
+      return true;
+    }
+}
 
+  function _beforeTokenTransfer(
+      address from,
+      address to,
+      uint256 amount
+  ) internal virtual override {
+      super._beforeTokenTransfer(from, to, amount);
+
+      require(canTransfer(from, amount), "ERC20: token transfer is locked");
+  }
 }

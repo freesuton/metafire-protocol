@@ -28,6 +28,10 @@ interface IBurnLockMToken is IScaledBalanceToken, IERC20Upgradeable, IERC20Metad
    * @param addressProvider The address of the address provider where this mToken will be used
    * @param treasury The address of the MetaFire treasury, receiving the fees on this mToken
    * @param underlyingAsset The address of the underlying asset of this mToken
+   * @param mTokenDecimals The decimals of this mToken
+   * @param mTokenName The name of this mToken
+   * @param mTokenSymbol The symbol of this mToken
+   * @param lockPeriod The lock period of this mToken
    */
   function initialize(
     ILendPoolAddressesProvider addressProvider,
