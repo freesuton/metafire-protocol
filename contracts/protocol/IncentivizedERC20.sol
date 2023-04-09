@@ -21,7 +21,7 @@ abstract contract IncentivizedERC20 is Initializable, IERC20MetadataUpgradeable,
     string memory name_,
     string memory symbol_,
     uint8 decimals_
-  ) internal initializer {
+  ) internal onlyInitializing {
     __ERC20_init(name_, symbol_);
 
     _customDecimals = decimals_;
