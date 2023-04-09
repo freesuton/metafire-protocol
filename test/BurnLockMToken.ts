@@ -1,6 +1,6 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-import { BurnLockMToken, WETH9Mocked, LendPoolAddressesProvider,MToken } from "../typechain-types";
+import { BurnLockMToken, WETH9Mocked, LendPoolAddressesProvider,MToken, LendPool } from "../typechain-types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 describe("BurnLockMToken", function () {
@@ -13,9 +13,11 @@ describe("BurnLockMToken", function () {
   let metaFireUpgradeableProxy: any;
   let metaFireProxyAdmin: any;
   let attachedBurnTokenProxy: BurnLockMToken;
+  let aLendPoolProxy: BurnLockMToken
 
+  let lendPool: LendPool;
   let lendPoolAddressesProvider: LendPoolAddressesProvider;
-  let burnLockMToken: MToken;
+  let burnLockMToken: BurnLockMToken;
   let wETH: WETH9Mocked;
 
   beforeEach(async function () {
@@ -27,8 +29,15 @@ describe("BurnLockMToken", function () {
     const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
     lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("esth");
   
+    // Deploy Lend Pool
+    // const LendPool = await ethers.getContractFactory("LendPool");
+    // lendPool = await LendPool.deploy(lendPoolAddressesProvider.address);
+
+    // Mock Lend Pool
+    await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), owner.address)
+
     // Deploy Implementation
-    const BurnLockMToken = await ethers.getContractFactory("MToken");
+    const BurnLockMToken = await ethers.getContractFactory("BurnLockMToken");
     burnLockMToken = await BurnLockMToken.deploy();
 
 
@@ -40,7 +49,7 @@ describe("BurnLockMToken", function () {
     const burnTokenProxy = await MetaFireUpgradeableProxy.deploy(burnLockMToken.address,metaFireProxyAdmin.address,"0x");
 
     // Attach Contract ABI to Proxy Address
-    const attachedBurnTokenProxy = await burnLockMToken.attach(burnTokenProxy.address);
+    attachedBurnTokenProxy = await burnLockMToken.attach(burnTokenProxy.address);
 
     await attachedBurnTokenProxy.initialize(
         lendPoolAddressesProvider.address,
@@ -49,20 +58,25 @@ describe("BurnLockMToken", function () {
         18,
         "BurnLockMToken",
         "BLMT",
-      );
+        ONE_MONTH
+    );
+
   });
   
 
   describe("Deployment", function () {
     // Write tests for the deployment and initialization of the contract
     it("Should mint tokens to the user", async function () {
-      console.log("owner.address");
-
+      
+      
     });
   });
 
   describe("Minting", function () {
-
+    it("Should mint tokens to the user", async function () {
+      console.log("owner.address");
+      await attachedBurnTokenProxy.mint(owner.address, 100,1);
+    })
   });
 
   describe("Burning", function () {
