@@ -67,8 +67,10 @@ describe("BurnLockMToken", function () {
   describe("Deployment", function () {
     // Write tests for the deployment and initialization of the contract
     it("Should mint tokens to the user", async function () {
-      
-      
+      expect(await attachedBurnTokenProxy.RESERVE_TREASURY_ADDRESS()).to.equal(owner.address);
+      expect(await attachedBurnTokenProxy.UNDERLYING_ASSET_ADDRESS()).to.equal(wETH.address);
+      expect(await attachedBurnTokenProxy.POOL()).to.equal(owner.address);
+      expect(await attachedBurnTokenProxy.LOCK_PERIOD()).to.equal(ONE_MONTH);
     });
   });
 
