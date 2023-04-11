@@ -4,9 +4,9 @@
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {
+    "@defi-wonderland/smock": "^2.3.4",
     "@ethersproject/abi": "^5.4.7",
     "@ethersproject/providers": "^5.4.7",
-    "@nomicfoundation/hardhat-chai-matchers": "^1.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
     "@nomicfoundation/hardhat-toolbox": "^1.0.1",
     "@nomiclabs/hardhat-ethers": "^2.0.0",
@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "@chainlink/contracts": "^0.6.1",
+    "@nomicfoundation/hardhat-chai-matchers": "^1.0.6",
     "@openzeppelin/contracts": "^4.8.2",
     "@openzeppelin/contracts-upgradeable": "^4.8.2"
   }

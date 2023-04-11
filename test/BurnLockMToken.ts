@@ -2,6 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 import { BurnLockMToken, WETH9Mocked, LendPoolAddressesProvider,MToken, LendPool } from "../typechain-types";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { smock } from '@defi-wonderland/smock';
 
 describe("BurnLockMToken", function () {
   const ONE_MONTH = 3600 * 24 * 30;
@@ -80,7 +81,6 @@ describe("BurnLockMToken", function () {
       // Round up
       await attachedBurnTokenProxy.mint(owner.address, 100, ray.mul(11).div(10));
       const balanceOf = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
-      console.log("balance"+balanceOf.toString());
       expect(await attachedBurnTokenProxy.scaledBalanceOf(owner.address)).to.equal(Math.ceil(100 / 1.1));
 
       // ROund down
@@ -91,6 +91,18 @@ describe("BurnLockMToken", function () {
 
   describe("Burning", function () {
     // Write tests for the burn() function
+    it("Should burn tokens from the user", async function () {
+      const myFake = await smock.fake<LendPool>('LendPool');
+      myFake.getMaxNumberOfReserves.returns(88);
+      const x = await myFake.getMaxNumberOfReserves();
+      console.log("mock:"+x);
+
+
+      await attachedBurnTokenProxy.mint(owner.address, 100, ray);
+      await ethers.provider.send("evm_increaseTime", [ONE_MONTH*2]);
+      await ethers.provider.send("evm_mine");
+      await attachedBurnTokenProxy.burn(owner.address, owner.address, 10, ray);
+    });
   });
 
   describe("Transfers", function () {
@@ -99,6 +111,11 @@ describe("BurnLockMToken", function () {
 
   describe("Balances", function () {
     // Write tests for balanceOf(), scaledBalanceOf(), and totalSupply() functions
+    it("Should return the correct balances", async function () {
+      await attachedBurnTokenProxy.mint(owner.address, 100, ray);
+      const balanceOf = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
+      expect(await attachedBurnTokenProxy.scaledBalanceOf(owner.address)).to.equal(100);
+    });
   });
 
   // Add more describe blocks for other functions and edge cases
