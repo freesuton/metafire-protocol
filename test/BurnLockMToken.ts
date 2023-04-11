@@ -5,6 +5,7 @@ import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 describe("BurnLockMToken", function () {
   const ONE_MONTH = 3600 * 24 * 30;
+  const ray = ethers.BigNumber.from(10).pow(27);
 
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
@@ -76,8 +77,15 @@ describe("BurnLockMToken", function () {
 
   describe("Minting", function () {
     it("Should mint tokens to the user", async function () {
-      console.log("owner.address");
-      await attachedBurnTokenProxy.mint(owner.address, 100,1);
+      // Round up
+      await attachedBurnTokenProxy.mint(owner.address, 100, ray.mul(11).div(10));
+      const balanceOf = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
+      console.log("balance"+balanceOf.toString());
+      expect(await attachedBurnTokenProxy.scaledBalanceOf(owner.address)).to.equal(Math.ceil(100 / 1.1));
+
+      // ROund down
+      await attachedBurnTokenProxy.mint(addr1.address, 120, ray.mul(11).div(10));
+      expect(await attachedBurnTokenProxy.scaledBalanceOf(addr1.address)).to.equal(Math.floor(120 / 1.1));
     })
   });
 
