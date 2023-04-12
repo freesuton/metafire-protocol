@@ -96,7 +96,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     _deposits[user].amount -= amountScaled;
 
 
-    // IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
+    IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
     emit Burn(user, receiverOfUnderlying, amount, index);
   }
@@ -332,7 +332,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     uint256 unlockTimestamp = _deposits[sender].unlockTimestamp;
     require(unlockTimestamp <= block.timestamp , "ERC20: token transfer is locked");
     uint256 unlockedAmount = _deposits[sender].amount;
-    require(unlockedAmount >= amount, "ERC20: insufficient balance ");
+    require(unlockedAmount >= amount, "ERC20: insufficient balance");
     return true;
   }
 

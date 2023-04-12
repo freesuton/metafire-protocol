@@ -7,6 +7,7 @@ import { smock } from '@defi-wonderland/smock';
 describe("BurnLockMToken", function () {
   const ONE_MONTH = 3600 * 24 * 30;
   const ray = ethers.BigNumber.from(10).pow(27);
+  const oneEther = ethers.BigNumber.from(10).pow(18);
 
   let owner: SignerWithAddress;
   let addr1: SignerWithAddress;
@@ -94,27 +95,30 @@ describe("BurnLockMToken", function () {
     it("Should burn tokens from the user", async function () {
       
       const fakeLendPool = await smock.fake<LendPool>('LendPool',{
+        // mock address
         address: owner.address
       });
-      // fakeLendPool.getReserveNormalizedIncome.returns(ray);
 
-      // await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), fakeLendPool.address)
-      // const fakeAddressProvider = await smock.fake<LendPoolAddressesProvider>('LendPoolAddressesProvider');
-      // fakeAddressProvider.getLendPool.returns(fakeLendPool.address);
+      // Mint WETH
+      await wETH.deposit({value: oneEther});
+      wETH.transfer(attachedBurnTokenProxy.address, oneEther);
+      expect(await wETH.balanceOf(attachedBurnTokenProxy.address)).to.equal(oneEther);
 
-
-
-
+      // Mint Burn Token
       await attachedBurnTokenProxy.mint(owner.address, 100, ray);
-      const balance = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
-      console.log("balance: "+balance.toString());
+      expect(await attachedBurnTokenProxy.scaledBalanceOf(owner.address)).to.equal(100);
+
+      // Test burn within lcoked period
+      await expect(attachedBurnTokenProxy.burn(owner.address, owner.address, 10, ray)).to.be.revertedWith("ERC20: token transfer is locked");
       await ethers.provider.send("evm_increaseTime", [ONE_MONTH]);
       await ethers.provider.send("evm_mine");
 
-
+      // Test burn after unlocked timestamp
       await attachedBurnTokenProxy.burn(owner.address, owner.address, 10, ray);
-      const balance2 = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
-      console.log("unlockedAmount: "+balance2.toString());
+      expect(await attachedBurnTokenProxy.scaledBalanceOf(owner.address)).to.equal(90);
+
+      // Test burn over balance
+      await expect(attachedBurnTokenProxy.burn(owner.address, owner.address, 100, ray)).to.be.revertedWith("ERC20: insufficient balance");
 
     });
   });
