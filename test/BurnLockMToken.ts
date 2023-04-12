@@ -92,21 +92,36 @@ describe("BurnLockMToken", function () {
   describe("Burning", function () {
     // Write tests for the burn() function
     it("Should burn tokens from the user", async function () {
-      const myFake = await smock.fake<LendPool>('LendPool');
-      myFake.getMaxNumberOfReserves.returns(88);
-      const x = await myFake.getMaxNumberOfReserves();
-      console.log("mock:"+x);
+      
+      const fakeLendPool = await smock.fake<LendPool>('LendPool',{
+        address: owner.address
+      });
+      // fakeLendPool.getReserveNormalizedIncome.returns(ray);
+
+      // await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), fakeLendPool.address)
+      // const fakeAddressProvider = await smock.fake<LendPoolAddressesProvider>('LendPoolAddressesProvider');
+      // fakeAddressProvider.getLendPool.returns(fakeLendPool.address);
+
+
 
 
       await attachedBurnTokenProxy.mint(owner.address, 100, ray);
-      await ethers.provider.send("evm_increaseTime", [ONE_MONTH*2]);
+      const balance = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
+      console.log("balance: "+balance.toString());
+      await ethers.provider.send("evm_increaseTime", [ONE_MONTH]);
       await ethers.provider.send("evm_mine");
+
+
       await attachedBurnTokenProxy.burn(owner.address, owner.address, 10, ray);
+      const balance2 = await attachedBurnTokenProxy.scaledBalanceOf(owner.address);
+      console.log("unlockedAmount: "+balance2.toString());
+
     });
   });
 
   describe("Transfers", function () {
     // Write tests for the transfer() and transferFrom() functions
+
   });
 
   describe("Balances", function () {

@@ -94,7 +94,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
-    IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
+    // IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
     emit Burn(user, receiverOfUnderlying, amount, index);
   }
@@ -119,7 +119,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
-    _deposits[user].push(Deposit(amount, block.timestamp));
+    _deposits[user].push(Deposit(amountScaled, block.timestamp));
 
     emit Mint(user, amount, index);
 
@@ -308,20 +308,25 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     _transfer(from, to, amount, true);
   }
 
-  function canTransfer(address sender, uint256 amount) public view returns (bool) {
+  function getUnlockedAmount(address sender) public view returns (uint256) {
     uint256 unlockedAmount;
+    for (uint256 i = 0; i < _deposits[sender].length; i++) {
+        Deposit memory deposit = _deposits[sender][i];
+        if (block.timestamp >= deposit.timestamp + LOCK_PERIOD) {
+            unlockedAmount = unlockedAmount + deposit.amount;
+        }
+    }
+    return unlockedAmount;
+  }
+
+  function canTransfer(address sender, uint256 amount) public view returns (bool) {
+    uint256 unlockedAmount = getUnlockedAmount(sender);
     if(sender != address(0)){
-      for (uint256 i = 0; i < _deposits[sender].length; i++) {
-          Deposit memory deposit = _deposits[sender][i];
-          if (block.timestamp >= deposit.timestamp + LOCK_PERIOD) {
-              unlockedAmount = unlockedAmount + deposit.amount;
-          }
-      }
-      return balanceOf(sender) -  amount>= unlockedAmount;
+      return unlockedAmount  >= amount;
     }else{
       return true;
     }
-}
+  }
 
   function _beforeTokenTransfer(
       address from,
