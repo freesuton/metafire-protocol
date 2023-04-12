@@ -13,10 +13,8 @@ describe("BurnLockMToken", function () {
   let addr1: SignerWithAddress;
   let addr2: SignerWithAddress;
 
-  let metaFireUpgradeableProxy: any;
   let metaFireProxyAdmin: any;
   let attachedBurnTokenProxy: BurnLockMToken;
-  let aLendPoolProxy: BurnLockMToken
 
   let lendPool: LendPool;
   let lendPoolAddressesProvider: LendPoolAddressesProvider;
@@ -31,10 +29,6 @@ describe("BurnLockMToken", function () {
   
     const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
     lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("esth");
-  
-    // Deploy Lend Pool
-    // const LendPool = await ethers.getContractFactory("LendPool");
-    // lendPool = await LendPool.deploy(lendPoolAddressesProvider.address);
 
     // Mock Lend Pool
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), owner.address)
@@ -63,6 +57,11 @@ describe("BurnLockMToken", function () {
         "BLMT",
         ONE_MONTH
     );
+
+    // Mint WETH
+    await wETH.deposit({value: oneEther});
+    wETH.transfer(attachedBurnTokenProxy.address, oneEther);
+    expect(await wETH.balanceOf(attachedBurnTokenProxy.address)).to.equal(oneEther);
 
   });
   
@@ -99,10 +98,7 @@ describe("BurnLockMToken", function () {
         address: owner.address
       });
 
-      // Mint WETH
-      await wETH.deposit({value: oneEther});
-      wETH.transfer(attachedBurnTokenProxy.address, oneEther);
-      expect(await wETH.balanceOf(attachedBurnTokenProxy.address)).to.equal(oneEther);
+
 
       // Mint Burn Token
       await attachedBurnTokenProxy.mint(owner.address, 100, ray);
@@ -121,11 +117,6 @@ describe("BurnLockMToken", function () {
       await expect(attachedBurnTokenProxy.burn(owner.address, owner.address, 100, ray)).to.be.revertedWith("ERC20: insufficient balance");
 
     });
-  });
-
-  describe("Transfers", function () {
-    // Write tests for the transfer() and transferFrom() functions
-
   });
 
   describe("Balances", function () {
