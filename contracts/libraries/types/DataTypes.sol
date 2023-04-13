@@ -6,11 +6,13 @@ library DataTypes {
     //stores the reserve configuration
     ReserveConfigurationMap configuration;
     //the liquidity index. Expressed in ray
-    uint128 liquidityIndex;
+    // mToken => index
+    mapping(address => uint128) liquidityIndices;
     //variable borrow index. Expressed in ray
     uint128 variableBorrowIndex;
     //the current supply rate. Expressed in ray
-    uint128 currentLiquidityRate;
+    // mToken => rate
+    mapping(address => uint128) currentLiquidityRates;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
     uint40 lastUpdateTimestamp;
