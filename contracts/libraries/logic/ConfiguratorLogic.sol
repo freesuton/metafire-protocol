@@ -68,6 +68,7 @@ library ConfiguratorLogic {
     ConfigTypes.InitReserveInput calldata input
   ) external {
     address[] memory mTokenProxyAddresses;
+
     for(uint256 i = 0; i < 4; ++i) {
       address mTokenProxyAddress = _initTokenWithProxy(
         input.mTokenImpl,
@@ -77,8 +78,8 @@ library ConfiguratorLogic {
           input.treasury,
           input.underlyingAsset,
           input.underlyingAssetDecimals,
-          input.mTokenName,
-          input.mTokenSymbol
+          input.mTokenName[i],
+          input.mTokenSymbol[i]
         )
       );
       
@@ -98,7 +99,7 @@ library ConfiguratorLogic {
       )
     );
 
-    cachePool.initReserve(input.underlyingAsset, mTokenProxyAddress, debtTokenProxyAddress, input.interestRateAddress);
+    cachePool.initReserve(input.underlyingAsset, mTokenProxyAddresses, debtTokenProxyAddress, input.interestRateAddress);
 
     DataTypes.ReserveConfigurationMap memory currentConfig = cachePool.getReserveConfiguration(input.underlyingAsset);
 
