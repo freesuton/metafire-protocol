@@ -788,7 +788,7 @@ contract LendPool is
    **/
   function initReserve(
     address asset,
-    address[] mTokenAddresses,
+    address[] memory mTokenAddresses,
     address debtTokenAddress,
     address interestRateAddress
   ) external override onlyLendPoolConfigurator {
