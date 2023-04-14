@@ -28,13 +28,13 @@ library ConfiguratorLogic {
   /**
    * @dev Emitted when a reserve is initialized.
    * @param asset The address of the underlying asset of the reserve
-   * @param mToken The address of the associated mToken contract
+   * @param mTokens The address of the associated mToken contract
    * @param debtToken The address of the associated debtToken contract
    * @param interestRateAddress The address of the interest rate strategy for the reserve
    **/
   event ReserveInitialized(
     address indexed asset,
-    address indexed mToken,
+    address[] indexed mTokens,
     address debtToken,
     address interestRateAddress
   );
@@ -112,7 +112,7 @@ library ConfiguratorLogic {
 
     emit ReserveInitialized(
       input.underlyingAsset,
-      mTokenProxyAddress,
+      mTokenProxyAddresses,
       debtTokenProxyAddress,
       input.interestRateAddress
     );

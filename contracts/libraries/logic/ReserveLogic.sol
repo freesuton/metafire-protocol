@@ -142,18 +142,18 @@ library ReserveLogic {
   /**
    * @dev Initializes a reserve
    * @param reserve The reserve object
-   * @param mTokenAddress The address of the overlying mToken contract
+   * @param mTokenAddresses The address of the overlying mToken contract
    * @param debtTokenAddress The address of the overlying debtToken contract
    * @param interestRateAddress The address of the interest rate strategy contract
    **/
   function init(
     DataTypes.ReserveData storage reserve,
-    address[] memory mTokenAddress,
+    address[] memory mTokenAddresses,
     address debtTokenAddress,
     address interestRateAddress
   ) external {
-    for (uint256 i = 0; i < inputAddresses.length; i++) {
-        require(reserve.mTokenAddress[i] == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
+    for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
+        require(reserve.mTokenAddresses[i] == address(0), Errors.RL_RESERVE_ALREADY_INITIALIZED);
     }
 
     uint128[4] memory liquidityIndices = [uint128(WadRayMath.ray()),uint128(WadRayMath.ray()),uint128(WadRayMath.ray()),uint128(WadRayMath.ray())];
