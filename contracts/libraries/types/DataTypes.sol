@@ -2,6 +2,13 @@
 pragma solidity 0.8.4;
 
 library DataTypes {
+  enum Period {
+    FourMonth,
+    SevenMonth,
+    ElevenMonth,
+    ThirteenMonth
+  }
+
   struct ReserveData {
     //stores the reserve configuration
     ReserveConfigurationMap configuration;
@@ -15,9 +22,10 @@ library DataTypes {
     mapping(address => uint128) currentLiquidityRates;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
-    uint40 lastUpdateTimestamp;
-    //tokens addresses
-    address mTokenAddress;
+    // mToken => timestamp
+    mapping(address => uint40) lastUpdateTimestamps;
+    // Period => mToken address
+    mapping(Period => address) mTokenAddresses;
     address debtTokenAddress;
     //address of the interest rate strategy
     address interestRateAddress;
