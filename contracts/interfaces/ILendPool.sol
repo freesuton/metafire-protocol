@@ -453,7 +453,7 @@ interface ILendPool {
 
   function initReserve(
     address asset,
-    address mTokenAddress,
+    address mTokenAddress[],
     address debtTokenAddress,
     address interestRateAddress
   ) external;

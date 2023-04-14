@@ -10,8 +10,8 @@ library ConfigTypes {
     address underlyingAsset;
     address treasury;
     string underlyingAssetName;
-    string mTokenName;
-    string mTokenSymbol;
+    string[] mTokenName;
+    string[] mTokenSymbol;
     string debtTokenName;
     string debtTokenSymbol;
   }

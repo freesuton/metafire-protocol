@@ -67,18 +67,24 @@ library ConfiguratorLogic {
     ILendPool cachePool,
     ConfigTypes.InitReserveInput calldata input
   ) external {
-    address mTokenProxyAddress = _initTokenWithProxy(
-      input.mTokenImpl,
-      abi.encodeWithSelector(
-        IMToken.initialize.selector,
-        addressProvider,
-        input.treasury,
-        input.underlyingAsset,
-        input.underlyingAssetDecimals,
-        input.mTokenName,
-        input.mTokenSymbol
-      )
-    );
+    address[] memory mTokenProxyAddresses;
+    for(uint256 i = 0; i < 4; ++i) {
+      address mTokenProxyAddress = _initTokenWithProxy(
+        input.mTokenImpl,
+        abi.encodeWithSelector(
+          IMToken.initialize.selector,
+          addressProvider,
+          input.treasury,
+          input.underlyingAsset,
+          input.underlyingAssetDecimals,
+          input.mTokenName,
+          input.mTokenSymbol
+        )
+      );
+      
+      mTokenProxyAddresses[i] = mTokenProxyAddress;
+    }
+
 
     address debtTokenProxyAddress = _initTokenWithProxy(
       input.debtTokenImpl,
