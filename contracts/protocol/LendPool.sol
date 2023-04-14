@@ -788,12 +788,12 @@ contract LendPool is
    **/
   function initReserve(
     address asset,
-    address mTokenAddress,
+    address[] mTokenAddresses,
     address debtTokenAddress,
     address interestRateAddress
   ) external override onlyLendPoolConfigurator {
     require(AddressUpgradeable.isContract(asset), Errors.LP_NOT_CONTRACT);
-    _reserves[asset].init(mTokenAddress, debtTokenAddress, interestRateAddress);
+    _reserves[asset].init(mTokenAddresses, debtTokenAddress, interestRateAddress);
     _addReserveToList(asset);
   }
 
