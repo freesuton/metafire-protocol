@@ -11,6 +11,7 @@ interface ILendPool {
    * @param amount The amount deposited
    * @param reserve The address of the underlying asset of the reserve
    * @param onBehalfOf The beneficiary of the deposit, receiving the mTokens
+   * @param period The period of the deposit
    * @param referral The referral code used
    **/
   event Deposit(
@@ -18,6 +19,7 @@ interface ILendPool {
     address indexed reserve,
     uint256 amount,
     address indexed onBehalfOf,
+    uint8  period,
     uint16 indexed referral
   );
 

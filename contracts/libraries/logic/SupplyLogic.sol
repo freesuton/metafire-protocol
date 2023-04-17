@@ -71,7 +71,7 @@ library SupplyLogic {
 
     IMToken(mToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndex);
 
-    emit Deposit(params.initiator, params.asset, params.amount, params.onBehalfOf, params.referralCode);
+    emit Deposit(params.initiator, params.asset, params.amount, params.onBehalfOf,uint8(params.period) ,params.referralCode);
   }
 
   /**
