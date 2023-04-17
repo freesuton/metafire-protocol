@@ -130,6 +130,7 @@ library DataTypes {
     address asset;
     uint256 amount;
     address to;
+    Period period;
   }
 
   struct ExecuteBorrowParams {

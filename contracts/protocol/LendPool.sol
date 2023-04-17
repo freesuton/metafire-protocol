@@ -160,12 +160,13 @@ contract LendPool is
   function withdraw(
     address asset,
     uint256 amount,
-    address to
+    address to,
+    Period period
   ) external override nonReentrant whenNotPaused returns (uint256) {
     return
       SupplyLogic.executeWithdraw(
         _reserves,
-        DataTypes.ExecuteWithdrawParams({initiator: _msgSender(), asset: asset, amount: amount, to: to})
+        DataTypes.ExecuteWithdrawParams({initiator: _msgSender(), asset: asset, amount: amount, to: to, period: period})
       );
   }
 

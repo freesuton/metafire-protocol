@@ -69,7 +69,7 @@ library SupplyLogic {
 
     IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, mToken, params.amount);
 
-    IMToken(mToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndex);
+    IMToken(mToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndices[period]);
 
     emit Deposit(params.initiator, params.asset, params.amount, params.onBehalfOf,uint8(params.period) ,params.referralCode);
   }
@@ -85,9 +85,9 @@ library SupplyLogic {
     DataTypes.ExecuteWithdrawParams memory params
   ) external returns (uint256) {
     require(params.to != address(0), Errors.VL_INVALID_TARGET_ADDRESS);
-
+    uint8 period = uint8(params.period);
     DataTypes.ReserveData storage reserve = reservesData[params.asset];
-    address mToken = reserve.mTokenAddress;
+    address mToken = reserve.mTokenAddresses[period];
     require(mToken != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
 
     uint256 userBalance = IMToken(mToken).balanceOf(params.initiator);
@@ -104,9 +104,9 @@ library SupplyLogic {
 
     reserve.updateInterestRates(params.asset, mToken, 0, amountToWithdraw);
 
-    IMToken(mToken).burn(params.initiator, params.to, amountToWithdraw, reserve.liquidityIndex);
+    IMToken(mToken).burn(params.initiator, params.to, amountToWithdraw, reserve.liquidityIndices[period]);
 
-    emit Withdraw(params.initiator, params.asset, amountToWithdraw, params.to);
+    emit Withdraw(params.initiator, params.asset, amountToWithdraw, params.to, period);
 
     return amountToWithdraw;
   }

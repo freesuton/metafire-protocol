@@ -30,7 +30,7 @@ interface ILendPool {
    * @param amount The amount to be withdrawn
    * @param to Address that will receive the underlying
    **/
-  event Withdraw(address indexed user, address indexed reserve, uint256 amount, address indexed to);
+  event Withdraw(address indexed user, address indexed reserve, uint256 amount, address indexed to, uint8 period);
 
   /**
    * @dev Emitted on borrow() when loan needs to be opened
@@ -183,6 +183,7 @@ interface ILendPool {
     address reserve,
     uint256 amount,
     address onBehalfOf,
+    Period period,
     uint16 referralCode
   ) external;
 
@@ -200,7 +201,8 @@ interface ILendPool {
   function withdraw(
     address reserve,
     uint256 amount,
-    address to
+    address to,
+    Period period
   ) external returns (uint256);
 
   /**
