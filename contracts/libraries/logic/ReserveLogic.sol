@@ -94,8 +94,7 @@ library ReserveLogic {
    * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/
-  function updateState(DataTypes.ReserveData storage reserve, Period period) internal {
-    uint8 period = uint8(period);
+  function updateState(DataTypes.ReserveData storage reserve, uint8 period) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndices[period]];
@@ -106,6 +105,7 @@ library ReserveLogic {
       scaledVariableDebt,
       previousLiquidityIndex,
       previousVariableBorrowIndex,
+      period,
       lastUpdatedTimestamp
     );
 
@@ -281,9 +281,10 @@ library ReserveLogic {
     uint256 scaledVariableDebt,
     uint256 liquidityIndex,
     uint256 variableBorrowIndex,
+    uint8 period,
     uint40 timestamp
   ) internal returns (uint256, uint256) {
-    uint256 currentLiquidityRate = reserve.currentLiquidityRate;
+    uint256 currentLiquidityRate = reserve.currentLiquidityRates[period];
 
     uint256 newLiquidityIndex = liquidityIndex;
     uint256 newVariableBorrowIndex = variableBorrowIndex;
@@ -294,7 +295,7 @@ library ReserveLogic {
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
       require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
-      reserve.liquidityIndex = uint128(newLiquidityIndex);
+      reserve.liquidityIndices[period] = uint128(newLiquidityIndex);
 
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
@@ -310,7 +311,7 @@ library ReserveLogic {
     }
 
     //solium-disable-next-line
-    reserve.lastUpdateTimestamp = uint40(block.timestamp);
+    reserve.lastUpdateTimestamps[period] = uint40(block.timestamp);
     return (newLiquidityIndex, newVariableBorrowIndex);
   }
 }

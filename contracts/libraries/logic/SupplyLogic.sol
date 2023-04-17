@@ -57,14 +57,14 @@ library SupplyLogic {
     DataTypes.ExecuteDepositParams memory params
   ) external {
     require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
-
+    uint8 period = uint8(params.period);
     DataTypes.ReserveData storage reserve = reservesData[params.asset];
-    address mToken = reserve.mTokenAddresses[uint8(params.period)];
+    address mToken = reserve.mTokenAddresses[period];
     require(mToken != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
 
     ValidationLogic.validateDeposit(reserve, params.amount);
 
-    reserve.updateState(params.period);
+    reserve.updateState(period);
     reserve.updateInterestRates(params.asset, mToken, params.amount, 0);
 
     IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, mToken, params.amount);
