@@ -130,6 +130,7 @@ contract LendPool is
     address asset,
     uint256 amount,
     address onBehalfOf,
+    Period period,
     uint16 referralCode
   ) external override nonReentrant whenNotPaused {
     SupplyLogic.executeDeposit(
@@ -139,6 +140,7 @@ contract LendPool is
         asset: asset,
         amount: amount,
         onBehalfOf: onBehalfOf,
+        period: period,
         referralCode: referralCode
       })
     );

@@ -59,7 +59,7 @@ library SupplyLogic {
     require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
 
     DataTypes.ReserveData storage reserve = reservesData[params.asset];
-    address mToken = reserve.mTokenAddress;
+    address mToken = reserve.mTokenAddresses[uint8(params.period)];
     require(mToken != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
 
     ValidationLogic.validateDeposit(reserve, params.amount);

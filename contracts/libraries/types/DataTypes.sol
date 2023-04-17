@@ -121,6 +121,7 @@ library DataTypes {
     address asset;
     uint256 amount;
     address onBehalfOf;
+    Period period;
     uint16 referralCode;
   }
 

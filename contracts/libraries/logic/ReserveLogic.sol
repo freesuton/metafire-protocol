@@ -50,6 +50,7 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return the normalized income. expressed in ray
    **/
+   // @Todo: update timestamp choosing
   function getNormalizedIncome(DataTypes.ReserveData storage reserve) internal view returns (uint256) {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
