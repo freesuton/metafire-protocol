@@ -2,6 +2,7 @@
 pragma solidity 0.8.4;
 
 library DataTypes {
+  
   enum Period {
     FourMonth,
     SevenMonth,

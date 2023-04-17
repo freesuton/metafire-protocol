@@ -176,6 +176,7 @@ interface ILendPool {
    * @param onBehalfOf The address that will receive the mTokens, same as msg.sender if the user
    *   wants to receive them on his own wallet, or a different address if the beneficiary of mTokens
    *   is a different wallet
+   * @param period The period of the deposit
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
    **/
@@ -183,7 +184,7 @@ interface ILendPool {
     address reserve,
     uint256 amount,
     address onBehalfOf,
-    Period period,
+    DataTypes.Period period,
     uint16 referralCode
   ) external;
 
@@ -202,7 +203,7 @@ interface ILendPool {
     address reserve,
     uint256 amount,
     address to,
-    Period period
+    DataTypes.Period period
   ) external returns (uint256);
 
   /**

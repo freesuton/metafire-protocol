@@ -51,17 +51,18 @@ library ReserveLogic {
    * @return the normalized income. expressed in ray
    **/
    // @Todo: update timestamp choosing
-  function getNormalizedIncome(DataTypes.ReserveData storage reserve) internal view returns (uint256) {
-    uint40 timestamp = reserve.lastUpdateTimestamp;
+  function getNormalizedIncome(DataTypes.ReserveData storage reserve, DataTypes.Period period) internal view returns (uint256) {
+    uint8 period = uint8(period);
+    uint40 timestamp = reserve.lastUpdateTimestamps[period];
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
       //if the index was updated in the same block, no need to perform any calculation
-      return reserve.liquidityIndex;
+      return reserve.liquidityIndices[period];
     }
 
-    uint256 cumulated = MathUtils.calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
-      reserve.liquidityIndex
+    uint256 cumulated = MathUtils.calculateLinearInterest(reserve.currentLiquidityRates[period], timestamp).rayMul(
+      reserve.liquidityIndices[period]
     );
 
     return cumulated;
@@ -74,8 +75,9 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return The normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(DataTypes.ReserveData storage reserve) internal view returns (uint256) {
-    uint40 timestamp = reserve.lastUpdateTimestamp;
+  function getNormalizedDebt(DataTypes.ReserveData storage reserve, DataTypes.Period period) internal view returns (uint256) {
+    uint8 period = uint8(period);
+    uint40 timestamp = reserve.lastUpdateTimestamps[period];
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
@@ -97,7 +99,7 @@ library ReserveLogic {
   function updateState(DataTypes.ReserveData storage reserve, uint8 period) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-    uint256 previousLiquidityIndex = reserve.liquidityIndices[period]];
+    uint256 previousLiquidityIndex = reserve.liquidityIndices[period];
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamps[period];
 
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
