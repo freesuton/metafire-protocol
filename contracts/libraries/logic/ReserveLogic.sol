@@ -94,11 +94,11 @@ library ReserveLogic {
    * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/
-  function updateState(DataTypes.ReserveData storage reserve) internal {
+  function updateState(DataTypes.ReserveData storage reserve, Period period) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
-    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
+    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamps[uint8(period)];
 
     (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
