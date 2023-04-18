@@ -186,11 +186,12 @@ library ReserveLogic {
   function updateInterestRates(
     DataTypes.ReserveData storage reserve,
     address reserveAddress,
-    address mTokenAddress,
+    address[] mTokenAddresses,
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
+    uint256 currentTotalLiquidity;
 
     //calculates the total variable debt locally using the scaled borrow amount instead
     //of borrow amount(), as it's noticeably cheaper. Also, the index has been
@@ -198,6 +199,14 @@ library ReserveLogic {
     vars.totalVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply().rayMul(
       reserve.variableBorrowIndex
     );
+
+    //calculates current total liquifity
+    for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
+      totalLiquidity += IMToken(reserve.mTokenAddresses[i]).scaledTotalSupply().rayMul(
+        reserve.liquidityIndices[i]
+      );
+    }
+    
 
     (vars.newLiquidityRate, vars.newVariableRate) = IInterestRate(reserve.interestRateAddress).calculateInterestRates(
       reserveAddress,
