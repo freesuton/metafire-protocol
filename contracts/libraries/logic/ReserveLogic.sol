@@ -131,16 +131,17 @@ library ReserveLogic {
   function cumulateToLiquidityIndex(
     DataTypes.ReserveData storage reserve,
     uint256 totalLiquidity,
-    uint256 amount
+    uint256 amount,
+    uint8 period
   ) internal {
     uint256 amountToLiquidityRatio = amount.wadToRay().rayDiv(totalLiquidity.wadToRay());
 
     uint256 result = amountToLiquidityRatio + (WadRayMath.ray());
 
-    result = result.rayMul(reserve.liquidityIndex);
+    result = result.rayMul(reserve.liquidityIndices[period]);
     require(result <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
-    reserve.liquidityIndex = uint128(result);
+    reserve.liquidityIndices[period] = uint128(result);
   }
 
   /**
