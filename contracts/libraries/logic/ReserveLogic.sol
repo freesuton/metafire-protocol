@@ -34,9 +34,9 @@ library ReserveLogic {
    **/
   event ReserveDataUpdated(
     address indexed asset,
-    uint256 liquidityRate,
+    uint256[] liquidityRates,
     uint256 variableBorrowRate,
-    uint256 liquidityIndex,
+    uint256[] liquidityIndices,
     uint256 variableBorrowIndex
   );
 
@@ -172,7 +172,7 @@ library ReserveLogic {
 
   struct UpdateInterestRatesLocalVars {
     uint256 availableLiquidity;
-    uint256 newLiquidityRate;
+    uint256[] newLiquidityRates;
     uint256 newVariableRate;
     uint256 totalVariableDebt;
   }
