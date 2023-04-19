@@ -91,7 +91,8 @@ contract InterestRate is IInterestRate {
     uint256 liquidityAdded,
     uint256 liquidityTaken,
     uint256 totalVariableDebt,
-    uint256 reserveFactor
+    uint256 reserveFactor,
+    uint8 period
   ) external view override returns (uint256, uint256) {
     // get total available liquidity
     uint256 availableLiquidity;
@@ -99,10 +100,9 @@ contract InterestRate is IInterestRate {
       address mToken = reserve.mTokenAddresses[i];
       availableLiquidity += IERC20Upgradeable(token).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]);
     }
-    
-    
+    availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
 
-    return calculateInterestRates(reserve, availableLiquidity, totalVariableDebt, reserveFactor);
+    return calculateInterestRates(reserve, availableLiquidity, totalVariableDebt, reserveFactor, period);
   }
 
   struct CalcInterestRatesLocalVars {
@@ -126,7 +126,8 @@ contract InterestRate is IInterestRate {
     address reserve,
     uint256 availableLiquidity,
     uint256 totalVariableDebt,
-    uint256 reserveFactor
+    uint256 reserveFactor,
+    uint8 period
   ) public view override returns (uint256, uint256) {
     reserve;
 

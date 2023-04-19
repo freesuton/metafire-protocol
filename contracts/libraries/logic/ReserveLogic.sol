@@ -188,7 +188,8 @@ library ReserveLogic {
     address reserveAddress,
     address targetMTokenAddress,
     uint256 liquidityAdded,
-    uint256 liquidityTaken
+    uint256 liquidityTaken,
+    uint8 period
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
     uint256 currentTotalLiquidity;
@@ -207,7 +208,8 @@ library ReserveLogic {
       liquidityAdded,
       liquidityTaken,
       vars.totalVariableDebt,
-      reserve.configuration.getReserveFactor()
+      reserve.configuration.getReserveFactor(),
+      period
     );
 
     require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
