@@ -78,6 +78,7 @@ contract InterestRate is IInterestRate {
   /**
    * @dev Calculates the interest rates depending on the reserve's state and configurations
    * @param reserve The address of the reserve
+   * @param mToken The address of the target mToken
    * @param liquidityAdded The liquidity added during the operation
    * @param liquidityTaken The liquidity taken during the operation
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
@@ -92,9 +93,14 @@ contract InterestRate is IInterestRate {
     uint256 totalVariableDebt,
     uint256 reserveFactor
   ) external view override returns (uint256, uint256) {
-    uint256 availableLiquidity = IERC20Upgradeable(reserve).balanceOf(mToken);
-    //avoid stack too deep
-    availableLiquidity = availableLiquidity + (liquidityAdded) - (liquidityTaken);
+    // get total available liquidity
+    uint256 availableLiquidity;
+    for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
+      address mToken = reserve.mTokenAddresses[i];
+      availableLiquidity += IERC20Upgradeable(token).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]);
+    }
+    
+    
 
     return calculateInterestRates(reserve, availableLiquidity, totalVariableDebt, reserveFactor);
   }
