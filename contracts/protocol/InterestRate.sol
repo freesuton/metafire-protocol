@@ -108,7 +108,7 @@ contract InterestRate is IInterestRate {
   struct CalcInterestRatesLocalVars {
     uint256 totalDebt;
     uint256 currentVariableBorrowRate;
-    uint256 currentLiquidityRate;
+    uint256 currentLiquidityBaseRate;
     uint256 utilizationRate;
   }
 
@@ -128,16 +128,16 @@ contract InterestRate is IInterestRate {
     uint256 totalVariableDebt,
     uint256 reserveFactor,
     uint8 period
-  ) public view override returns (uint256, uint256) {
+  ) public view override returns (uint256[] memory, uint256) {
     reserve;
 
     CalcInterestRatesLocalVars memory vars;
 
     vars.totalDebt = totalVariableDebt;
     vars.currentVariableBorrowRate = 0;
-    vars.currentLiquidityRate = 0;
+    vars.currentLiquidityBaseRate = 0;
 
-    vars.utilizationRate = vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity + (vars.totalDebt));
+    vars.utilizationRate = vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity);
 
     if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
       uint256 excessUtilizationRateRatio = (vars.utilizationRate - (OPTIMAL_UTILIZATION_RATE)).rayDiv(
@@ -156,7 +156,11 @@ contract InterestRate is IInterestRate {
 
     vars.currentLiquidityRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
       .rayMul(vars.utilizationRate)
+      .rayMul(availableLiquidity)
+      
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
+
+    var.currentLiquidityBaseRate =
 
     return (vars.currentLiquidityRate, vars.currentVariableBorrowRate);
   }
