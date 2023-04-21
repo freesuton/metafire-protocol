@@ -60,6 +60,7 @@ contract InterestRate is IInterestRate {
     _baseVariableBorrowRate = baseVariableBorrowRate_;
     _variableRateSlope1 = variableRateSlope1_;
     _variableRateSlope2 = variableRateSlope2_;
+    distributeCoefficients = distributeCoefficients_;
   }
 
   function variableRateSlope1() external view returns (uint256) {
@@ -142,6 +143,8 @@ contract InterestRate is IInterestRate {
 
     vars.utilizationRate = vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity);
 
+    uint256[4] memory currentLiquidityRates;
+
     if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
       uint256 excessUtilizationRateRatio = (vars.utilizationRate - (OPTIMAL_UTILIZATION_RATE)).rayDiv(
         EXCESS_UTILIZATION_RATE
@@ -163,15 +166,17 @@ contract InterestRate is IInterestRate {
       weightedLiquiditySum += IERC20Upgradeable(token).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]).rayMul(distributeCoefficient[i]);
     }
 
-    vars.currentLiquidityRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
+    vars.currentLiquidityBaseRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
       .rayMul(vars.utilizationRate)
       .rayMul(availableLiquidity)
       .rayDiv(weightedLiquiditySum)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
 
-    var.currentLiquidityBaseRate =
+    for(uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
+      currentLiquidityRates[i] =  distributeCoefficients[i].rayMul(var.currentLiquidityBaseRate);
+    }
 
-    return (vars.currentLiquidityRate, vars.currentVariableBorrowRate);
+    return (vars.currentLiquidityRates, vars.currentVariableBorrowRate);
   }
 
   /**
