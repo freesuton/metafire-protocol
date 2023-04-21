@@ -44,12 +44,15 @@ contract InterestRate is IInterestRate {
   // Slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _variableRateSlope2;
 
+  uint32[4] internal distributeCoefficients;
+
   constructor(
     ILendPoolAddressesProvider provider,
     uint256 optimalUtilizationRate_,
     uint256 baseVariableBorrowRate_,
     uint256 variableRateSlope1_,
-    uint256 variableRateSlope2_
+    uint256 variableRateSlope2_,
+    uint32[4] memory distributeCoefficients_
   ) {
     addressesProvider = provider;
     OPTIMAL_UTILIZATION_RATE = optimalUtilizationRate_;
@@ -154,10 +157,16 @@ contract InterestRate is IInterestRate {
         (vars.utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE));
     }
 
+    uint256 weightedLiquiditySum;
+    for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
+      address mToken = reserve.mTokenAddresses[i];
+      weightedLiquiditySum += IERC20Upgradeable(token).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]).rayMul(distributeCoefficient[i]);
+    }
+
     vars.currentLiquidityRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
       .rayMul(vars.utilizationRate)
       .rayMul(availableLiquidity)
-      
+      .rayDiv(weightedLiquiditySum)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
 
     var.currentLiquidityBaseRate =
