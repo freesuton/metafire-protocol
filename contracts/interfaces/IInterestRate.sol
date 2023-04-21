@@ -15,15 +15,16 @@ interface IInterestRate {
     address reserve,
     uint256 availableLiquidity,
     uint256 totalVariableDebt,
-    uint256 reserveFactor
+    uint256 reserveFactor,
+    uint256[4] memory liquidities
   ) external view returns (uint256, uint256);
 
   function calculateInterestRates(
     address reserve,
-    address mToken,
+    address targetMToken,
     uint256 liquidityAdded,
     uint256 liquidityTaken,
     uint256 totalVariableDebt,
     uint256 reserveFactor
-  ) external view returns (uint256 liquidityRate, uint256 variableBorrowRate);
+  ) external view returns (uint256[] memory liquidityRates, uint256 variableBorrowRate);
 }

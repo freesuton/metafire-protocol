@@ -91,22 +91,28 @@ contract InterestRate is IInterestRate {
    **/
   function calculateInterestRates(
     address reserve,
-    address mToken,
+    address targetMToken,
     uint256 liquidityAdded,
     uint256 liquidityTaken,
     uint256 totalVariableDebt,
-    uint256 reserveFactor,
-    uint8 period
+    uint256 reserveFactor
   ) external view override returns (uint256, uint256) {
     // get total available liquidity
-    uint256 availableLiquidity;
+    uint256 totalLiquidity;
+    uint256[4] memory liquidities;
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
-      availableLiquidity += IERC20Upgradeable(token).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]);
+      if(mToken == targetMToken){
+        liquidities[i] = IERC20Upgradeable(mToken).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]) + liquidityAdded - liquidityTaken;
+      }else{
+        liquidities[i] = IERC20Upgradeable(mToken).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]);
+      }
+      totalLiquidity += liquidities[i];
     }
-    availableLiquidity = availableLiquidity + liquidityAdded - liquidityTaken;
+    
+    
 
-    return calculateInterestRates(reserve, availableLiquidity, totalVariableDebt, reserveFactor, period);
+    return calculateInterestRates(reserve, totalLiquidity, totalVariableDebt, reserveFactor, liquidities);
   }
 
   struct CalcInterestRatesLocalVars {
@@ -121,17 +127,17 @@ contract InterestRate is IInterestRate {
    * NOTE This function is kept for compatibility with the previous DefaultInterestRateStrategy interface.
    * New protocol implementation uses the new calculateInterestRates() interface
    * @param reserve The address of the reserve
-   * @param availableLiquidity The liquidity available in the corresponding mToken
+   * @param totalLiquidity The liquidity available in the corresponding mToken
    * @param totalVariableDebt The total borrowed from the reserve at a variable rate
    * @param reserveFactor The reserve portion of the interest that goes to the treasury of the market
    * @return The liquidity rate and the variable borrow rate
    **/
   function calculateInterestRates(
     address reserve,
-    uint256 availableLiquidity,
+    uint256 totalLiquidity,
     uint256 totalVariableDebt,
     uint256 reserveFactor,
-    uint8 period
+    uint256[4] memory liquidities
   ) public view override returns (uint256[] memory, uint256) {
     reserve;
 
@@ -141,7 +147,7 @@ contract InterestRate is IInterestRate {
     vars.currentVariableBorrowRate = 0;
     vars.currentLiquidityBaseRate = 0;
 
-    vars.utilizationRate = vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(availableLiquidity);
+    vars.utilizationRate = vars.totalDebt == 0 ? 0 : vars.totalDebt.rayDiv(totalLiquidity);
 
     uint256[4] memory currentLiquidityRates;
 
@@ -163,12 +169,12 @@ contract InterestRate is IInterestRate {
     uint256 weightedLiquiditySum;
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
-      weightedLiquiditySum += IERC20Upgradeable(token).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]).rayMul(distributeCoefficient[i]);
+      weightedLiquiditySum += liquidities[i].rayMul(distributeCoefficient[i]);
     }
 
     vars.currentLiquidityBaseRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
       .rayMul(vars.utilizationRate)
-      .rayMul(availableLiquidity)
+      .rayMul(totalLiquidity)
       .rayDiv(weightedLiquiditySum)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
 
