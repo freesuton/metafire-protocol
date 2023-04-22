@@ -34,9 +34,9 @@ library ReserveLogic {
    **/
   event ReserveDataUpdated(
     address indexed asset,
-    uint256[] liquidityRates,
+    uint256[4] liquidityRates,
     uint256 variableBorrowRate,
-    uint256[] liquidityIndices,
+    uint256 liquidityIndex,
     uint256 variableBorrowIndex
   );
 
@@ -200,7 +200,6 @@ library ReserveLogic {
     vars.totalVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply().rayMul(
       reserve.variableBorrowIndex
     );
-    
 
     (vars.newLiquidityRates, vars.newVariableRate) = IInterestRate(reserve.interestRateAddress).calculateInterestRates(
       reserveAddress,
@@ -208,8 +207,7 @@ library ReserveLogic {
       liquidityAdded,
       liquidityTaken,
       vars.totalVariableDebt,
-      reserve.configuration.getReserveFactor(),
-      period
+      reserve.configuration.getReserveFactor()
     );
 
     require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
@@ -225,7 +223,7 @@ library ReserveLogic {
       reserveAddress,
       vars.newLiquidityRates,
       vars.newVariableRate,
-      reserve.liquidityIndices,
+      reserve.liquidityIndices[period],
       reserve.variableBorrowIndex
     );
   }

@@ -96,7 +96,7 @@ contract InterestRate is IInterestRate {
     uint256 liquidityTaken,
     uint256 totalVariableDebt,
     uint256 reserveFactor
-  ) external view override returns (uint256, uint256) {
+  ) external view override returns (uint256[4] memory, uint256) {
     // get total available liquidity
     uint256 totalLiquidity;
     uint256[4] memory liquidities;
@@ -138,7 +138,7 @@ contract InterestRate is IInterestRate {
     uint256 totalVariableDebt,
     uint256 reserveFactor,
     uint256[4] memory liquidities
-  ) public view override returns (uint256[] memory, uint256) {
+  ) public view override returns (uint256[4] memory, uint256) {
     reserve;
 
     CalcInterestRatesLocalVars memory vars;
@@ -169,7 +169,7 @@ contract InterestRate is IInterestRate {
     uint256 weightedLiquiditySum;
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
-      weightedLiquiditySum += liquidities[i].rayMul(distributeCoefficient[i]);
+      weightedLiquiditySum += liquidities[i].rayMul(distributeCoefficients[i]);
     }
 
     vars.currentLiquidityBaseRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
@@ -179,7 +179,7 @@ contract InterestRate is IInterestRate {
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
 
     for(uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
-      currentLiquidityRates[i] =  distributeCoefficients[i].rayMul(var.currentLiquidityBaseRate);
+      currentLiquidityRates[i] =  distributeCoefficients[i].rayMul(vars.currentLiquidityBaseRate);
     }
 
     return (vars.currentLiquidityRates, vars.currentVariableBorrowRate);
