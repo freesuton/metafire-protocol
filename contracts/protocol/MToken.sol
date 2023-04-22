@@ -84,7 +84,7 @@ contract MToken is Initializable, IMToken, IncentivizedERC20 {
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
 
-    IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
+    // IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
     emit Burn(user, receiverOfUnderlying, amount, index);
   }
