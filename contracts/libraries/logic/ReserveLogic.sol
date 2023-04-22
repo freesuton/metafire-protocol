@@ -27,7 +27,7 @@ library ReserveLogic {
   /**
    * @dev Emitted when the state of a reserve is updated
    * @param asset The address of the underlying asset of the reserve
-   * @param liquidityRate The new liquidity rate
+   * @param liquidityRates The new liquidity rate list
    * @param variableBorrowRate The new variable borrow rate
    * @param liquidityIndex The new liquidity index
    * @param variableBorrowIndex The new variable borrow index
@@ -117,7 +117,8 @@ library ReserveLogic {
       previousVariableBorrowIndex,
       newLiquidityIndex,
       newVariableBorrowIndex,
-      lastUpdatedTimestamp
+      lastUpdatedTimestamp,
+      period
     );
   }
 
@@ -251,7 +252,8 @@ library ReserveLogic {
     uint256 previousVariableBorrowIndex,
     uint256 newLiquidityIndex,
     uint256 newVariableBorrowIndex,
-    uint40 timestamp
+    uint40 timestamp,
+    uint8 period
   ) internal {
     timestamp;
     MintToTreasuryLocalVars memory vars;
@@ -274,7 +276,7 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      IMToken(reserve.mTokenAddress).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+      IMToken(reserve.mTokenAddresses[period]).mintToTreasury(vars.amountToMint, newLiquidityIndex);
     }
   }
 
