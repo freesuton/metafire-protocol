@@ -50,10 +50,12 @@ library SupplyLogic {
    * @notice Implements the supply feature. Through `deposit()`, users deposit assets to the protocol.
    * @dev Emits the `Deposit()` event.
    * @param reservesData The state of all the reserves
+   * @param lendPoolAddress The address of the LendPool contract
    * @param params The additional parameters needed to execute the deposit function
    */
   function executeDeposit(
     mapping(address => DataTypes.ReserveData) storage reservesData,
+    address lendPoolAddress,
     DataTypes.ExecuteDepositParams memory params
   ) external {
     require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
@@ -67,7 +69,7 @@ library SupplyLogic {
     reserve.updateState(period);
     reserve.updateInterestRates(params.asset, mToken, params.amount, 0, period);
 
-    IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, mToken, params.amount);
+    IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, lendPoolAddress, params.amount);
 
     IMToken(mToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndices[period]);
 

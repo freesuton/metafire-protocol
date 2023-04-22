@@ -135,6 +135,7 @@ contract LendPool is
   ) external override nonReentrant whenNotPaused {
     SupplyLogic.executeDeposit(
       _reserves,
+      address(this),
       DataTypes.ExecuteDepositParams({
         initiator: _msgSender(),
         asset: asset,
