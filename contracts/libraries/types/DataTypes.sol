@@ -25,7 +25,7 @@ library DataTypes {
     uint128[] currentLiquidityRates;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
-    uint40[] lastUpdateTimestamps;
+    uint40 lastUpdateTimestamp;
     //tokens addresses
     address[] mTokenAddresses;
     address debtTokenAddress;

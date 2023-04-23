@@ -53,7 +53,7 @@ library ReserveLogic {
    // @Todo: update timestamp choosing
   function getNormalizedIncome(DataTypes.ReserveData storage reserve, DataTypes.Period period) internal view returns (uint256) {
     uint8 period = uint8(period);
-    uint40 timestamp = reserve.lastUpdateTimestamps[period];
+    uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
@@ -77,7 +77,7 @@ library ReserveLogic {
    **/
   function getNormalizedDebt(DataTypes.ReserveData storage reserve, DataTypes.Period period) internal view returns (uint256) {
     uint8 period = uint8(period);
-    uint40 timestamp = reserve.lastUpdateTimestamps[period];
+    uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
     if (timestamp == uint40(block.timestamp)) {
@@ -99,15 +99,14 @@ library ReserveLogic {
   function updateState(DataTypes.ReserveData storage reserve, uint8 period) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-    uint256 previousLiquidityIndex = reserve.liquidityIndices[period];
-    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamps[period];
+    uint128[] previousLiquidityIndices = reserve.liquidityIndices;
+    uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
-    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
+    (uint256[] newLiquidityIndices, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
       scaledVariableDebt,
-      previousLiquidityIndex,
+      previousLiquidityIndices,
       previousVariableBorrowIndex,
-      period,
       lastUpdatedTimestamp
     );
 
@@ -115,7 +114,7 @@ library ReserveLogic {
       reserve,
       scaledVariableDebt,
       previousVariableBorrowIndex,
-      newLiquidityIndex,
+      newLiquidityIndices,
       newVariableBorrowIndex,
       lastUpdatedTimestamp,
       period
@@ -290,39 +289,45 @@ library ReserveLogic {
   function _updateIndexes(
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
-    uint256 liquidityIndex,
+    uint256[] liquidityIndices,
     uint256 variableBorrowIndex,
-    uint8 period,
     uint40 timestamp
-  ) internal returns (uint256, uint256) {
-    uint256 currentLiquidityRate = reserve.currentLiquidityRates[period];
-
-    uint256 newLiquidityIndex = liquidityIndex;
+  ) internal returns (uint256[] memory, uint256) {
+    
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
-    //only cumulating if there is any income being produced
-    if (currentLiquidityRate > 0) {
-      uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
-      newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
-      require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
+    uint256[] newLiquidtyIndices = liquidityIndices;
 
-      reserve.liquidityIndices[period] = uint128(newLiquidityIndex);
+    for (uint8 i = 0; i < newLiquidtyIndices.length; i++) {
+      uint256 currentLiquidityRate = reserve.currentLiquidityRates[i];
+      uint256 newLiquidityIndex = liquidityIndices[i];
+      
+      //only cumulating if there is any income being produced
+      if (currentLiquidityRate > 0) {
+        uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
+        newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
+        require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
-      //as the liquidity rate might come only from stable rate loans, we need to ensure
-      //that there is actual variable debt before accumulating
-      if (scaledVariableDebt != 0) {
-        uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
-          reserve.currentVariableBorrowRate,
-          timestamp
-        );
-        newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
-        require(newVariableBorrowIndex <= type(uint128).max, Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
-        reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
+        reserve.liquidityIndices[i] = uint128(newLiquidityIndex);
+        newLiquidtyIndices[i] = newLiquidityIndex;
       }
     }
 
+    //as the liquidity rate might come only from stable rate loans, we need to ensure
+    //that there is actual variable debt before accumulating
+    if (scaledVariableDebt != 0 &&  (reserve.currentLiquidityRates[0] > 0 || reserve.currentLiquidityRates[1] > 0 || reserve.currentLiquidityRates[2] > 0 || reserve.currentLiquidityRates[3] > 0)) {
+      uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
+        reserve.currentVariableBorrowRate,
+        timestamp
+      );
+      newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
+      require(newVariableBorrowIndex <= type(uint128).max, Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
+      reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
+    }
+    
+
     //solium-disable-next-line
-    reserve.lastUpdateTimestamps[period] = uint40(block.timestamp);
-    return (newLiquidityIndex, newVariableBorrowIndex);
+    reserve.lastUpdateTimestamp = uint40(block.timestamp);
+    return (liquidityIndices, newVariableBorrowIndex);
   }
 }
