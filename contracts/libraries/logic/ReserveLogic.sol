@@ -75,8 +75,7 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return The normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(DataTypes.ReserveData storage reserve, DataTypes.Period period) internal view returns (uint256) {
-    uint8 period = uint8(period);
+  function getNormalizedDebt(DataTypes.ReserveData storage reserve) internal view returns (uint256) {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -96,7 +95,7 @@ library ReserveLogic {
    * @dev Updates the liquidity cumulative index and the variable borrow index.
    * @param reserve the reserve object
    **/
-  function updateState(DataTypes.ReserveData storage reserve, uint8 period) internal {
+  function updateState(DataTypes.ReserveData storage reserve) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint128[] previousLiquidityIndices = reserve.liquidityIndices;
@@ -117,7 +116,6 @@ library ReserveLogic {
       newLiquidityIndices,
       newVariableBorrowIndex,
       lastUpdatedTimestamp,
-      period
     );
   }
 
@@ -249,10 +247,9 @@ library ReserveLogic {
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
-    uint256 newLiquidityIndex,
+    uint256[] memory newLiquidityIndices,
     uint256 newVariableBorrowIndex,
     uint40 timestamp,
-    uint8 period
   ) internal {
     timestamp;
     MintToTreasuryLocalVars memory vars;
@@ -275,7 +272,7 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      IMToken(reserve.mTokenAddresses[period]).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+      IMToken(reserve.mTokenAddresses[0]).mintToTreasury(vars.amountToMint, newLiquidityIndex);
     }
   }
 
