@@ -348,10 +348,10 @@ library BorrowLogic {
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(loanData.reserveAsset, reserveData.mTokenAddress, vars.repayAmount, 0);
 
-    // transfer repay amount to mToken
+    // transfer repay amount to lend pool
     IERC20Upgradeable(loanData.reserveAsset).safeTransferFrom(
       vars.initiator,
-      reserveData.mTokenAddress,
+      address(this),
       vars.repayAmount
     );
 
