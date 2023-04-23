@@ -165,7 +165,10 @@ library ValidationLogic {
     uint256 borrowAmount
   ) external view {
     require(nftData.bNftAddress != address(0), Errors.LPC_INVALIED_BNFT_ADDRESS);
-    require(reserveData.mTokenAddress != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      require(reserveData.mTokenAddresses[i] != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    }
 
     require(reserveData.configuration.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 
@@ -191,7 +194,10 @@ library ValidationLogic {
     uint256 bidPrice
   ) internal view {
     require(nftData.bNftAddress != address(0), Errors.LPC_INVALIED_BNFT_ADDRESS);
-    require(reserveData.mTokenAddress != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      require(reserveData.mTokenAddresses[i] != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    }
 
     require(reserveData.configuration.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 
@@ -217,7 +223,10 @@ library ValidationLogic {
     uint256 amount
   ) external view {
     require(nftData.bNftAddress != address(0), Errors.LPC_INVALIED_BNFT_ADDRESS);
-    require(reserveData.mTokenAddress != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      require(reserveData.mTokenAddresses[i] != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    }
 
     require(reserveData.configuration.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 
@@ -242,7 +251,10 @@ library ValidationLogic {
     DataTypes.LoanData memory loanData
   ) internal view {
     require(nftData.bNftAddress != address(0), Errors.LPC_INVALIED_BNFT_ADDRESS);
-    require(reserveData.mTokenAddress != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      require(reserveData.mTokenAddresses[i] != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    }
 
     require(reserveData.configuration.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
 
