@@ -98,7 +98,10 @@ library ValidationLogic {
   ) external view {
     ValidateBorrowLocalVars memory vars;
 
-    require(reserveData.mTokenAddress != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      require(reserveData.mTokenAddresses[i] != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    }
+
     require(nftData.bNftAddress != address(0), Errors.LPC_INVALIED_BNFT_ADDRESS);
     require(amount > 0, Errors.VL_INVALID_AMOUNT);
 

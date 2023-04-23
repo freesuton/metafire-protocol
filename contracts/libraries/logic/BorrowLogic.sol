@@ -215,7 +215,7 @@ library BorrowLogic {
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(params.asset, reserveData.mTokenAddress, 0, params.amount);
 
-    IMToken(reserveData.mTokenAddress).transferUnderlyingTo(vars.initiator, params.amount);
+    IERC20Upgradeable(params.asset).safeTransfer(params.to, params.amount);
 
     emit Borrow(
       vars.initiator,

@@ -106,7 +106,7 @@ library SupplyLogic {
 
     IMToken(mToken).burn(params.initiator, params.to, amountToWithdraw, reserve.liquidityIndices[period]);
 
-    IERC20Upgradeable(params.asset).safeTransfer(params.to, amount);
+    IERC20Upgradeable(params.asset).safeTransfer(params.to, amountToWithdraw);
 
     emit Withdraw(params.initiator, params.asset, amountToWithdraw, params.to, period);
 
