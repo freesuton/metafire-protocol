@@ -34,6 +34,7 @@ library SupplyLogic {
     address indexed reserve,
     uint256 amount,
     address indexed onBehalfOf,
+    uint8 period,
     uint16 indexed referral
   );
 
@@ -44,7 +45,7 @@ library SupplyLogic {
    * @param amount The amount to be withdrawn
    * @param to Address that will receive the underlying
    **/
-  event Withdraw(address indexed user, address indexed reserve, uint256 amount, address indexed to);
+  event Withdraw(address indexed user, address indexed reserve, uint256 amount, address indexed to, uint8 period);
 
   /**
    * @notice Implements the supply feature. Through `deposit()`, users deposit assets to the protocol.
@@ -65,7 +66,7 @@ library SupplyLogic {
     ValidationLogic.validateDeposit(reserve, params.amount);
 
     reserve.updateState();
-    reserve.updateInterestRates(params.asset, mToken, params.amount, 0, period);
+    reserve.updateInterestRates(params.asset, mToken, params.amount, 0);
 
     IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, address(this), params.amount);
 
@@ -102,7 +103,7 @@ library SupplyLogic {
 
     reserve.updateState();
 
-    reserve.updateInterestRates(params.asset, mToken, 0, amountToWithdraw, period);
+    reserve.updateInterestRates(params.asset, mToken, 0, amountToWithdraw);
 
     IMToken(mToken).burn(params.initiator, params.to, amountToWithdraw, reserve.liquidityIndices[period]);
 

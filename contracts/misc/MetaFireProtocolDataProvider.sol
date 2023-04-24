@@ -39,7 +39,7 @@ contract MetaFireProtocolDataProvider {
     ADDRESSES_PROVIDER = addressesProvider;
   }
 
-  function getAllReservesTokenDatas() external view returns (ReserveTokenData[] memory) {
+  function getAllReservesTokenDatas(uint8 period) external view returns (ReserveTokenData[] memory) {
     ILendPool pool = ILendPool(ADDRESSES_PROVIDER.getLendPool());
     address[] memory reserves = pool.getReservesList();
     ReserveTokenData[] memory reservesTokens = new ReserveTokenData[](reserves.length);
@@ -48,8 +48,8 @@ contract MetaFireProtocolDataProvider {
       reservesTokens[i] = ReserveTokenData({
         tokenSymbol: IERC20Detailed(reserves[i]).symbol(),
         tokenAddress: reserves[i],
-        mTokenSymbol: IERC20Detailed(reserveData.mTokenAddress).symbol(),
-        mTokenAddress: reserveData.mTokenAddress,
+        mTokenSymbol: IERC20Detailed(reserveData.mTokenAddresses[period]).symbol(),
+        mTokenAddress: reserveData.mTokenAddresses[period],
         debtTokenSymbol: IERC20Detailed(reserveData.debtTokenAddress).symbol(),
         debtTokenAddress: reserveData.debtTokenAddress
       });
@@ -57,15 +57,15 @@ contract MetaFireProtocolDataProvider {
     return reservesTokens;
   }
 
-  function getReserveTokenData(address asset) external view returns (ReserveTokenData memory) {
+  function getReserveTokenData(address asset, uint8 period) external view returns (ReserveTokenData memory) {
     ILendPool pool = ILendPool(ADDRESSES_PROVIDER.getLendPool());
     DataTypes.ReserveData memory reserveData = pool.getReserveData(asset);
     return
       ReserveTokenData({
         tokenSymbol: IERC20Detailed(asset).symbol(),
         tokenAddress: asset,
-        mTokenSymbol: IERC20Detailed(reserveData.mTokenAddress).symbol(),
-        mTokenAddress: reserveData.mTokenAddress,
+        mTokenSymbol: IERC20Detailed(reserveData.mTokenAddresses[period]).symbol(),
+        mTokenAddress: reserveData.mTokenAddresses[period],
         debtTokenSymbol: IERC20Detailed(reserveData.debtTokenAddress).symbol(),
         debtTokenAddress: reserveData.debtTokenAddress
       });
@@ -149,7 +149,7 @@ contract MetaFireProtocolDataProvider {
     (configData.minBidFine) = configuration.getMinBidFineMemory();
   }
 
-  function getReserveData(address asset)
+  function getReserveData(address asset, uint8 period)
     external
     view
     returns (
@@ -165,7 +165,7 @@ contract MetaFireProtocolDataProvider {
     DataTypes.ReserveData memory reserve = ILendPool(ADDRESSES_PROVIDER.getLendPool()).getReserveData(asset);
 
     return (
-      IERC20Detailed(asset).balanceOf(reserve.mTokenAddress),
+      IERC20Detailed(asset).balanceOf(reserve.mTokenAddresses[period]),
       IERC20Detailed(reserve.debtTokenAddress).totalSupply(),
       reserve.currentLiquidityRate,
       reserve.currentVariableBorrowRate,
@@ -175,7 +175,7 @@ contract MetaFireProtocolDataProvider {
     );
   }
 
-  function getUserReserveData(address asset, address user)
+  function getUserReserveData(address asset, address user, uint8 period)
     external
     view
     returns (
@@ -187,7 +187,7 @@ contract MetaFireProtocolDataProvider {
   {
     DataTypes.ReserveData memory reserve = ILendPool(ADDRESSES_PROVIDER.getLendPool()).getReserveData(asset);
 
-    currentMTokenBalance = IERC20Detailed(reserve.mTokenAddress).balanceOf(user);
+    currentMTokenBalance = IERC20Detailed(reserve.mTokenAddresses[period]).balanceOf(user);
     currentVariableDebt = IERC20Detailed(reserve.debtTokenAddress).balanceOf(user);
     scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledBalanceOf(user);
     liquidityRate = reserve.currentLiquidityRate;

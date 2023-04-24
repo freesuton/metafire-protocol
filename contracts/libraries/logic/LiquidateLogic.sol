@@ -327,10 +327,10 @@ library LiquidateLogic {
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(loanData.reserveAsset, address(0), vars.repayAmount, 0);
 
-    // transfer repay amount from borrower to mToken
+    // transfer repay amount from borrower to the pool
     IERC20Upgradeable(loanData.reserveAsset).safeTransferFrom(
       vars.initiator,
-      reserveData.mTokenAddress,
+      address(this),
       vars.repayAmount
     );
 
@@ -453,7 +453,7 @@ library LiquidateLogic {
     );
 
     // update interest rate according latest borrow amount (utilizaton)
-    reserveData.updateInterestRates(loanData.reserveAsset, reserveData.mTokenAddress, vars.borrowAmount, 0);
+    reserveData.updateInterestRates(loanData.reserveAsset, address(0), vars.borrowAmount, 0);
 
     // transfer extra borrow amount from liquidator to lend pool
     if (vars.extraDebtAmount > 0) {
@@ -461,7 +461,7 @@ library LiquidateLogic {
     }
 
     // transfer borrow amount from lend pool to mToken, repay debt
-    IERC20Upgradeable(loanData.reserveAsset).safeTransfer(reserveData.mTokenAddress, vars.borrowAmount);
+    // IERC20Upgradeable(loanData.reserveAsset).safeTransfer(reserveData.mTokenAddress, vars.borrowAmount);
 
     // transfer remain amount to borrower
     if (vars.remainAmount > 0) {
