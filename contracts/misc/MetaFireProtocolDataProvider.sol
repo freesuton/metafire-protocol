@@ -167,9 +167,9 @@ contract MetaFireProtocolDataProvider {
     return (
       IERC20Detailed(asset).balanceOf(reserve.mTokenAddresses[period]),
       IERC20Detailed(reserve.debtTokenAddress).totalSupply(),
-      reserve.currentLiquidityRate,
+      reserve.currentLiquidityRates[period],
       reserve.currentVariableBorrowRate,
-      reserve.liquidityIndex,
+      reserve.liquidityIndices[period],
       reserve.variableBorrowIndex,
       reserve.lastUpdateTimestamp
     );
@@ -190,7 +190,7 @@ contract MetaFireProtocolDataProvider {
     currentMTokenBalance = IERC20Detailed(reserve.mTokenAddresses[period]).balanceOf(user);
     currentVariableDebt = IERC20Detailed(reserve.debtTokenAddress).balanceOf(user);
     scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledBalanceOf(user);
-    liquidityRate = reserve.currentLiquidityRate;
+    liquidityRate = reserve.currentLiquidityRates[period];
   }
 
   struct LoanData {
