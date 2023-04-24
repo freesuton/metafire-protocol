@@ -52,7 +52,7 @@ library ConfiguratorLogic {
    * @param proxy The mToken proxy address
    * @param implementation The new mToken implementation
    **/
-  event MTokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
+  event MTokenUpgraded(address indexed asset, address[4] indexed proxies, address indexed implementation);
 
   /**
    * @dev Emitted when the implementation of a debt token is upgraded
@@ -142,9 +142,11 @@ library ConfiguratorLogic {
   function executeUpdateMToken(ILendPool cachedPool, ConfigTypes.UpdateMTokenInput calldata input) external {
     DataTypes.ReserveData memory reserveData = cachedPool.getReserveData(input.asset);
 
-    _upgradeTokenImplementation(reserveData.mTokenAddress, input.implementation, input.encodedCallData);
+    for(uint256 i = 0; i < 4; ++i) {
+      _upgradeTokenImplementation(reserveData.mTokenAddresses[i], input.implementation, input.encodedCallData);
+    }
 
-    emit MTokenUpgraded(input.asset, reserveData.mTokenAddress, input.implementation);
+    emit MTokenUpgraded(input.asset, reserveData.mTokenAddresses, input.implementation);
   }
 
   function executeUpdateDebtToken(ILendPool cachedPool, ConfigTypes.UpdateDebtTokenInput calldata input) external {

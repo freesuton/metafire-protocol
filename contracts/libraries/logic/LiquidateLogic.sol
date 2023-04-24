@@ -206,7 +206,7 @@ library LiquidateLogic {
     }
 
     // update interest rate according latest borrow amount (utilizaton)
-    reserveData.updateInterestRates(loanData.reserveAsset, reserveData.mTokenAddress, 0, 0);
+    reserveData.updateInterestRates(loanData.reserveAsset, address(0), 0, 0);
 
     emit Auction(
       vars.initiator,
@@ -325,7 +325,7 @@ library LiquidateLogic {
     IDebtToken(reserveData.debtTokenAddress).burn(loanData.borrower, vars.repayAmount, reserveData.variableBorrowIndex);
 
     // update interest rate according latest borrow amount (utilizaton)
-    reserveData.updateInterestRates(loanData.reserveAsset, reserveData.mTokenAddress, vars.repayAmount, 0);
+    reserveData.updateInterestRates(loanData.reserveAsset, address(0), vars.repayAmount, 0);
 
     // transfer repay amount from borrower to mToken
     IERC20Upgradeable(loanData.reserveAsset).safeTransferFrom(
