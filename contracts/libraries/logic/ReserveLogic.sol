@@ -293,9 +293,11 @@ library ReserveLogic {
     
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
-    uint256[] memory newLiquidtyIndices = liquidityIndices;
+    uint256[] memory newLiquidtyIndices;
 
     for (uint8 i = 0; i < newLiquidtyIndices.length; i++) {
+      newLiquidtyIndices[i] = liquidityIndices[i];
+
       uint256 currentLiquidityRate = reserve.currentLiquidityRates[i];
       uint256 newLiquidityIndex = liquidityIndices[i];
       
@@ -325,6 +327,6 @@ library ReserveLogic {
 
     //solium-disable-next-line
     reserve.lastUpdateTimestamp = uint40(block.timestamp);
-    return (liquidityIndices, newVariableBorrowIndex);
+    return (newLiquidtyIndices, newVariableBorrowIndex);
   }
 }

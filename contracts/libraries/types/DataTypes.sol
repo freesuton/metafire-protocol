@@ -18,16 +18,16 @@ library DataTypes {
     //stores the reserve configuration
     ReserveConfigurationMap configuration;
     //the liquidity index. Expressed in ray
-    uint128[] liquidityIndices;
+    uint128[4] liquidityIndices;
     //variable borrow index. Expressed in ray
     uint128 variableBorrowIndex;
     //the current supply rate. Expressed in ray
-    uint128[] currentLiquidityRates;
+    uint128[4] currentLiquidityRates;
     //the current variable borrow rate. Expressed in ray
     uint128 currentVariableBorrowRate;
     uint40 lastUpdateTimestamp;
     //tokens addresses
-    address[] mTokenAddresses;
+    address[4] mTokenAddresses;
     address debtTokenAddress;
     //address of the interest rate strategy
     address interestRateAddress;
