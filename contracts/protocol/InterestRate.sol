@@ -109,8 +109,6 @@ contract InterestRate is IInterestRate {
       }
       totalLiquidity += liquidities[i];
     }
-    
-    
 
     return calculateInterestRates(reserve, totalLiquidity, totalVariableDebt, reserveFactor, liquidities);
   }

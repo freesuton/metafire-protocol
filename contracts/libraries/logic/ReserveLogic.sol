@@ -36,7 +36,7 @@ library ReserveLogic {
     address indexed asset,
     uint256[4] liquidityRates,
     uint256 variableBorrowRate,
-    uint256 liquidityIndex,
+    uint128[4] liquidityIndices,
     uint256 variableBorrowIndex
   );
 
@@ -98,10 +98,10 @@ library ReserveLogic {
   function updateState(DataTypes.ReserveData storage reserve) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-    uint128[] memory previousLiquidityIndices = reserve.liquidityIndices;
+    uint128[4] memory previousLiquidityIndices = reserve.liquidityIndices;
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
-    (uint256[] memory newLiquidityIndices, uint256 newVariableBorrowIndex) = _updateIndexes(
+    (uint256[4] memory newLiquidityIndices, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
       scaledVariableDebt,
       previousLiquidityIndices,
@@ -151,7 +151,7 @@ library ReserveLogic {
    **/
   function init(
     DataTypes.ReserveData storage reserve,
-    address[] memory mTokenAddresses,
+    address[4] memory mTokenAddresses,
     address debtTokenAddress,
     address interestRateAddress
   ) external {
@@ -186,8 +186,7 @@ library ReserveLogic {
     address reserveAddress,
     address targetMTokenAddress,
     uint256 liquidityAdded,
-    uint256 liquidityTaken,
-    uint8 period
+    uint256 liquidityTaken
   ) internal {
     UpdateInterestRatesLocalVars memory vars;
     uint256 currentTotalLiquidity;
@@ -221,7 +220,7 @@ library ReserveLogic {
       reserveAddress,
       vars.newLiquidityRates,
       vars.newVariableRate,
-      reserve.liquidityIndices[period],
+      reserve.liquidityIndices,
       reserve.variableBorrowIndex
     );
   }
@@ -247,7 +246,7 @@ library ReserveLogic {
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
     uint256 previousVariableBorrowIndex,
-    uint256[] memory newLiquidityIndices,
+    uint256[4] memory newLiquidityIndices,
     uint256 newVariableBorrowIndex,
     uint40 timestamp
   ) internal {
@@ -286,14 +285,14 @@ library ReserveLogic {
   function _updateIndexes(
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
-    uint128[] memory liquidityIndices,
+    uint128[4] memory liquidityIndices,
     uint256 variableBorrowIndex,
     uint40 timestamp
-  ) internal returns (uint256[] memory, uint256) {
+  ) internal returns (uint256[4] memory, uint256) {
     
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
-    uint256[] memory newLiquidtyIndices;
+    uint256[4] memory newLiquidtyIndices;
 
     for (uint8 i = 0; i < newLiquidtyIndices.length; i++) {
       newLiquidtyIndices[i] = liquidityIndices[i];

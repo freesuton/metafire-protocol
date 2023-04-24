@@ -215,7 +215,7 @@ library BorrowLogic {
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(params.asset, address(0), 0, params.amount);
 
-    IERC20Upgradeable(params.asset).safeTransfer(params.to, params.amount);
+    IERC20Upgradeable(params.asset).safeTransfer(params.onBehalfOf, params.amount);
 
     emit Borrow(
       vars.initiator,
@@ -346,7 +346,7 @@ library BorrowLogic {
     IDebtToken(reserveData.debtTokenAddress).burn(loanData.borrower, vars.repayAmount, reserveData.variableBorrowIndex);
 
     // update interest rate according latest borrow amount (utilizaton)
-    reserveData.updateInterestRates(loanData.reserveAsset, reserveData.mTokenAddress, vars.repayAmount, 0);
+    reserveData.updateInterestRates(loanData.reserveAsset, address(0), vars.repayAmount, 0);
 
     // transfer repay amount to lend pool
     IERC20Upgradeable(loanData.reserveAsset).safeTransferFrom(
