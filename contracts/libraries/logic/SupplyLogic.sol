@@ -64,7 +64,7 @@ library SupplyLogic {
 
     ValidationLogic.validateDeposit(reserve, params.amount);
 
-    reserve.updateState(period);
+    reserve.updateState();
     reserve.updateInterestRates(params.asset, mToken, params.amount, 0, period);
 
     IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, address(this), params.amount);

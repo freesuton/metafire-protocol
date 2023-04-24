@@ -98,10 +98,10 @@ library ReserveLogic {
   function updateState(DataTypes.ReserveData storage reserve) internal {
     uint256 scaledVariableDebt = IDebtToken(reserve.debtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
-    uint128[] previousLiquidityIndices = reserve.liquidityIndices;
+    uint128[] memory previousLiquidityIndices = reserve.liquidityIndices;
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
-    (uint256[] newLiquidityIndices, uint256 newVariableBorrowIndex) = _updateIndexes(
+    (uint256[] memory newLiquidityIndices, uint256 newVariableBorrowIndex) = _updateIndexes(
       reserve,
       scaledVariableDebt,
       previousLiquidityIndices,
@@ -115,7 +115,7 @@ library ReserveLogic {
       previousVariableBorrowIndex,
       newLiquidityIndices,
       newVariableBorrowIndex,
-      lastUpdatedTimestamp,
+      lastUpdatedTimestamp
     );
   }
 
@@ -249,7 +249,7 @@ library ReserveLogic {
     uint256 previousVariableBorrowIndex,
     uint256[] memory newLiquidityIndices,
     uint256 newVariableBorrowIndex,
-    uint40 timestamp,
+    uint40 timestamp
   ) internal {
     timestamp;
     MintToTreasuryLocalVars memory vars;
@@ -272,7 +272,7 @@ library ReserveLogic {
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
     if (vars.amountToMint != 0) {
-      IMToken(reserve.mTokenAddresses[0]).mintToTreasury(vars.amountToMint, newLiquidityIndex);
+      IMToken(reserve.mTokenAddresses[0]).mintToTreasury(vars.amountToMint, newLiquidityIndices[0]);
     }
   }
 
@@ -286,14 +286,14 @@ library ReserveLogic {
   function _updateIndexes(
     DataTypes.ReserveData storage reserve,
     uint256 scaledVariableDebt,
-    uint256[] liquidityIndices,
+    uint128[] memory liquidityIndices,
     uint256 variableBorrowIndex,
     uint40 timestamp
   ) internal returns (uint256[] memory, uint256) {
     
     uint256 newVariableBorrowIndex = variableBorrowIndex;
 
-    uint256[] newLiquidtyIndices = liquidityIndices;
+    uint256[] memory newLiquidtyIndices = liquidityIndices;
 
     for (uint8 i = 0; i < newLiquidtyIndices.length; i++) {
       uint256 currentLiquidityRate = reserve.currentLiquidityRates[i];
@@ -302,7 +302,7 @@ library ReserveLogic {
       //only cumulating if there is any income being produced
       if (currentLiquidityRate > 0) {
         uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
-        newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
+        newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndices[i]);
         require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
         reserve.liquidityIndices[i] = uint128(newLiquidityIndex);
