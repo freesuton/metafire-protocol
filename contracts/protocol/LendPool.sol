@@ -401,8 +401,8 @@ contract LendPool is
    * @param asset The address of the underlying asset of the reserve
    * @return The reserve's normalized income
    */
-  function getReserveNormalizedIncome(address asset) external view override returns (uint256) {
-    return _reserves[asset].getNormalizedIncome();
+  function getReserveNormalizedIncome(address asset, DataTypes.Period period) external view override returns (uint256) {
+    return _reserves[asset].getNormalizedIncome(period);
   }
 
   /**
@@ -677,7 +677,8 @@ contract LendPool is
     address to,
     uint256 amount,
     uint256 balanceFromBefore,
-    uint256 balanceToBefore
+    uint256 balanceToBefore,
+    uint8 period
   ) external view override whenNotPaused {
     asset;
     from;
@@ -687,7 +688,7 @@ contract LendPool is
     balanceToBefore;
 
     DataTypes.ReserveData storage reserve = _reserves[asset];
-    require(_msgSender() == reserve.mTokenAddress, Errors.LP_CALLER_MUST_BE_AN_MTOKEN);
+    require(_msgSender() == reserve.mTokenAddresses[period], Errors.LP_CALLER_MUST_BE_AN_MTOKEN);
 
     ValidationLogic.validateTransfer(from, reserve);
   }
@@ -791,7 +792,7 @@ contract LendPool is
    **/
   function initReserve(
     address asset,
-    address[] memory mTokenAddresses,
+    address[4] memory mTokenAddresses,
     address debtTokenAddress,
     address interestRateAddress
   ) external override onlyLendPoolConfigurator {

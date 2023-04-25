@@ -449,10 +449,11 @@ contract LendPoolConfigurator is Initializable, ILendPoolConfigurator {
 
   function _checkReserveNoLiquidity(address asset) internal view {
     DataTypes.ReserveData memory reserveData = _getLendPool().getReserveData(asset);
-
-    uint256 availableLiquidity = IERC20Upgradeable(asset).balanceOf(reserveData.mTokenAddress);
-
-    require(availableLiquidity == 0 && reserveData.currentLiquidityRate == 0, Errors.LPC_RESERVE_LIQUIDITY_NOT_0);
+    uint256 availableLiquidity;
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      availableLiquidity = availableLiquidity + IERC20Upgradeable(asset).balanceOf(reserveData.mTokenAddresses[i]);
+      require(availableLiquidity == 0 && reserveData.currentLiquidityRates[i] == 0, Errors.LPC_RESERVE_LIQUIDITY_NOT_0);
+    }
   }
 
   function _checkNftNoLiquidity(address asset) internal view {

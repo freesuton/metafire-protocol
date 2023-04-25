@@ -320,7 +320,8 @@ interface ILendPool {
     address to,
     uint256 amount,
     uint256 balanceFromBefore,
-    uint256 balanceToBefore
+    uint256 balanceToBefore,
+    uint8 period
   ) external view;
 
   function getReserveConfiguration(address asset) external view returns (DataTypes.ReserveConfigurationMap memory);
@@ -332,7 +333,7 @@ interface ILendPool {
    * @param asset The address of the underlying asset of the reserve
    * @return The reserve's normalized income
    */
-  function getReserveNormalizedIncome(address asset) external view returns (uint256);
+  function getReserveNormalizedIncome(address asset, DataTypes.Period period) external view returns (uint256);
 
   /**
    * @dev Returns the normalized variable debt per unit of asset
@@ -458,7 +459,7 @@ interface ILendPool {
 
   function initReserve(
     address asset,
-    address[] memory mTokenAddresses,
+    address[4] memory mTokenAddresses,
     address debtTokenAddress,
     address interestRateAddress
   ) external;

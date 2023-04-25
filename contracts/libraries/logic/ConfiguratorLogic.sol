@@ -34,7 +34,7 @@ library ConfiguratorLogic {
    **/
   event ReserveInitialized(
     address indexed asset,
-    address[] indexed mTokens,
+    address[4] indexed mTokens,
     address debtToken,
     address interestRateAddress
   );
@@ -67,7 +67,7 @@ library ConfiguratorLogic {
     ILendPool cachePool,
     ConfigTypes.InitReserveInput calldata input
   ) external {
-    address[] memory mTokenProxyAddresses;
+    address[4] memory mTokenProxyAddresses;
 
     for(uint256 i = 0; i < 4; ++i) {
       address mTokenProxyAddress = _initTokenWithProxy(
