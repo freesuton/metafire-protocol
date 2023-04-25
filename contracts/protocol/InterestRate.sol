@@ -6,6 +6,7 @@ import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvid
 import {WadRayMath} from "../libraries/math/WadRayMath.sol";
 import {PercentageMath} from "../libraries/math/PercentageMath.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
+import {IMToken} from "../interfaces/IMToken.sol";
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
@@ -18,6 +19,7 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
  **/
 contract InterestRate is IInterestRate {
   using WadRayMath for uint256;
+  using WadRayMath for uint32;
   using PercentageMath for uint256;
 
   ILendPoolAddressesProvider public immutable addressesProvider;
@@ -104,9 +106,9 @@ contract InterestRate is IInterestRate {
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
       if(mToken == targetMToken){
-        liquidities[i] = IERC20Upgradeable(mToken).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]) + liquidityAdded - liquidityTaken;
+        liquidities[i] = IMToken(mToken).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]) + liquidityAdded - liquidityTaken;
       }else{
-        liquidities[i] = IERC20Upgradeable(mToken).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]);
+        liquidities[i] = IMToken(mToken).scaledTotalSupply().rayMul(reserve.liquidityIndices[i]);
       }
       totalLiquidity += liquidities[i];
     }
@@ -181,7 +183,7 @@ contract InterestRate is IInterestRate {
       currentLiquidityRates[i] =  distributeCoefficients[i].rayMul(vars.currentLiquidityBaseRate);
     }
 
-    return (vars.currentLiquidityRates, vars.currentVariableBorrowRate);
+    return (currentLiquidityRates, vars.currentVariableBorrowRate);
   }
 
   /**

@@ -188,6 +188,7 @@ library ReserveLogic {
     uint256 liquidityAdded,
     uint256 liquidityTaken
   ) internal {
+    DataTypes.ReserveData memory _reserve = reserve;
     UpdateInterestRatesLocalVars memory vars;
     uint256 currentTotalLiquidity;
 
@@ -199,7 +200,7 @@ library ReserveLogic {
     );
 
     (vars.newLiquidityRates, vars.newVariableRate) = IInterestRate(reserve.interestRateAddress).calculateInterestRates(
-      reserve,
+      _reserve,
       targetMTokenAddress,
       liquidityAdded,
       liquidityTaken,
