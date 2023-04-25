@@ -9,6 +9,7 @@ import {IIncentivesController} from "../interfaces/IIncentivesController.sol";
 import {IncentivizedERC20} from "./IncentivizedERC20.sol";
 import {WadRayMath} from "../libraries/math/WadRayMath.sol";
 import {Errors} from "../libraries/helpers/Errors.sol";
+import {DataTypes} from "../libraries/types/DataTypes.sol";
 
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
@@ -157,9 +158,9 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
    * @param user The user whose balance is calculated
    * @return The balance of the user
    **/
-  function balanceOf(address user) public view override returns (uint256) {
+  function balanceOf(address user, DataTypes.Period period) public view override returns (uint256) {
     ILendPool pool = _getLendPool();
-    return super.balanceOf(user).rayMul(pool.getReserveNormalizedIncome(_underlyingAsset));
+    return super.balanceOf(user).rayMul(pool.getReserveNormalizedIncome(_underlyingAsset, period));
   }
 
   /**
@@ -188,7 +189,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
    * does that too.
    * @return the current total supply
    **/
-  function totalSupply() public view override returns (uint256) {
+  function totalSupply(DataTypes.Period period) public view override returns (uint256) {
     uint256 currentSupplyScaled = super.totalSupply();
 
     if (currentSupplyScaled == 0) {
@@ -196,7 +197,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     }
 
     ILendPool pool = _getLendPool();
-    return currentSupplyScaled.rayMul(pool.getReserveNormalizedIncome(_underlyingAsset));
+    return currentSupplyScaled.rayMul(pool.getReserveNormalizedIncome(_underlyingAsset, period));
   }
 
   /**
