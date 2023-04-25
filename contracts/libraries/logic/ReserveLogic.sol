@@ -199,7 +199,7 @@ library ReserveLogic {
     );
 
     (vars.newLiquidityRates, vars.newVariableRate) = IInterestRate(reserve.interestRateAddress).calculateInterestRates(
-      reserveAddress,
+      reserve,
       targetMTokenAddress,
       liquidityAdded,
       liquidityTaken,

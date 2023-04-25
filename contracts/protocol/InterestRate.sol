@@ -5,6 +5,7 @@ import {IInterestRate} from "../interfaces/IInterestRate.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 import {WadRayMath} from "../libraries/math/WadRayMath.sol";
 import {PercentageMath} from "../libraries/math/PercentageMath.sol";
+import {DataTypes} from "../libraries/types/DataTypes.sol";
 
 import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20/IERC20Upgradeable.sol";
 
@@ -90,7 +91,7 @@ contract InterestRate is IInterestRate {
    * @return The liquidity rate, the stable borrow rate and the variable borrow rate
    **/
   function calculateInterestRates(
-    address reserve,
+    DataTypes.ReserveData memory reserve,
     address targetMToken,
     uint256 liquidityAdded,
     uint256 liquidityTaken,
@@ -131,7 +132,7 @@ contract InterestRate is IInterestRate {
    * @return The liquidity rate and the variable borrow rate
    **/
   function calculateInterestRates(
-    address reserve,
+    DataTypes.ReserveData memory reserve,
     uint256 totalLiquidity,
     uint256 totalVariableDebt,
     uint256 reserveFactor,
