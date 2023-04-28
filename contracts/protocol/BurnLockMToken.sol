@@ -158,7 +158,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
    * @param user The user whose balance is calculated
    * @return The balance of the user
    **/
-  function balanceOf(address user, DataTypes.Period period) public view override returns (uint256) {
+  function balanceOf(address user, DataTypes.Period period) public view returns (uint256) {
     ILendPool pool = _getLendPool();
     return super.balanceOf(user).rayMul(pool.getReserveNormalizedIncome(_underlyingAsset, period));
   }
@@ -189,7 +189,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
    * does that too.
    * @return the current total supply
    **/
-  function totalSupply(DataTypes.Period period) public view override returns (uint256) {
+  function totalSupply(DataTypes.Period period) public view returns (uint256) {
     uint256 currentSupplyScaled = super.totalSupply();
 
     if (currentSupplyScaled == 0) {
@@ -279,12 +279,13 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     address from,
     address to,
     uint256 amount,
-    bool validate
+    bool validate,
+    DataTypes.Period period
   ) internal {
     address underlyingAsset = _underlyingAsset;
     ILendPool pool = _getLendPool();
 
-    uint256 index = pool.getReserveNormalizedIncome(underlyingAsset);
+    uint256 index = pool.getReserveNormalizedIncome(underlyingAsset,period);
 
     uint256 fromBalanceBefore = super.balanceOf(from).rayMul(index);
     uint256 toBalanceBefore = super.balanceOf(to).rayMul(index);
@@ -292,7 +293,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     super._transfer(from, to, amount.rayDiv(index));
 
     if (validate) {
-      pool.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore);
+      pool.finalizeTransfer(underlyingAsset, from, to, amount, fromBalanceBefore, toBalanceBefore, period);
     }
 
     emit BalanceTransfer(from, to, amount, index);

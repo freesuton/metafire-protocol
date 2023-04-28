@@ -321,7 +321,7 @@ interface ILendPool {
     uint256 amount,
     uint256 balanceFromBefore,
     uint256 balanceToBefore,
-    uint8 period
+    DataTypes.Period period
   ) external view;
 
   function getReserveConfiguration(address asset) external view returns (DataTypes.ReserveConfigurationMap memory);

@@ -678,7 +678,7 @@ contract LendPool is
     uint256 amount,
     uint256 balanceFromBefore,
     uint256 balanceToBefore,
-    uint8 period
+    DataTypes.Period period
   ) external view override whenNotPaused {
     asset;
     from;
@@ -687,6 +687,7 @@ contract LendPool is
     balanceFromBefore;
     balanceToBefore;
 
+    uint8 period = uint8(period);
     DataTypes.ReserveData storage reserve = _reserves[asset];
     require(_msgSender() == reserve.mTokenAddresses[period], Errors.LP_CALLER_MUST_BE_AN_MTOKEN);
 
