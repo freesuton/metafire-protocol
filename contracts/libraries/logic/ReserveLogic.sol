@@ -29,7 +29,7 @@ library ReserveLogic {
    * @param asset The address of the underlying asset of the reserve
    * @param liquidityRates The new liquidity rate list
    * @param variableBorrowRate The new variable borrow rate
-   * @param liquidityIndex The new liquidity index
+   * @param liquidityIndices The new liquidity index
    * @param variableBorrowIndex The new variable borrow index
    **/
   event ReserveDataUpdated(
@@ -240,8 +240,9 @@ library ReserveLogic {
    * @param reserve The reserve reserve to be updated
    * @param scaledVariableDebt The current scaled total variable debt
    * @param previousVariableBorrowIndex The variable borrow index before the last accumulation of the interest
-   * @param newLiquidityIndex The new liquidity index
+   * @param newLiquidityIndices The new liquidity index
    * @param newVariableBorrowIndex The variable borrow index after the last accumulation of the interest
+   * @param timestamp The timestamp of the action
    **/
   function _mintToTreasury(
     DataTypes.ReserveData storage reserve,
@@ -280,8 +281,9 @@ library ReserveLogic {
    * @dev Updates the reserve indexes and the timestamp of the update
    * @param reserve The reserve reserve to be updated
    * @param scaledVariableDebt The scaled variable debt
-   * @param liquidityIndex The last stored liquidity index
+   * @param liquidityIndices The last stored liquidity index
    * @param variableBorrowIndex The last stored variable borrow index
+   * @param timestamp The timestamp of the action
    **/
   function _updateIndexes(
     DataTypes.ReserveData storage reserve,

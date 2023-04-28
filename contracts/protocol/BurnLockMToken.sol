@@ -308,9 +308,10 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
   function _transfer(
     address from,
     address to,
-    uint256 amount
-  ) internal override {
-    _transfer(from, to, amount, true);
+    uint256 amount,
+    DataTypes.Period period
+  ) internal {
+    _transfer(from, to, amount, true, period);
   }
 
   // function getUnlockedAmount(address sender) public view returns (uint256) {

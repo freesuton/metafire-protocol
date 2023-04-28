@@ -49,7 +49,7 @@ library ConfiguratorLogic {
   /**
    * @dev Emitted when an mToken implementation is upgraded
    * @param asset The address of the underlying asset of the reserve
-   * @param proxy The mToken proxy address
+   * @param proxies The mToken proxy addresses
    * @param implementation The new mToken implementation
    **/
   event MTokenUpgraded(address indexed asset, address[4] indexed proxies, address indexed implementation);
