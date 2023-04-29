@@ -170,7 +170,18 @@ describe("MetaFire Protocol Main Functions", async function () {
     // set lendpool admin
     await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
+    // init reserve
+    const initReserveInput: any = [[burnLockMTokenImpl.address, debtTokenImpl.address, 18, interestRate.address,wETH.address,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+    await lendPoolConfigurator.batchInitReserve(initReserveInput);
+
+    // init NFT
+    const initNftInput: any = [[mintableERC721.address]];
+    await lendPoolConfigurator.batchInitNft(initNftInput);
+
+    // configuration
     
+    erc20Assets = [wETH.address];
+    nftAssets = [mintableERC721.address];
 })
    
   describe("Configuration", async function () {
