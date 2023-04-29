@@ -19,7 +19,6 @@ import {IERC20Upgradeable} from "@openzeppelin/contracts-upgradeable/token/ERC20
  **/
 contract InterestRate is IInterestRate {
   using WadRayMath for uint256;
-  using WadRayMath for uint32;
   using PercentageMath for uint256;
 
   ILendPoolAddressesProvider public immutable addressesProvider;
@@ -47,7 +46,7 @@ contract InterestRate is IInterestRate {
   // Slope of the variable interest curve when utilization rate > OPTIMAL_UTILIZATION_RATE. Expressed in ray
   uint256 internal immutable _variableRateSlope2;
 
-  uint32[4] internal distributeCoefficients;
+  uint256[4] internal _distributeCoefficients;
 
   constructor(
     ILendPoolAddressesProvider provider,
@@ -55,7 +54,7 @@ contract InterestRate is IInterestRate {
     uint256 baseVariableBorrowRate_,
     uint256 variableRateSlope1_,
     uint256 variableRateSlope2_,
-    uint32[4] memory distributeCoefficients_
+    uint256[4] memory distributeCoefficients_
   ) {
     addressesProvider = provider;
     OPTIMAL_UTILIZATION_RATE = optimalUtilizationRate_;
@@ -63,7 +62,7 @@ contract InterestRate is IInterestRate {
     _baseVariableBorrowRate = baseVariableBorrowRate_;
     _variableRateSlope1 = variableRateSlope1_;
     _variableRateSlope2 = variableRateSlope2_;
-    distributeCoefficients = distributeCoefficients_;
+    _distributeCoefficients = distributeCoefficients_;
   }
 
   function variableRateSlope1() external view returns (uint256) {
@@ -80,6 +79,10 @@ contract InterestRate is IInterestRate {
 
   function getMaxVariableBorrowRate() external view override returns (uint256) {
     return _baseVariableBorrowRate + (_variableRateSlope1) + (_variableRateSlope2);
+  }
+
+  function getDistributeCoefficients() external view returns (uint256[4] memory) {
+    return _distributeCoefficients;
   }
 
   /**
@@ -170,7 +173,7 @@ contract InterestRate is IInterestRate {
     uint256 weightedLiquiditySum;
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
-      weightedLiquiditySum += liquidities[i].rayMul(distributeCoefficients[i]);
+      weightedLiquiditySum += liquidities[i].rayMul(_distributeCoefficients[i]);
     }
 
     vars.currentLiquidityBaseRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
@@ -182,7 +185,7 @@ contract InterestRate is IInterestRate {
       
 
     for(uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
-      currentLiquidityRates[i] =  distributeCoefficients[i].rayMul(vars.currentLiquidityBaseRate);
+      currentLiquidityRates[i] =  _distributeCoefficients[i].rayMul(vars.currentLiquidityBaseRate);
     }
 
     return (currentLiquidityRates, vars.currentVariableBorrowRate);

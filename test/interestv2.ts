@@ -6,6 +6,7 @@ import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, Mintab
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../typechain-types/contracts/libraries/logic"
 import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate,MToken, DebtToken} from "../typechain-types/contracts/protocol"
 import {MetaFireProxyAdmin, MetaFireUpgradeableProxy} from "../typechain-types/contracts/libraries/proxy";
+import { FakeContract, smock } from '@defi-wonderland/smock';
 
 describe("MetaFire Protocol Main Functions", async function () {
   console.log("------start test -------");
@@ -54,90 +55,45 @@ describe("MetaFire Protocol Main Functions", async function () {
   let lendPoolAddressesProvider: LendPoolAddressesProvider;
   let interestRate: InterestRate;
   let wETH: WETH9Mocked;
-  let mToken: MToken;
-  let debtToken: DebtToken;
-  let mintableERC721: MintableERC721;
-  let bNFT: any;
-  let bNFTRegistry: any;
-  let mockNFTOracle: MockNFTOracle;
-  let mockReserveOracle: MockReserveOracle;
-
-
 
 
   this.beforeEach(async () => {
 
     [owner, addr1] = await ethers.getSigners();
 
-    // Deploy and init needed contracts
-    const ValidationLogic = await ethers.getContractFactory("ValidationLogic");
-    validationLogic = await ValidationLogic.deploy();
-    
-    const SupplyLogic = await ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: validationLogic.address }});
-    supplyLogic = await SupplyLogic.deploy();
-    
-    
-    const BorrowLogic = await ethers.getContractFactory("BorrowLogic", {libraries: {ValidationLogic: validationLogic.address}});
-    borrowLogic = await BorrowLogic.deploy();
-
-    const LiquidateLogic = await ethers.getContractFactory("LiquidateLogic", {libraries: {ValidationLogic: validationLogic.address}});
-    liquidateLogic = await LiquidateLogic.deploy();
-
-
-    const ReserveLogic = await ethers.getContractFactory("ReserveLogic");
-    reserveLogic = await ReserveLogic.deploy();
-    
-    const NftLogic = await ethers.getContractFactory("NftLogic");
-    nftLogic = await NftLogic.deploy();
-
-    const ConfiguratorLogic = await ethers.getContractFactory("ConfiguratorLogic");
-    configuratorLogic = await ConfiguratorLogic.deploy();
-
     const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
     lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
-
-    const LendPool = await ethers.getContractFactory("LendPool", {
-      libraries: {
-        SupplyLogic: supplyLogic.address,
-        BorrowLogic: borrowLogic.address,
-        LiquidateLogic: liquidateLogic.address,
-        ReserveLogic: reserveLogic.address,
-        NftLogic: nftLogic.address
-      },
-    });
-    lendPool = await LendPool.deploy();
-    await lendPool.initialize(lendPoolAddressesProvider.address);
-
-    const LendPoolLoan = await ethers.getContractFactory("LendPoolLoan");
-    lendPoolLoan = await LendPoolLoan.deploy();
-    await lendPoolLoan.initialize(lendPoolAddressesProvider.address);
-
-    const LendPoolConfigurator = await ethers.getContractFactory("LendPoolConfigurator", {
-      libraries: {
-        ConfiguratorLogic: configuratorLogic.address,
-      },
-    });
-    lendPoolConfigurator = await LendPoolConfigurator.deploy();
-    await lendPoolConfigurator.initialize(lendPoolAddressesProvider.address);
 
     const InterestRate = await ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
-    const distributeCoefficients= [1000000,1000000,1000000,1000000];
+    const distributeCoefficients= [ray,ray,ray.mul(2),ray.mul(2)];
     interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
-   
 
   })
    
-  describe("Configuration", async function () {
+  describe("Interest Rate", async function () {
   
-    it("", async function () {
+    it("Configuration", async function () {
       
+        const coefficients = await interestRate.getDistributeCoefficients();
+        console.log(coefficients);
+        expect(coefficients[0]).to.equal(ray);
+        expect(coefficients[1]).to.equal(ray);
+        expect(coefficients[2]).to.equal(ray.mul(2));
+        expect(coefficients[3]).to.equal(ray.mul(2));
 
     })
 
+    it("Calculation", async function () {
 
+      const fakeMToken = await smock.fake('BurnLockMToken');
+      fakeMToken.scaledTotalSupply.returns(oneEther.mul(10));
 
-  })
+      const x = await fakeMToken.scaledTotalSupply();
+      console.log("sdsdsds"+x);
+      console.log(fakeMToken.address);
+    })
+})
 
 })
