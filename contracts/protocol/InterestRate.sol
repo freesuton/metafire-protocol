@@ -175,9 +175,11 @@ contract InterestRate is IInterestRate {
 
     vars.currentLiquidityBaseRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
       .rayMul(vars.utilizationRate)
-      .rayMul(totalLiquidity)
+      .rayMul(totalLiquidity);
+    vars.currentLiquidityBaseRate = vars.currentLiquidityBaseRate
       .rayDiv(weightedLiquiditySum)
       .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
+      
 
     for(uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       currentLiquidityRates[i] =  distributeCoefficients[i].rayMul(vars.currentLiquidityBaseRate);
