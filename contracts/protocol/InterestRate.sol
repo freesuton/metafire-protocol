@@ -170,7 +170,7 @@ contract InterestRate is IInterestRate {
         (vars.utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE));
     }
 
-    uint256 weightedLiquiditySum;
+    uint256 weightedLiquiditySum=1;
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
       weightedLiquiditySum += liquidities[i].rayMul(_distributeCoefficients[i]);
