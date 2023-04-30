@@ -182,6 +182,19 @@ describe("MetaFire Protocol Main Functions", async function () {
     
     erc20Assets = [wETH.address];
     nftAssets = [mintableERC721.address];
+
+    await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
+    // set reserve interest rate address
+    await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,50,0);
+    await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
+    await lendPoolConfigurator.setActiveFlagOnReserve(erc20Assets, true);
+    // position 64. 1% -> 100
+    await lendPoolConfigurator.setReserveFactor(erc20Assets,3000);
+    await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+    //}
 })
    
   describe("Configuration", async function () {

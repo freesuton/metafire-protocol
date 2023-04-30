@@ -78,8 +78,8 @@ library ConfiguratorLogic {
           input.treasury,
           input.underlyingAsset,
           input.underlyingAssetDecimals,
-          input.mTokenName[i],
-          input.mTokenSymbol[i]
+          input.mTokenName,
+          input.mTokenSymbol
         )
       );
       
@@ -163,7 +163,7 @@ library ConfiguratorLogic {
   }
 
   function _initTokenWithProxy(address implementation, bytes memory initParams) internal returns (address) {
-    MetaFireUpgradeableProxy proxy = new MetaFireUpgradeableProxy(implementation, address(this), initParams);
+    // MetaFireUpgradeableProxy proxy = new MetaFireUpgradeableProxy(implementation, address(this), initParams);
 
     return address(proxy);
   }
