@@ -203,18 +203,29 @@ describe("MetaFire Protocol Main Functions", async function () {
     it("Deposit and Withdraw", async function () {
       
       reserveData = await lendPool.getReserveData(wETH.address);
-      // instantiate mtoken proxy contract
-      const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
+
 
       // console.log(reserveData);
-      await wETH.mint(oneEther.mul(10));
+      await wETH.mint(oneEther.mul(100));
       await wETH.approve(lendPool.address,oneEther.mul(100));
       await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
 
-      // deposit
-      await lendPool.deposit(wETH.address,oneEther,owner.address,0,0);
-      const deposited = await proxy.scaledBalanceOf(owner.address);
-      console.log("deposited",deposited.toString());
+  
+
+
+      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+        // instantiate mtoken proxy contract
+        const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
+        // deposit
+        await lendPool.deposit(wETH.address,oneEther.mul(2),owner.address,0,0);
+        const deposited = await proxy.scaledBalanceOf(owner.address);
+        console.log("deposited",deposited.toString());
+      }
+      reserveData = await lendPool.getReserveData(wETH.address);
+      console.log(reserveData);
     })
 
 
