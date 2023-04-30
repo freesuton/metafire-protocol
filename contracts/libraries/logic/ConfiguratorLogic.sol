@@ -2,6 +2,7 @@
 pragma solidity 0.8.4;
 
 import {IMToken} from "../../interfaces/IMToken.sol";
+import {IBurnLockMToken} from "../../interfaces/IBurnLockMToken.sol";
 import {IDebtToken} from "../../interfaces/IDebtToken.sol";
 import {ILendPool} from "../../interfaces/ILendPool.sol";
 import {ILendPoolAddressesProvider} from "../../interfaces/ILendPoolAddressesProvider.sol";
@@ -68,18 +69,30 @@ library ConfiguratorLogic {
     ConfigTypes.InitReserveInput calldata input
   ) external {
     address[4] memory mTokenProxyAddresses;
+    uint256 lockPeriod;
+
 
     for(uint256 i = 0; i < 4; ++i) {
+      if(i == 0) {
+        lockPeriod = 120 days;
+      } else if(i == 1) {
+        lockPeriod = 210 days;
+      } else if(i == 2) {
+        lockPeriod = 330 days;
+      } else if(i == 3) {
+        lockPeriod = 390 days;
+      }
       address mTokenProxyAddress = _initTokenWithProxy(
         input.mTokenImpl,
         abi.encodeWithSelector(
-          IMToken.initialize.selector,
+          IBurnLockMToken.initialize.selector,
           addressProvider,
           input.treasury,
           input.underlyingAsset,
           input.underlyingAssetDecimals,
           input.mTokenName,
-          input.mTokenSymbol
+          input.mTokenSymbol,
+          lockPeriod
         )
       );
       
@@ -163,7 +176,7 @@ library ConfiguratorLogic {
   }
 
   function _initTokenWithProxy(address implementation, bytes memory initParams) internal returns (address) {
-    // MetaFireUpgradeableProxy proxy = new MetaFireUpgradeableProxy(implementation, address(this), initParams);
+    MetaFireUpgradeableProxy proxy = new MetaFireUpgradeableProxy(implementation, address(this), initParams);
 
     return address(proxy);
   }
