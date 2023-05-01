@@ -255,12 +255,12 @@ describe("MetaFire Protocol Main Functions", async function () {
       reserveData = await lendPool.getReserveData(wETH.address);
 
       // mint ETH
-      await wETH.mint(oneEther.mul(100));
-      await wETH.approve(lendPool.address,oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
+      await wETH.mint(oneEther.mul(10000));
+      await wETH.approve(lendPool.address,oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
 
 
       // mint NFT
@@ -270,7 +270,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       // deposit
       await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,0,0);
       await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,1,0);
-      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,2,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(500),owner.address,2,0);
       await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,3,0);
       //borrow
       await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
@@ -283,6 +283,32 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     })
 
+    it("Auction and Liquidate", async function () {
+      // set nft oracle price to 2 ethers
+      await mockNFTOracle.setAssets(nftAssets);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(1));
+    
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // mint ETH
+      await wETH.mint(oneEther.mul(10));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddress,oneEther.mul(100));
+
+      // mint ETH
+      await wETH.connect(addr1).mint(oneEther.mul(10));
+      await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(100));
+      await wETH.connect(addr1).approve(reserveData.mTokenAddress,oneEther.mul(100));
+
+      // mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
+
+      //deposit 2 ether
+      await lendPool.deposit(wETH.address, oneEther.mul(2), owner.address,0);
+      // borrow 50% of collateral
+      await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
+    })
   })
 
 })
