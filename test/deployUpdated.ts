@@ -125,7 +125,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     const InterestRate = await ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
-    const distributeCoefficients: [number, number, number, number]= [1000000,1000000,1000000,1000000];
+    const distributeCoefficients: [number, number, number, number]= [1000000,2000000,3000000,4000000];
     interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
    
 
@@ -255,9 +255,12 @@ describe("MetaFire Protocol Main Functions", async function () {
       reserveData = await lendPool.getReserveData(wETH.address);
 
       // mint ETH
-      await wETH.mint(oneEther.mul(10));
+      await wETH.mint(oneEther.mul(100));
       await wETH.approve(lendPool.address,oneEther.mul(100));
       await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
 
 
       // mint NFT
@@ -266,8 +269,17 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       // deposit
       await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,0,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,1,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,2,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,3,0);
       //borrow
       await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      console.log("Current Liquidity Rate: " + reserveData[3]);
+      console.log("Current Borrow Rate: " + reserveData[4]);
+
 
     })
 
