@@ -95,9 +95,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
     _deposits[user].amount -= amountScaled;
-
-
-    IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
+    // IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
     emit Burn(user, receiverOfUnderlying, amount, index);
   }

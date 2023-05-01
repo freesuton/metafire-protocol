@@ -231,7 +231,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 4]);
       await ethers.provider.send("evm_mine");
 
-      // await lendPool.withdraw(wETH.address,oneEther.mul(1),owner.address,0);
+      await lendPool.withdraw(wETH.address,oneEther.mul(1),owner.address,0);
       // const deposited = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]).scaledBalanceOf(owner.address);
       // console.log("deposited",deposited.toString());
 
