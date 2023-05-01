@@ -240,6 +240,37 @@ describe("MetaFire Protocol Main Functions", async function () {
       }
     })
 
+    it("Interest calculation of Deposit, Borrow, Repay", async function () {
+
+      //set nft oracle price to 2 ethers
+      await mockNFTOracle.setAssets(nftAssets);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
+      const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
+      expect(nftPrice).to.equal(oneEther.mul(2));
+
+      // set reserve asset price 1 ether
+      const price = await mockReserveOracle.getAssetPrice(wETH.address);
+      expect(price).to.equal(oneEther);
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // mint ETH
+      await wETH.mint(oneEther.mul(10));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+
+
+      // mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
+
+      // deposit
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,0,0);
+      //borrow
+      await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 0, owner.address,0 );
+
+    })
+
   })
 
 })
