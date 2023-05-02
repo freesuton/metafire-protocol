@@ -345,6 +345,13 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther.mul(2), addr1.address);
       let auctionData = await lendPool.getNftAuctionData(mintableERC721.address, 0);
       let nftAuctionEndTime = await lendPool.getNftAuctionEndTime(mintableERC721.address, 0);
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*2]);
+      await ethers.provider.send("evm_mine");
+
+      await lendPool.liquidate(mintableERC721.address, 0, 0);
+      const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
+      expect(addr1NftBalance).to.equal(1);
     })
   })
 
