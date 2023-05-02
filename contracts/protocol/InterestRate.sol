@@ -170,7 +170,7 @@ contract InterestRate is IInterestRate {
         (vars.utilizationRate.rayMul(_variableRateSlope1).rayDiv(OPTIMAL_UTILIZATION_RATE));
     }
 
-    uint256 weightedLiquiditySum=1;
+    uint256 weightedLiquiditySum = 1;
     for (uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
       address mToken = reserve.mTokenAddresses[i];
       weightedLiquiditySum += liquidities[i].rayMul(_distributeCoefficients[i]);
@@ -179,9 +179,10 @@ contract InterestRate is IInterestRate {
     vars.currentLiquidityBaseRate = _getOverallBorrowRate(totalVariableDebt, vars.currentVariableBorrowRate)
       .rayMul(vars.utilizationRate)
       .rayMul(totalLiquidity);
+
     vars.currentLiquidityBaseRate = vars.currentLiquidityBaseRate
-      .rayDiv(weightedLiquiditySum)
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
+      .rayDiv(weightedLiquiditySum);
+      // .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
       
 
     for(uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
