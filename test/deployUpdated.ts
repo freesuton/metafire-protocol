@@ -328,13 +328,23 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,3,0);
 
       //borrow 50% of the collateral
-      // await lendPool.borrow(wETH.address, oneEther, mintableERC721.address, 0, owner.address,0 );
+      await lendPool.borrow(wETH.address, oneEther, mintableERC721.address, 0, owner.address,0 );
 
-      // let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
-      // let healthFactor = nftDebtData[5];
-      // expect(healthFactor).to.equal(oneEther);
+      let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      let healthFactor = nftDebtData[5];
+      expect(healthFactor).to.equal(oneEther);
 
+      await ethers.provider.send("evm_increaseTime", [3600*24*365]);
+      await ethers.provider.send("evm_mine");
 
+      nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      healthFactor = nftDebtData[5];
+      expect(healthFactor).lessThan(oneEther);
+
+      // auction
+      await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther.mul(2), addr1.address);
+      let auctionData = await lendPool.getNftAuctionData(mintableERC721.address, 0);
+      let nftAuctionEndTime = await lendPool.getNftAuctionEndTime(mintableERC721.address, 0);
     })
   })
 
