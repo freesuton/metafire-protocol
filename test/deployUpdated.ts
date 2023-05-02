@@ -287,15 +287,32 @@ describe("MetaFire Protocol Main Functions", async function () {
       for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
         const liquidityRate = reserveData[3][i].mul(100).div(ray);
         expect(liquidityRate).to.equal(3* (i+1));
-        // console.log(liquidityRate);
       }
-      console.log(borrowRate);
-      
 
+      await lendPool.repay(mintableERC721.address, 0, oneEther.div(10000000));
+      let balanceofNFT = await mintableERC721.balanceOf(owner.address);
+      expect(balanceofNFT).to.equal(0);
+
+      await lendPool.repay(mintableERC721.address, 0, oneEther);
+      balanceofNFT = await mintableERC721.balanceOf(owner.address);
+      expect(balanceofNFT).to.equal(1);
 
     })
 
-    it("Auction and Liquidate", async function () {
+    it("Liquidate", async function () {
+        // set nft oracle price to 2 ethers
+        await mockNFTOracle.setAssets(nftAssets);
+        await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(1));
+  
+        reserveData = await lendPool.getReserveData(wETH.address);
+  
+        // mint ETH
+        await wETH.mint(oneEther.mul(10));
+        await wETH.approve(lendPool.address,oneEther.mul(100));
+        await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
+        await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
+        await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
+        await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
 
     })
   })
