@@ -1,14 +1,13 @@
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
-import { ethers } from "hardhat";
+// import { ethers } from "hardhat";
 require('dotenv').config();
 const fs = require('fs');
 import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken} from "../../typechain-types/contracts/protocol"
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../../typechain-types/contracts/libraries/logic"
+import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../typechain-types/contracts/mock";
 
 
-const oneEther = ethers.BigNumber.from("1000000000000000000");
-const ray = ethers.BigNumber.from("1000000000000000000000000000");
 const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
 const ONE_DAY = 3600 * 24;
 const ONE_MONTH = 3600 * 24 * 30;
@@ -29,6 +28,16 @@ let lendPoolLoan: LendPoolLoan;
 let lendPoolConfigurator: LendPoolConfigurator;
 let lendPoolAddressesProvider: LendPoolAddressesProvider;
 let interestRate: InterestRate;
+
+// Sub
+let wETH: WETH9Mocked;
+let burnLockMTokenImpl: BurnLockMToken;
+let debtTokenImpl: DebtToken;
+let mintableERC721: MintableERC721;
+let bNFT: any;
+let bNFTRegistry: any;
+let mockNFTOracle: MockNFTOracle;
+let mockReserveOracle: MockReserveOracle;
 
 
 
@@ -157,23 +166,103 @@ task("deploy-interest", "Deploy the logic contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
     // Load logic address
     const path = './tasks/deploys/contractAddresses.json';
     const jsonData = loadJsonFile(path);
 
 
-    const InterestRate = await ethers.getContractFactory("InterestRate");
+    const InterestRate = await hre.ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
     const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
-    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
-   
+    interestRate = await InterestRate.deploy(jsonData.lendPoolAddressesProviderAddress,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
+    await interestRate.deployed();
 
     if(taskArgs.update){
         const path = './tasks/deploys/contractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         jsonData.interestRateAddress = interestRate.address;
+        saveJsonFile(path, jsonData);
+    }
+});
+
+task("deploy-sub", "Deploy the logic contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+
+    const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
+    wETH = await WETH9Mocked.deploy();
+    await wETH.deployed();
+
+    const DebtTokenImpl = await hre.ethers.getContractFactory("DebtToken");
+    debtTokenImpl = await DebtTokenImpl.deploy();
+    await debtTokenImpl.deployed();
+
+    const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
+    mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
+    await mintableERC721.deployed();
+
+    const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
+    burnLockMTokenImpl = await BurnLockMTokenImpl.deploy();
+    await burnLockMTokenImpl.deployed();
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.wETHAddress = wETH.address;
+        jsonData.debtTokenImplAddress = debtTokenImpl.address;
+        jsonData.mintableERC721Address = mintableERC721.address;
+        jsonData.burnLockMTokenImplAddress = burnLockMTokenImpl.address;
+        saveJsonFile(path, jsonData);
+    }
+});
+
+
+task("deploy-oracle", "Deploy the logic contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    // Oracle
+    const MockNFTOracle = await hre.ethers.getContractFactory("MockNFTOracle");
+    mockNFTOracle = await MockNFTOracle.deploy();
+    await mockNFTOracle.deployed();
+
+    await mockNFTOracle.initialize(owner.address,oneEther.div(10).mul(2),oneEther.div(10),30,10,600);
+    const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
+    mockReserveOracle = await MockReserveOracle.deploy();
+    await mockReserveOracle.deployed();
+    await mockReserveOracle.initialize(wETH.address);
+
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.mockNFTOracleAddress = mockNFTOracle.address;
+        jsonData.mockReserveOracleAddress = mockReserveOracle.address;
         saveJsonFile(path, jsonData);
     }
 });
