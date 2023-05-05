@@ -2,7 +2,7 @@ import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
 require('dotenv').config();
 const fs = require('fs');
-
+import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken} from "../../typechain-types/contracts/protocol"
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../../typechain-types/contracts/libraries/logic"
 
 // Libraries
@@ -13,6 +13,14 @@ let liquidateLogic: LiquidateLogic;
 let reserveLogic: ReserveLogic;
 let nftLogic: any;
 let configuratorLogic: ConfiguratorLogic;
+
+// Main
+let lendPool: LendPool;
+let lendPoolLoan: LendPoolLoan;
+let lendPoolConfigurator: LendPoolConfigurator;
+let lendPoolAddressesProvider: LendPoolAddressesProvider;
+let interestRate: InterestRate;
+
 
 
 
@@ -84,12 +92,55 @@ task("deploy-logic", "Deploy the logic contracts")
     console.log("ValidationLogic deployed to:", validationLogic.address);
 });
 
-task("deploy-l", "Deploy the logic contracts")
+
+
+task("deploy-main", "Deploy the logic contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
-    console.log("xxxx");
-    const jsonData = loadJsonFile('./tasks/deploys/contractAddresses.json');
-    console.log(jsonData);
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+
+    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+      libraries: {
+        SupplyLogic: jsonData.supplyLogicAddress,
+        BorrowLogic: jsonData.borrowLogicAddress,
+        LiquidateLogic: jsonData.liquidateLogicAddress,
+        ReserveLogic: jsonData.reserveLogicAddress,
+        NftLogic: jsonData.nftLogicAddress,
+      },
+    });
+    lendPool = await LendPool.deploy();
+    await lendPool.initialize(lendPoolAddressesProvider.address);
+
+    const LendPoolLoan = await hre.ethers.getContractFactory("LendPoolLoan");
+    lendPoolLoan = await LendPoolLoan.deploy();
+    await lendPoolLoan.initialize(lendPoolAddressesProvider.address);
+
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    lendPoolConfigurator = await LendPoolConfigurator.deploy();
+    await lendPoolConfigurator.initialize(lendPoolAddressesProvider.address);
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.lendPoolAddressesProviderAddress = lendPoolAddressesProvider.address;
+        jsonData.lendPoolAddress = lendPool.address;
+        jsonData.lendPoolLoanAddress = lendPoolLoan.address;
+        jsonData.lendPoolConfiguratorAddress = lendPoolConfigurator.address;
+
+        saveJsonFile(path, jsonData);
+    }
 });
 
 
