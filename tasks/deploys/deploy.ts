@@ -1,9 +1,18 @@
 import { task } from "hardhat/config";
 import "@nomiclabs/hardhat-ethers";
+import { ethers } from "hardhat";
 require('dotenv').config();
 const fs = require('fs');
 import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken} from "../../typechain-types/contracts/protocol"
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../../typechain-types/contracts/libraries/logic"
+
+
+const oneEther = ethers.BigNumber.from("1000000000000000000");
+const ray = ethers.BigNumber.from("1000000000000000000000000000");
+const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
+const ONE_DAY = 3600 * 24;
+const ONE_MONTH = 3600 * 24 * 30;
+const ONE_GWEI = 1_000_000_000;
 
 // Libraries
 let validationLogic: any;
@@ -144,3 +153,27 @@ task("deploy-main", "Deploy the logic contracts")
 });
 
 
+task("deploy-interest", "Deploy the logic contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+
+    const InterestRate = await ethers.getContractFactory("InterestRate");
+    // U: 65%, BR:10%, S1: 8%, d2: 100%
+    // distributeCoefficients_： 2:3:4:5
+    const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
+    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
+   
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.interestRateAddress = interestRate.address;
+        saveJsonFile(path, jsonData);
+    }
+});
