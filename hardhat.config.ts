@@ -3,7 +3,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import '@typechain/hardhat';
 import '@nomiclabs/hardhat-ethers';
-import '@nomiclabs/hardhat-waffle';
+// import '@nomiclabs/hardhat-waffle';
 
 import "./tasks/deploys/deploy";
 
