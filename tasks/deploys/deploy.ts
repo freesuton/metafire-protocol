@@ -290,5 +290,8 @@ task("set-deploy-addr", " Set deployed contracts addresses")
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), mockReserveOracle.address)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), mockNFTOracle.address)
+
+    // set lendpool admin
+    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 });
 
