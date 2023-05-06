@@ -5,7 +5,8 @@ require('dotenv').config();
 const fs = require('fs');
 import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken} from "../../typechain-types/contracts/protocol"
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../../typechain-types/contracts/libraries/logic"
-import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../typechain-types/contracts/mock";
+import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../../typechain-types/contracts/mock";
+import { BigNumber } from "ethers";
 
 
 const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
@@ -178,7 +179,7 @@ task("deploy-interest", "Deploy the logic contracts")
     const InterestRate = await hre.ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
-    const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
+    const distributeCoefficients:[BigNumber, BigNumber, BigNumber, BigNumber]= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
     interestRate = await InterestRate.deploy(jsonData.lendPoolAddressesProviderAddress,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
     await interestRate.deployed();
 
@@ -266,3 +267,28 @@ task("deploy-oracle", "Deploy the logic contracts")
         saveJsonFile(path, jsonData);
     }
 });
+
+task("set-deploy-addr", " Set deployed contracts addresses")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    lendPoolAddressesProvider = await LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+
+    // address setting
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), bNFTRegistry.address);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), mockReserveOracle.address)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), mockNFTOracle.address)
+});
+
