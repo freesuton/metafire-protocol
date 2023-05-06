@@ -60,6 +60,43 @@ task("init-nft", "Init the NFT")
     await lendPoolConfigurator.batchInitNft(initNftInput);
 });
 
+task("basic-config", "Init the NFT")
+  .addParam("address", "The NFT address")
+  .setAction(async ( {address} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    // configuration
+    
+    const erc20Assets = [jsonData.wETHAddress];
+    const nftAssets = [jsonData.mintableERC721Address];
+
+
+    // Load the contract
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
+    lendPoolConfigurator = await LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+    await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
+    // set reserve interest rate address
+    await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets, jsonData.interestRateAddress);
+    await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,50,0);
+    await lendPoolConfigurator.setBorrowingFlagOnReserve(erc20Assets, true);
+    await lendPoolConfigurator.setActiveFlagOnReserve(erc20Assets, true);
+    // position 64. 1% -> 100
+    await lendPoolConfigurator.setReserveFactor(erc20Assets,3000);
+    await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+});
+
 
 function loadJsonFile(filename: string) {
     const data = fs.readFileSync(filename, 'utf-8');
