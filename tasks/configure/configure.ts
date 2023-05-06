@@ -37,6 +37,29 @@ task("init-reserve", "Init the reserve")
     await lendPoolConfigurator.batchInitReserve(initReserveInput);
 });
 
+task("init-nft", "Init the NFT")
+  .addParam("address", "The NFT address")
+  .setAction(async ( {address} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    // Load the contract
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
+    lendPoolConfigurator = await LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+    // init NFT
+    const initNftInput: any = [[address]];
+    await lendPoolConfigurator.batchInitNft(initNftInput);
+});
+
 
 function loadJsonFile(filename: string) {
     const data = fs.readFileSync(filename, 'utf-8');
