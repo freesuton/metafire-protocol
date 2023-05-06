@@ -22,6 +22,13 @@ const config: HardhatUserConfig = {
       gas: "auto",
       allowUnlimitedContractSize: true,
     },
+    sepolia: {
+      url: process.env.SEPOLIA_URL || "",
+      accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      chainId: 1337,
+      gas: "auto",
+      allowUnlimitedContractSize: true,
+    },
     localhost:{
       
     }
