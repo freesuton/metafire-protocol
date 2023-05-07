@@ -4,8 +4,10 @@ import "@nomicfoundation/hardhat-toolbox";
 import '@typechain/hardhat';
 import '@nomiclabs/hardhat-ethers';
 // import '@nomiclabs/hardhat-waffle';
+require("hardhat-contract-sizer");
 
 import "./tasks/deploys/deploy";
+
 
 dotenv.config();
 
@@ -22,6 +24,9 @@ const config: HardhatUserConfig = {
 
   networks: {
     hardhat: {
+      chainId: 1337,
+      gas: "auto",
+      gasPrice: "auto",
       allowUnlimitedContractSize: true
     },
     goerli: {
@@ -37,8 +42,8 @@ const config: HardhatUserConfig = {
       chainId: 11155111,
       // gas: "auto",
       allowUnlimitedContractSize: true,
-      gas: 5000000,
-      gasPrice: 2000000000,
+      gas: "auto",
+      gasPrice: "auto",
     },
     localhost:{
       
