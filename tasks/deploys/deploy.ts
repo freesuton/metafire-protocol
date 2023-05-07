@@ -53,6 +53,12 @@ function saveJsonFile(filename:string, data:any) {
     fs.writeFileSync(filename, jsonString, 'utf-8');
 }
 
+function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+
+
 
 task("deploy-logic", "Deploy the logic contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
@@ -62,35 +68,54 @@ task("deploy-logic", "Deploy the logic contracts")
 
     const [owner, addr1] = await hre.ethers.getSigners();
 
+    
     // Deploy and init needed contracts
     const ValidationLogic = await hre.ethers.getContractFactory("ValidationLogic");
     validationLogic = await ValidationLogic.deploy();
     await validationLogic.deployed();
 
+    await delay(10000); // 10 seconds delay
+
     const SupplyLogic = await hre.ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: validationLogic.address }});
     supplyLogic = await SupplyLogic.deploy();
     await supplyLogic.deployed(); 
+
     
     const BorrowLogic = await hre.ethers.getContractFactory("BorrowLogic", {libraries: {ValidationLogic: validationLogic.address}});
     borrowLogic = await BorrowLogic.deploy();
     await borrowLogic.deployed();
 
-    const LiquidateLogic = await hre.ethers.getContractFactory("LiquidateLogic", {libraries: {ValidationLogic: validationLogic.address}});
-    liquidateLogic = await LiquidateLogic.deploy();
-    await liquidateLogic.deployed();
 
-    const ReserveLogic = await hre.ethers.getContractFactory("ReserveLogic");
-    reserveLogic = await ReserveLogic.deploy();
-    await reserveLogic.deployed();
 
-    const NftLogic = await hre.ethers.getContractFactory("NftLogic");
-    nftLogic = await NftLogic.deploy();
-    await nftLogic.deployed();
+    // const LiquidateLogic = await hre.ethers.getContractFactory("LiquidateLogic", {libraries: {ValidationLogic: validationLogic.address}});
+    // liquidateLogic = await LiquidateLogic.deploy();
+    // await liquidateLogic.deployed();
 
-    const ConfiguratorLogic = await hre.ethers.getContractFactory("ConfiguratorLogic");
-    configuratorLogic = await ConfiguratorLogic.deploy();
-    await configuratorLogic.deployed();
-    
+
+    // const ReserveLogic = await hre.ethers.getContractFactory("ReserveLogic");
+    // reserveLogic = await ReserveLogic.deploy();
+    // await reserveLogic.deployed();
+
+
+
+    // const NftLogic = await hre.ethers.getContractFactory("NftLogic");
+    // nftLogic = await NftLogic.deploy();
+    // await nftLogic.deployed();
+
+
+
+    // const ConfiguratorLogic = await hre.ethers.getContractFactory("ConfiguratorLogic");
+    // configuratorLogic = await ConfiguratorLogic.deploy();
+    // await configuratorLogic.deployed();
+
+    console.log("ValidationLogic deployed to:", validationLogic.address);
+    console.log("SupplyLogic deployed to:", supplyLogic.address);
+    console.log("BorrowLogic deployed to:", borrowLogic.address);
+    // console.log("LiquidateLogic deployed to:", liquidateLogic.address);
+    // console.log("ReserveLogic deployed to:", reserveLogic.address);
+    // console.log("NftLogic deployed to:", nftLogic.address);
+    // console.log("ConfiguratorLogic deployed to:", configuratorLogic.address);
+
 
     if(taskArgs.update){
         const path = './tasks/deploys/contractAddresses.json';
@@ -100,17 +125,67 @@ task("deploy-logic", "Deploy the logic contracts")
         jsonData.validationLogicAddress = validationLogic.address;
         jsonData.supplyLogicAddress = supplyLogic.address;
         jsonData.borrowLogicAddress = borrowLogic.address;
-        jsonData.liquidateLogicAddress = liquidateLogic.address;
-        jsonData.reserveLogicAddress = reserveLogic.address;
-        jsonData.nftLogicAddress = nftLogic.address;
-        jsonData.configuratorLogicAddress = configuratorLogic.address;
+        // jsonData.liquidateLogicAddress = liquidateLogic.address;
+        // jsonData.reserveLogicAddress = reserveLogic.address;
+        // jsonData.nftLogicAddress = nftLogic.address;
+        // jsonData.configuratorLogicAddress = configuratorLogic.address;
 
         saveJsonFile(path, jsonData);
     }
-
-    console.log("ValidationLogic deployed to:", validationLogic.address);
 });
 
+task("deploy-logic-2", "Deploy the logic contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+    console.log("Start to deploy");
+
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+    const path = './tasks/deploys/contractAddresses.json';
+        
+    // load the json file
+    const jsonData = await loadJsonFile(path);
+    console.log(jsonData.validationLogicAddress);
+
+    
+    // Deploy and init needed contracts
+    const ValidationLogic = await hre.ethers.getContractFactory("ValidationLogic");
+    // validationLogic = await ValidationLogic.deploy();
+    // await validationLogic.deployed();
+    // const SupplyLogic = await hre.ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress }});
+    // const BorrowLogic = await hre.ethers.getContractFactory("BorrowLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress}});
+
+
+    try{
+        const LiquidateLogic = await hre.ethers.getContractFactory("LiquidateLogic", {libraries: {ValidationLogic : "0xe6a1c353c4e23afbbf884b92c3a69e1c99057009"}});
+        liquidateLogic = await LiquidateLogic.deploy();
+        await liquidateLogic.deployed();
+        console.log("LiquidateLogic deployed to:", liquidateLogic.address);
+
+        if(taskArgs.update){
+            console.log("Start to update addresses");
+    
+    
+    
+            // jsonData.liquidateLogicAddress = liquidateLogic.address;
+    
+    
+            saveJsonFile(path, jsonData);
+        }
+    
+    }catch(e){
+        console.log(e);
+    }
+
+
+
+
+    
+
+
+
+
+});
 
 
 task("deploy-main", "Deploy the logic contracts")

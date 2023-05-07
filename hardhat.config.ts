@@ -10,7 +10,16 @@ import "./tasks/deploys/deploy";
 dotenv.config();
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.4",
+  solidity: {
+    version: "0.8.4",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
+  },
+
   networks: {
     hardhat: {
       allowUnlimitedContractSize: true
@@ -25,9 +34,11 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: process.env.SEPOLIA_URL || "",
       accounts: process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-      chainId: 1337,
-      gas: "auto",
+      chainId: 11155111,
+      // gas: "auto",
       allowUnlimitedContractSize: true,
+      gas: 5000000,
+      gasPrice: 2000000000,
     },
     localhost:{
       
