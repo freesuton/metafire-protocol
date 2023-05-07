@@ -333,12 +333,16 @@ task("deploy-oracle", "Deploy the logic contracts")
     const MockNFTOracle = await hre.ethers.getContractFactory("MockNFTOracle");
     mockNFTOracle = await MockNFTOracle.deploy();
     await mockNFTOracle.deployed();
-
     await mockNFTOracle.initialize(owner.address,oneEther.div(10).mul(2),oneEther.div(10),30,10,600);
+
     const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
     mockReserveOracle = await MockReserveOracle.deploy();
+
     await mockReserveOracle.deployed();
-    await mockReserveOracle.initialize(wETH.address);
+    await mockReserveOracle.initialize(jsonData.wETHAddress);
+
+    console.log("mockNFTOracle deployed to:", mockNFTOracle.address);
+    console.log("mockReserveOracle deployed to:", mockReserveOracle.address);
 
 
     if(taskArgs.update){
