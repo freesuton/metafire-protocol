@@ -182,7 +182,7 @@ task("deploy-logic", "Deploy the logic contracts")
 // });
 
 
-task("deploy-main", "Deploy the logic contracts")
+task("deploy-main", "Deploy the main contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
@@ -239,7 +239,7 @@ task("deploy-main", "Deploy the logic contracts")
 });
 
 
-task("deploy-interest", "Deploy the logic contracts")
+task("deploy-interest", "Deploy the interest strategy contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
@@ -270,7 +270,7 @@ task("deploy-interest", "Deploy the logic contracts")
     }
 });
 
-task("deploy-sub", "Deploy the logic contracts")
+task("deploy-sub", "Deploy the sub contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
@@ -316,6 +316,41 @@ task("deploy-sub", "Deploy the logic contracts")
     }
 });
 
+task("deploy-nft", "Deploy nft related contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const BNFT = await hre.ethers.getContractFactory("BNFT");
+    bNFT = await BNFT.deploy();
+
+    const BNFTRegistry = await hre.ethers.getContractFactory("BNFTRegistry");
+    bNFTRegistry = await BNFTRegistry.deploy();
+    // Init BNFT Registry
+    await bNFTRegistry.initialize(bNFT.address,"M","M");
+    // Create Proxy and init IMPL
+    await bNFTRegistry.createBNFT(mintableERC721.address);
+
+    console.log("bNFT deployed to:", bNFT.address);
+    console.log("bNFTRegistry deployed to:", bNFTRegistry.address);
+
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.bNFTAddress = bNFT.address;
+        jsonData.bNFTRegistryAddress = bNFTRegistry.address;
+        saveJsonFile(path, jsonData);
+    }
+});
 
 task("deploy-oracle", "Deploy the logic contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
@@ -365,18 +400,18 @@ task("set-deploy-addr", " Set deployed contracts addresses")
 
     // Load logic address
     const path = './tasks/deploys/contractAddresses.json';
-    const jsonData = loadJsonFile(path);
+    const jsonData = await loadJsonFile(path);
 
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     lendPoolAddressesProvider = await LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
 
     // address setting
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), lendPool.address)
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), lendPoolConfigurator.address)
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), bNFTRegistry.address);
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), lendPoolLoan.address)
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), mockReserveOracle.address)
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), mockNFTOracle.address)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.lendPoolAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), jsonData.lendPoolConfiguratorAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistrAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), jsonData.lendPoolLoanAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), jsonData.mockReserveOracleAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), jsonData.mockNFTOracleAddress)
 
     // set lendpool admin
     await lendPoolAddressesProvider.setPoolAdmin(owner.address);
