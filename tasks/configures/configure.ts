@@ -24,16 +24,20 @@ task("init-reserve", "Init the reserve")
 
     // Load logic address
     const path = './tasks/deploys/contractAddresses.json';
-    const jsonData = loadJsonFile(path);
+    const jsonData = await loadJsonFile(path);
 
     const [owner] = await hre.ethers.getSigners();
 
     // Load the contract
-    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
     lendPoolConfigurator = await LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
 
     // init reserve
-    const initReserveInput: any = [[burnLockMTokenImpl.address, debtTokenImpl.address, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+    const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
     await lendPoolConfigurator.batchInitReserve(initReserveInput);
 });
 
@@ -52,7 +56,11 @@ task("init-nft", "Init the NFT")
     const [owner] = await hre.ethers.getSigners();
 
     // Load the contract
-    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
     lendPoolConfigurator = await LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
 
     // init NFT
@@ -95,6 +103,29 @@ task("basic-config", "Init the NFT")
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
     await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+});
+
+task("approve-weth", "Init the NFT")
+  .addParam("address", "The NFT address")
+  .setAction(async ( {address} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    // configuration
+    
+    const erc20Assets = [jsonData.wETHAddress];
+    const nftAssets = [jsonData.mintableERC721Address];
+
+
+
 });
 
 
