@@ -316,7 +316,7 @@ task("deploy-sub", "Deploy the sub contracts")
     }
 });
 
-task("deploy-nft", "Deploy nft related contracts")
+task("deploy-bnft", "Deploy nft related contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
@@ -335,15 +335,15 @@ task("deploy-nft", "Deploy nft related contracts")
     bNFTRegistry = await BNFTRegistry.deploy();
     // Init BNFT Registry
     await bNFTRegistry.initialize(bNFT.address,"M","M");
+
     // Create Proxy and init IMPL
-    await bNFTRegistry.createBNFT(mintableERC721.address);
+    await bNFTRegistry.createBNFT(jsonData.mintableERC721Address);
 
     console.log("bNFT deployed to:", bNFT.address);
     console.log("bNFTRegistry deployed to:", bNFTRegistry.address);
 
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         jsonData.bNFTAddress = bNFT.address;
@@ -408,7 +408,10 @@ task("set-deploy-addr", " Set deployed contracts addresses")
     // address setting
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.lendPoolAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), jsonData.lendPoolConfiguratorAddress)
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistrAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistryAddress);
+    
+    await delay(5000);
+
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), jsonData.lendPoolLoanAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), jsonData.mockReserveOracleAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), jsonData.mockNFTOracleAddress)
