@@ -8,14 +8,14 @@ interface IWETHGateway {
    * @param onBehalfOf address of the user who will receive the mTokens representing the deposit
    * @param referralCode integrators are assigned a referral code and can potentially receive rewards.
    **/
-  function depositETH(address onBehalfOf, uint16 referralCode) external payable;
+  function depositETH(address onBehalfOf, DataTypes.Period period, uint16 referralCode) external payable;
 
   /**
    * @dev withdraws the WETH _reserves of msg.sender.
    * @param amount amount of mWETH to withdraw and receive native ETH
    * @param to address of the user who will receive native ETH
    */
-  function withdrawETH(uint256 amount, address to) external;
+  function withdrawETH(uint256 amount, address to, DataTypes.Period period) external;
 
   /**
    * @dev borrow WETH, unwraps to ETH and send both the ETH and DebtTokens to msg.sender, via `approveDelegation` and onBehalf argument in `LendPool.borrow`.
