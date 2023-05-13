@@ -10,7 +10,6 @@ import {IWETHGateway} from "../interfaces/IWETHGateway.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 import {ILendPool} from "../interfaces/ILendPool.sol";
 import {ILendPoolLoan} from "../interfaces/ILendPoolLoan.sol";
-import {IMToken} from "../interfaces/IMToken.sol";
 import {IBurnLockMToken} from "../interfaces/IBurnLockMToken.sol";
 import {DataTypes} from "../libraries/types/DataTypes.sol";
 
@@ -110,7 +109,7 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
     ILendPool cachedPool = _getLendPool();
     IBurnLockMToken mWETH = IBurnLockMToken(cachedPool.getReserveData(address(WETH)).mTokenAddresses[periodIndex]);
 
-    uint256 userBalance = mWETH.balanceOf(msg.sender, periodIndex);
+    uint256 userBalance = mWETH.balanceOf(msg.sender, period);
     uint256 amountToWithdraw = amount;
 
     // if amount is equal to uint(-1), the user wants to redeem everything
