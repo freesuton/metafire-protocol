@@ -106,8 +106,8 @@ task("basic-config", "Init the NFT")
 });
 
 task("approve-weth", "Init the NFT")
-  .addParam("address", "The NFT address")
-  .setAction(async ( {address} , hre) => {
+  // .addParam("address", "The NFT address")
+  .setAction(async ( {} , hre) => {
 
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
@@ -124,7 +124,12 @@ task("approve-weth", "Init the NFT")
     const erc20Assets = [jsonData.wETHAddress];
     const nftAssets = [jsonData.mintableERC721Address];
 
+    const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
+    const wETH = await WETH9Mocked.attach(jsonData.wETHAddress);
 
+    // console.log(reserveData);
+    await wETH.mint(oneEther.mul(100));
+    await wETH.approve(jsonData.lendPoolAddress,oneEther.mul(100));
 
 });
 

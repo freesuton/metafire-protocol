@@ -207,10 +207,10 @@ describe("MetaFire Protocol Main Functions", async function () {
       // console.log(reserveData);
       await wETH.mint(oneEther.mul(100));
       await wETH.approve(lendPool.address,oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
-      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
 
       for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
         // instantiate mtoken proxy contract
@@ -261,7 +261,6 @@ describe("MetaFire Protocol Main Functions", async function () {
       await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
       await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
       await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
-
 
       // mint NFT
       await mintableERC721.mint(0);
