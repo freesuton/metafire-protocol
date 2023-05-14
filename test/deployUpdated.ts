@@ -4,7 +4,7 @@ import { ethers } from "hardhat";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../typechain-types/contracts/mock";
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../typechain-types/contracts/libraries/logic"
-import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken} from "../typechain-types/contracts/protocol"
+import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken, WETHGateway} from "../typechain-types/contracts/protocol"
 import {MetaFireProxyAdmin, MetaFireUpgradeableProxy} from "../typechain-types/contracts/libraries/proxy";
 
 describe("MetaFire Protocol Main Functions", async function () {
@@ -48,6 +48,8 @@ describe("MetaFire Protocol Main Functions", async function () {
   let aDebtTokenProxy: DebtToken;
 //   let aMTokenProxy: MToken;
   let aBurnLockMTokenProxy: BurnLockMToken;
+
+  let wETHGateway: WETHGateway;
   
   let lendPool: LendPool;
   let lendPoolLoan: LendPoolLoan;
@@ -63,6 +65,7 @@ describe("MetaFire Protocol Main Functions", async function () {
   let bNFTRegistry: any;
   let mockNFTOracle: MockNFTOracle;
   let mockReserveOracle: MockReserveOracle;
+
 
 
 
@@ -351,6 +354,33 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.liquidate(mintableERC721.address, 0, 0);
       const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
       expect(addr1NftBalance).to.equal(1);
+    })
+
+    it(" WETH Gateway", async function () {
+
+    })
+
+    it("Deposit and Withdraw via WETH Gateway", async function () {
+
+
+
+      const WETHGateway = await ethers.getContractFactory("WETHGateway");
+      wETHGateway = await WETHGateway.deploy();
+      await wETHGateway.deployed();
+
+      await wETHGateway.initialize(lendPoolAddressesProvider.address, wETH.address);
+      
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // console.log(reserveData);
+      await wETH.mint(oneEther.mul(100));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(wETHGateway.address,oneEther.mul(100));
+
+      await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
+
+      
+
     })
   })
 
