@@ -379,8 +379,16 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
 
-      
+      const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
+    
+      const deposited = await proxy.scaledBalanceOf(owner.address);
+      // console.log("deposited",deposited.toString());
+      expect(deposited).to.equal(oneEther);
 
+      let liquidity = await wETH.balanceOf(lendPool.address);
+      console.log("liquidity: "+liquidity);
+      expect(liquidity).to.equal(oneEther);
+    
     })
   })
 
