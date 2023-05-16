@@ -94,7 +94,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_BURN_AMOUNT);
     _burn(user, amountScaled);
-    _deposits[user].amount -= amountScaled;
+    // _deposits[user].amount -= amountScaled;
     // IERC20Upgradeable(_underlyingAsset).safeTransfer(receiverOfUnderlying, amount);
 
     emit Burn(user, receiverOfUnderlying, amount, index);
@@ -120,7 +120,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     uint256 amountScaled = amount.rayDiv(index);
     require(amountScaled != 0, Errors.CT_INVALID_MINT_AMOUNT);
     _mint(user, amountScaled);
-    _deposits[user].amount += amountScaled;
+    // _deposits[user].amount += amountScaled;
     _deposits[user].unlockTimestamp = block.timestamp + LOCK_PERIOD;
 
     emit Mint(user, amount, index);
@@ -325,15 +325,14 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
 
   function canTransfer(address sender, uint256 amount) public view returns (bool) {
 
-
     if(sender == address(0)){
       return true;
     }
 
     uint256 unlockTimestamp = _deposits[sender].unlockTimestamp;
     require(unlockTimestamp <= block.timestamp , "ERC20: token transfer is locked");
-    uint256 unlockedAmount = _deposits[sender].amount;
-    require(unlockedAmount >= amount, "ERC20: insufficient balance");
+    // uint256 unlockedAmount = _deposits[sender].amount;
+    // require(unlockedAmount >= amount, "ERC20: insufficient balance");
     return true;
   }
 

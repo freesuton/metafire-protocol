@@ -15,6 +15,8 @@ import {DataTypes} from "../libraries/types/DataTypes.sol";
 
 import {EmergencyTokenRecoveryUpgradeable} from "./EmergencyTokenRecoveryUpgradeable.sol";
 
+import "hardhat/console.sol";
+
 contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRecoveryUpgradeable {
   ILendPoolAddressesProvider internal _addressProvider;
 
@@ -118,6 +120,7 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
     }
 
     mWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
+
     cachedPool.withdraw(address(WETH), amountToWithdraw, address(this), period);
     WETH.withdraw(amountToWithdraw);
     _safeTransferETH(to, amountToWithdraw);
