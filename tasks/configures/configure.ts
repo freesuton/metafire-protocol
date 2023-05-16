@@ -166,11 +166,9 @@ task("deploy-update-mToken", "Deploy new mToken implementation and update the lo
       implementation: burnLockMTokenImpl.address,
       encodedCallData: "0x"
     }
-    // const UpdateMTokenInput = [jsonData.wETHAddress, burnLockMTokenImpl.address, "0x"];
-    lendPoolConfigurator.updateMToken([UpdateMTokenInput]);
 
-    
-
+    const tx = await lendPoolConfigurator.updateMToken([UpdateMTokenInput]);
+    console.log(tx);
 });
 
 function loadJsonFile(filename: string) {

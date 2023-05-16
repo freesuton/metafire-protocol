@@ -3,7 +3,7 @@ import "@nomiclabs/hardhat-ethers";
 // import { ethers } from "hardhat";
 require('dotenv').config();
 const fs = require('fs');
-import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken} from "../../typechain-types/contracts/protocol"
+import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken, WETHGateway} from "../../typechain-types/contracts/protocol"
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../../typechain-types/contracts/libraries/logic"
 import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../../typechain-types/contracts/mock";
 import { BigNumber } from "ethers";
@@ -418,5 +418,23 @@ task("set-deploy-addr", " Set deployed contracts addresses")
 
     // set lendpool admin
     await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+});
+
+task("deploy-wETHGateway", "Deploy wETHGateway contract") 
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = await WETHGateway.deploy();
+    await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress);
+    
 });
 
