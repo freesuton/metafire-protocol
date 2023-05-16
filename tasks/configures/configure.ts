@@ -133,6 +133,45 @@ task("approve-weth", "Init the NFT")
 
 });
 
+task("deploy-update-mToken", "Deploy new mToken implementation and update the logic")
+  // .addParam("address", "The NFT address")
+  .setAction(async ( {} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    // configuration
+    
+    const erc20Assets = [jsonData.wETHAddress];
+    const nftAssets = [jsonData.mintableERC721Address];
+
+    const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
+    burnLockMTokenImpl = await BurnLockMTokenImpl.deploy();
+    await burnLockMTokenImpl.deployed();
+
+    // load the configurator
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
+    lendPoolConfigurator = await LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+
+    const UpdateMTokenInput = {
+      asset: jsonData.wETHAddress,
+      implementation: burnLockMTokenImpl.address,
+      encodedCallData: "0x"
+    }
+    // const UpdateMTokenInput = [jsonData.wETHAddress, burnLockMTokenImpl.address, "0x"];
+    lendPoolConfigurator.updateMToken([UpdateMTokenInput]);
+
+    
+
+});
 
 function loadJsonFile(filename: string) {
     const data = fs.readFileSync(filename, 'utf-8');
