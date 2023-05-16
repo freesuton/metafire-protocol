@@ -147,11 +147,6 @@ task("deploy-update-mToken", "Deploy new mToken implementation and update the lo
 
     const [owner] = await hre.ethers.getSigners();
 
-    // configuration
-    
-    const erc20Assets = [jsonData.wETHAddress];
-    const nftAssets = [jsonData.mintableERC721Address];
-
     const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
     burnLockMTokenImpl = await BurnLockMTokenImpl.deploy();
     await burnLockMTokenImpl.deployed();

@@ -434,7 +434,19 @@ task("deploy-wETHGateway", "Deploy wETHGateway contract")
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = await WETHGateway.deploy();
-    await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress);
+    await wETHGateway.deployed();
     
+    console.log(wETHGateway.address);
+    console.log("lendpool address provider", jsonData.lendPoolAddressesProviderAddress);
+    console.log("wETH address", jsonData.wETHAddress);
+    await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress,{gasLimit: 10000000});
+   
+    if(taskArgs.update){
+      const path = './tasks/deploys/contractAddresses.json';
+      console.log("Start to update addresses");
+      // load the json file
+      jsonData.wETHGatewayAddress = wETHGateway.address;
+      saveJsonFile(path, jsonData);
+  }
 });
 
