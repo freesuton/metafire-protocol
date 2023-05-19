@@ -369,8 +369,8 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       // console.log(reserveData);
       await wETH.mint(oneEther.mul(100));
-      await wETH.approve(lendPool.address,oneEther.mul(100));
-      await wETH.approve(wETHGateway.address,oneEther.mul(100));
+      // await wETH.approve(lendPool.address,oneEther.mul(100));
+      // await wETH.approve(wETHGateway.address,oneEther.mul(100));
 
       await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
 

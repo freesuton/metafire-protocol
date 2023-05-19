@@ -166,6 +166,29 @@ task("deploy-update-mToken", "Deploy new mToken implementation and update the lo
     console.log(tx);
 });
 
+task("deposit-via-gateway", "Deploy new mToken implementation and update the logic")
+  // .addParam("address", "The NFT address")
+  .setAction(async ( {} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = await WETHGateway.attach(jsonData.wETHGatewayAddress);
+
+    const tx = await wETHGateway.depositETH(owner.address, 0, 0, {value: oneEther.div(100)});
+    console.log(tx);
+
+
+});
+
 function loadJsonFile(filename: string) {
     const data = fs.readFileSync(filename, 'utf-8');
     return JSON.parse(data);
