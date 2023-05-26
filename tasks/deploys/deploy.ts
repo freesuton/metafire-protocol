@@ -18,9 +18,6 @@ const ONE_GWEI = 1_000_000_000;
 // Proxy
 let metaFireProxyAdmin: MetaFireProxyAdmin;
 let metaFireUpgradeableProxy: MetaFireUpgradeableProxy;
-let lendPoolProxy: MetaFireUpgradeableProxy; 
-
-
 
 // Libraries
 let validationLogic: any;
@@ -460,7 +457,7 @@ task("deploy-wETHGateway", "Deploy wETHGateway contract")
 });
 
 
-task("deploy-proxy", "Deploy proxy contract") 
+task("deploy-proxy-1", "Deploy proxy contract") 
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
@@ -477,14 +474,25 @@ task("deploy-proxy", "Deploy proxy contract")
     await metaFireProxyAdmin.deployed();
 
     const MetaFireUpgradeableProxy = await hre.ethers.getContractFactory("MetaFireUpgradeableProxy");
-    lendPoolProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolAddress,metaFireProxyAdmin.address,"0x");
+
+    const lendPoolProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolAddress,jsonData.metaFireProxyAdminAddress,"0x");
     await lendPoolProxy.deployed();
+
+    const lendPoolLoanProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolLoanAddress,jsonData.metaFireProxyAdminAddress,"0x");
+    await lendPoolLoanProxy.deployed();
+
+    const lendPoolConfiguratorProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolConfiguratorAddress,jsonData.MetaFireProxyAdminAddress,"0x");
+    await lendPoolConfiguratorProxy.deployed();
+
 
     if(taskArgs.update){
       const path = './tasks/deploys/contractAddresses.json';
       console.log("Start to update addresses");
       // load the json file
+      jsonData.metaFireProxyAdminAddress = metaFireProxyAdmin.address;
       jsonData.lendPoolLoanProxyAddress = lendPoolProxy.address;
+      jsonData.lendPoolLoanProxyAddress = lendPoolLoanProxy.address;
+      jsonData.lendPoolConfiguratorProxyAddress = lendPoolConfiguratorProxy.address;
       saveJsonFile(path, jsonData);
   }
 });
