@@ -484,7 +484,7 @@ task("deploy-proxy", "Deploy proxy contract")
       const path = './tasks/deploys/contractAddresses.json';
       console.log("Start to update addresses");
       // load the json file
-      jsonData.wETHGatewayAddress = wETHGateway.address;
+      jsonData.lendPoolLoanProxyAddress = lendPoolProxy.address;
       saveJsonFile(path, jsonData);
   }
 });

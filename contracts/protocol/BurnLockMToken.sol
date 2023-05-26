@@ -345,4 +345,8 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
 
       require(canTransfer(from, amount), "ERC20: token transfer is locked");
   }
+
+  function setLockPeriod(uint256 lockPeriod) external onlyOwner {
+    LOCK_PERIOD = lockPeriod;
+  }
 }
