@@ -6,6 +6,7 @@ const fs = require('fs');
 import {LendPool,LendPoolLoan,LendPoolConfigurator,LendPoolAddressesProvider, InterestRate, DebtToken, BurnLockMToken, WETHGateway} from "../../typechain-types/contracts/protocol"
 import {SupplyLogic,BorrowLogic, LiquidateLogic, ReserveLogic,ConfiguratorLogic} from "../../typechain-types/contracts/libraries/logic"
 import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, MintableERC721} from "../../typechain-types/contracts/mock";
+import {MetaFireProxyAdmin, MetaFireUpgradeableProxy} from "../../typechain-types/contracts/libraries/proxy";
 import { BigNumber } from "ethers";
 
 
@@ -13,6 +14,13 @@ const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
 const ONE_DAY = 3600 * 24;
 const ONE_MONTH = 3600 * 24 * 30;
 const ONE_GWEI = 1_000_000_000;
+
+// Proxy
+let metaFireProxyAdmin: MetaFireProxyAdmin;
+let metaFireUpgradeableProxy: MetaFireUpgradeableProxy;
+let lendPoolProxy: MetaFireUpgradeableProxy; 
+
+
 
 // Libraries
 let validationLogic: any;
@@ -56,6 +64,7 @@ function saveJsonFile(filename:string, data:any) {
 function delay(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
 
 
 
@@ -441,6 +450,36 @@ task("deploy-wETHGateway", "Deploy wETHGateway contract")
     console.log("wETH address", jsonData.wETHAddress);
     await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress,{gasLimit: 10000000});
    
+    if(taskArgs.update){
+      const path = './tasks/deploys/contractAddresses.json';
+      console.log("Start to update addresses");
+      // load the json file
+      jsonData.wETHGatewayAddress = wETHGateway.address;
+      saveJsonFile(path, jsonData);
+  }
+});
+
+
+task("deploy-proxy", "Deploy proxy contract") 
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const MetaFireProxyAdmin = await hre.ethers.getContractFactory("MetaFireProxyAdmin");
+    metaFireProxyAdmin = await MetaFireProxyAdmin.deploy();
+    await metaFireProxyAdmin.deployed();
+
+    const MetaFireUpgradeableProxy = await hre.ethers.getContractFactory("MetaFireUpgradeableProxy");
+    lendPoolProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolAddress,metaFireProxyAdmin.address,"0x");
+    await lendPoolProxy.deployed();
+
     if(taskArgs.update){
       const path = './tasks/deploys/contractAddresses.json';
       console.log("Start to update addresses");

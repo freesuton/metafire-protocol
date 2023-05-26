@@ -373,6 +373,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       // await wETH.approve(wETHGateway.address,oneEther.mul(100));
 
       await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
+      await wETHGateway.connect(addr1).depositETH(addr1.address,0,0,{value:oneEther.mul(1)});
 
       const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
     
@@ -382,13 +383,13 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       let liquidity = await wETH.balanceOf(lendPool.address);
       console.log("liquidity: "+liquidity);
-      expect(liquidity).to.equal(oneEther);
+      expect(liquidity).to.equal(oneEther.mul(2));
     
       //withdraw via gateway
       await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
       await ethers.provider.send("evm_mine");
 
-      await wETH.approve(wETHGateway.address,oneEther.mul(100));
+      // await wETH.approve(wETHGateway.address,oneEther.mul(100));
       await proxy.approve(wETHGateway.address,oneEther.mul(100));
 
       await wETHGateway.withdrawETH(oneEther.mul(1),owner.address,0,{gasLimit: 10000000});
