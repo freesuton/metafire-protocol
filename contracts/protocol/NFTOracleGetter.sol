@@ -7,7 +7,6 @@ import {AddressChecksumUtils} from "../utils/AddressChecksumUtils.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 
-import "hardhat/console.sol";
 
 contract NFTOracleGetter is INFTOracleGetter, Initializable{
 
@@ -41,7 +40,6 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
     function getKey(address asset) public view returns (string memory) {
         string memory checksumAddr = AddressChecksumUtils.getChecksum(asset);
         string memory key = concatStrings(CHAIN_NAME, "0x", checksumAddr);
-        console.log("key: %s", key);
         return key;
     }
 

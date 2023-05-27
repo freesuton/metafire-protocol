@@ -5,7 +5,7 @@ import {WETH9Mocked,MockMetaFireOracle, MockNFTOracle, MockReserveOracle, Mintab
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 
-describe("Lend Protocol", function () {
+describe("Mock Oracle", function () {
   console.log("------start test -------");
   const oneEther = ethers.BigNumber.from("1000000000000000000");
   const ray = ethers.BigNumber.from("1000000000000000000000000000");
@@ -23,6 +23,7 @@ describe("Lend Protocol", function () {
   let mockReserveOracle: MockReserveOracle;
   let mintableERC721: MintableERC721;
 
+  let nFTOracleGetter: any;
 
   this.beforeEach(async () => {
 
@@ -73,6 +74,23 @@ describe("Lend Protocol", function () {
       await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
       const price = await mockNFTOracle.getAssetPrice(mintableERC721.address);
       expect(price).to.equal(oneEther.mul(2));
+    })
+
+    it("Set and get NFT floor price from NFT oracle", async function () {
+      const [owner, addr1] = await ethers.getSigners();
+
+      // setAssetData(address _nftContract, uint256 _price) setAssets
+
+      const nftAssets = [mintableERC721.address]
+
+      const AddressChecksumUtils = await ethers.getContractFactory("AddressChecksumUtils");
+      const addressCheckSumUtils = await AddressChecksumUtils.deploy();
+      await addressCheckSumUtils.deployed();
+
+      const NFTOracleGetter = await ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
+      nFTOracleGetter = await NFTOracleGetter.deploy();
+
+
     })
 
 })
