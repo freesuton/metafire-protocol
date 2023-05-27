@@ -497,3 +497,34 @@ task("deploy-proxy-1", "Deploy proxy contract")
   }
 });
 
+  task("deploy-proxy-2", "Deploy proxy contract") 
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const MetaFireUpgradeableProxy = await hre.ethers.getContractFactory("MetaFireUpgradeableProxy");
+    
+    const bNFTRegistryProxy = await MetaFireUpgradeableProxy.deploy(jsonData.bNFTRegistryAddress,jsonData.metaFireProxyAdminAddress,"0x");
+    await bNFTRegistryProxy.deployed();
+    const mockNFTOracleProxy = await MetaFireUpgradeableProxy.deploy(jsonData.mockNFTOracleAddress,jsonData.metaFireProxyAdminAddress,"0x");
+    await mockNFTOracleProxy.deployed();
+    const mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(jsonData.mockReserveOracleAddress,jsonData.metaFireProxyAdminAddress,"0x");
+    await mockReserveOracleProxy.deployed();
+
+
+    if(taskArgs.update){
+      const path = './tasks/deploys/contractAddresses.json';
+      console.log("Start to update addresses");
+      // load the json file
+
+      saveJsonFile(path, jsonData);
+  }
+});
+
