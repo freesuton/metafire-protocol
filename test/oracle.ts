@@ -9,7 +9,7 @@ describe("Mock Oracle", function () {
   console.log("------start test -------");
   const oneEther = ethers.BigNumber.from("1000000000000000000");
   const ray = ethers.BigNumber.from("1000000000000000000000000000");
-
+  const oneEther8Decimals = ethers.BigNumber.from("100000000");
   const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
   const ONE_GWEI = 1_000_000_000;
 
@@ -23,7 +23,8 @@ describe("Mock Oracle", function () {
   let mockReserveOracle: MockReserveOracle;
   let mintableERC721: MintableERC721;
 
-  let nFTOracleGetter: any;
+  let nftOracleGetter: any;
+  let mockDIAOracle: any;
 
   this.beforeEach(async () => {
 
@@ -83,13 +84,31 @@ describe("Mock Oracle", function () {
 
       const nftAssets = [mintableERC721.address]
 
+      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+      await lendPoolAddressesProvider.deployed();
+
+      const MockDIAOracle = await ethers.getContractFactory("MockDIAOracle");
+      mockDIAOracle = await MockDIAOracle.deploy();
+      await mockDIAOracle.deployed();
+
       const AddressChecksumUtils = await ethers.getContractFactory("AddressChecksumUtils");
       const addressCheckSumUtils = await AddressChecksumUtils.deploy();
       await addressCheckSumUtils.deployed();
 
       const NFTOracleGetter = await ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
-      nFTOracleGetter = await NFTOracleGetter.deploy();
+      nftOracleGetter = await NFTOracleGetter.deploy();
 
+      await nftOracleGetter.initialize("ETH-", mockDIAOracle.address, lendPoolAddressesProvider.address);
+
+      // Set NFT price
+      const key: string = "ETH-" + mintableERC721.address;
+      await mockDIAOracle.setValue(key, oneEther8Decimals,oneEther8Decimals,0,0,0,1674382846);
+      const oPrice = await  mockDIAOracle.getValue(key);
+      const floorPrice = await nftOracleGetter.getAssetPrice(mintableERC721.address);
+      // expect(floorPrice).to.equal(oneEther);
+      console.log("floorPrice",floorPrice.toString());
+      expect(oPrice[0]).to.equal(oneEther8Decimals);
 
     })
 

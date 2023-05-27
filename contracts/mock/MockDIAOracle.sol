@@ -3,7 +3,7 @@ pragma solidity 0.8.4;
 
 import {IDIAOracle} from "../interfaces/IDIAOracle.sol";
 
-contract MockMDIAOracle is IDIAOracle {
+contract MockDIAOracle is IDIAOracle {
     struct Values {
         uint256 value0;
         uint256 value1;
