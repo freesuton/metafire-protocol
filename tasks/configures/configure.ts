@@ -185,8 +185,6 @@ task("deposit-via-gateway", "Deploy new mToken implementation and update the log
 
     const tx = await wETHGateway.depositETH(owner.address, 0, 0, {value: oneEther.div(100)});
     console.log(tx);
-
-
 });
 
 function loadJsonFile(filename: string) {

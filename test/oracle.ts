@@ -109,7 +109,6 @@ describe("Mock Oracle", function () {
       // expect(floorPrice).to.equal(oneEther);
       console.log("floorPrice",floorPrice.toString());
       expect(oPrice[0]).to.equal(oneEther8Decimals);
-
     })
 
 })
