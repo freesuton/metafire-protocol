@@ -538,7 +538,7 @@ task("deploy-proxy-1", "Deploy proxy contract")
       console.log("Start to update addresses");
       // load the json file
       jsonData.metaFireProxyAdminAddress = metaFireProxyAdmin.address;
-      jsonData.lendPoolLoanProxyAddress = lendPoolProxy.address;
+      jsonData.lendPoolProxyAddress = lendPoolProxy.address;
       jsonData.lendPoolLoanProxyAddress = lendPoolLoanProxy.address;
       jsonData.lendPoolConfiguratorProxyAddress = lendPoolConfiguratorProxy.address;
       saveJsonFile(path, jsonData);
