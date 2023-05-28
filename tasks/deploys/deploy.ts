@@ -416,9 +416,13 @@ task("deploy-dia-oracle", "Deploy the logic contracts")
     const addressChecksumUtils = await AddressChecksumUtils.deploy();
     await addressChecksumUtils.deployed();
 
-    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
+    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: addressChecksumUtils.address}});
     nftOracleGetter = await NFTOracleGetter.deploy();
     await nftOracleGetter.deployed();
+
+    console.log("mockDIAOracle deployed to:", mockDIAOracle.address);
+    console.log("addressChecksumUtils deployed to:", addressChecksumUtils.address);
+    console.log("nftOracleGetter deployed to:", nftOracleGetter.address);
 
     if(taskArgs.update){
       const path = './tasks/deploys/contractAddresses.json';
