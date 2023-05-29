@@ -563,14 +563,15 @@ task("deploy-proxy-1", "Deploy proxy contract")
     await bNFTRegistryProxy.deployed();
     const mockNFTOracleProxy = await MetaFireUpgradeableProxy.deploy(jsonData.mockNFTOracleAddress,jsonData.metaFireProxyAdminAddress,"0x");
     await mockNFTOracleProxy.deployed();
+    const mockDIAOracleProxy = await MetaFireUpgradeableProxy.deploy(jsonData.mockDIAOracleAddress,jsonData.metaFireProxyAdminAddress,"0x");
+    await mockDIAOracleProxy.deployed();
     const mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(jsonData.mockReserveOracleAddress,jsonData.metaFireProxyAdminAddress,"0x");
     await mockReserveOracleProxy.deployed();
 
     console.log("bNFTRegistryProxy deployed to:", bNFTRegistryProxy.address);
     console.log("mockNFTOracleProxy deployed to:", mockNFTOracleProxy.address);
+    console.log("mockDIAOracleProxy deployed to:", mockDIAOracleProxy.address);
     console.log("mockReserveOracleProxy deployed to:", mockReserveOracleProxy.address);
-
-
 
     if(taskArgs.update){
       const path = './tasks/deploys/contractAddresses.json';
@@ -578,9 +579,48 @@ task("deploy-proxy-1", "Deploy proxy contract")
       // load the json file
       jsonData.bNFTRegistryProxyAddress = bNFTRegistryProxy.address;
       jsonData.mockNFTOracleProxyAddress = mockNFTOracleProxy.address;
+      jsonData.mockDIAOracleProxyAddress = mockDIAOracleProxy.address;
       jsonData.mockReserveOracleProxyAddress = mockReserveOracleProxy.address;
 
       saveJsonFile(path, jsonData);
   }
 });
+
+task("deploy-oracle-getter", "Deploy oracle getter") 
+.addFlag("update", "Whether to update the logic contract addresses")
+.setAction(async ( taskArgs , hre) => {
+
+  const [owner, addr1] = await hre.ethers.getSigners();
+
+  const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+  // Load logic address
+  const path = './tasks/deploys/contractAddresses.json';
+  const jsonData = await loadJsonFile(path);
+
+  
+
+  const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: jsonData.addressChecksumUtilsAddress}});
+  const nftOracleGetter = await NFTOracleGetter.deploy();
+  await nftOracleGetter.deployed();
+
+  const MetaFireUpgradeableProxy = await hre.ethers.getContractFactory("MetaFireUpgradeableProxy");
+
+  const nftOracleGetterProxy = await MetaFireUpgradeableProxy.deploy(nftOracleGetter.address,jsonData.metaFireProxyAdminAddress,"0x");
+  await nftOracleGetterProxy.deployed();
+
+  console.log("nftOracleGetter deployed to:", nftOracleGetter.address);
+  console.log("nftOracleGetterProxy deployed to:", nftOracleGetterProxy.address);
+
+
+  if(taskArgs.update){
+    const path = './tasks/deploys/contractAddresses.json';
+    console.log("Start to update addresses");
+    // load the json file
+    jsonData.nftOracleGetterAddress = nftOracleGetter.address;
+    jsonData.nftOracleGetterProxyAddress = nftOracleGetterProxy.address;
+    saveJsonFile(path, jsonData);
+  }
+});
+
 

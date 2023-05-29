@@ -28,9 +28,6 @@ task("init-proxy-contracts", "Init the reserve")
 
     const [owner] = await hre.ethers.getSigners();
 
-    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
-    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
-
 
     const LendPool = await hre.ethers.getContractFactory("LendPool", {
         libraries: {
@@ -43,9 +40,11 @@ task("init-proxy-contracts", "Init the reserve")
       });
     const  lendPool = LendPool.attach(jsonData.lendPoolAddress);
     const  aLendPoolProxy = await lendPool.attach(jsonData.lendPoolProxyAddress);
+
     const LendPoolLoan = await hre.ethers.getContractFactory("LendPoolLoan");
     const lendPoolLoan = LendPoolLoan.attach(jsonData.lendPoolLoanAddress);
     const aLendPoolLoanProxy = await lendPoolLoan.attach(jsonData.lendPoolLoanProxyAddress);
+
     const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
         libraries: {
           ConfiguratorLogic: jsonData.configuratorLogicAddress,
@@ -58,19 +57,39 @@ task("init-proxy-contracts", "Init the reserve")
     const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryAddress);
     const aBNFTRegistryProxy = await bNFTRegistry.attach(jsonData.bNFTRegistryProxyAddress);
 
+    // const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
+    // const mockReserveOracle = MockReserveOracle.attach(jsonData.mockReserveOracleAddress);
+    // const aMockReserveOracleProxy = await mockReserveOracle.attach(jsonData.mockReserveOracleProxyAddress);
+
+    // const MockDIAOracle = await hre.ethers.getContractFactory("MockDIAOracle");
+    // const mockDIAOracle = MockDIAOracle.attach(jsonData.mockDIAOracle);
+    // const aMockDIAOracleProxy = await mockDIAOracle.attach(jsonData.mockDIAOracleProxyAddress);
+
     /**
      * Init contracts
      */
-    await aLendPoolProxy.initialize(lendPoolAddressesProvider.address);
-    await aLendPoolLoanProxy.initialize(lendPoolAddressesProvider.address);
-    await aLendPoolConfiguratorProxy.initialize(lendPoolAddressesProvider.address);
+    console.log(jsonData.lendPoolAddressesProviderAddress);
+    await aLendPoolProxy.initialize(jsonData.lendPoolAddressesProviderAddress,{gasLimit: 10000000});
+    await aLendPoolLoanProxy.initialize(jsonData.lendPoolAddressesProviderAddress,{gasLimit: 10000000});
+    await aLendPoolConfiguratorProxy.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
 
     // Init BNFT Registry
-    await aBNFTRegistryProxy.initialize(jsonData.bNFTAddress,"M","M");
-  // Create Proxy and init IMPL
-    await aBNFTRegistryProxy.createBNFT(jsonData.mintableERC721Address);
+    await aBNFTRegistryProxy.initialize(jsonData.bNFTAddress,"M","M", {gasLimit: 10000000});
+    // Create Proxy and init IMPL
+    await aBNFTRegistryProxy.createBNFT(jsonData.mintableERC721Address, {gasLimit: 10000000});
+
+    // const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    // const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+
+    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), aLendPoolProxy.address)
+    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), aLendPoolConfiguratorProxy.address)
+    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), aBNFTRegistryProxy.address);
+    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), aLendPoolLoanProxy.address);
+    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), aMockReserveOracleProxy.address);
+    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), aMockDIAOracleProxy.address);
 
 });
+
 
 
 
