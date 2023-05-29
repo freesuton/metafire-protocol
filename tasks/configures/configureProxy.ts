@@ -57,6 +57,7 @@ task("init-proxy-contracts", "Init the reserve")
     const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryAddress);
     const aBNFTRegistryProxy = await bNFTRegistry.attach(jsonData.bNFTRegistryProxyAddress);
 
+
     // const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
     // const mockReserveOracle = MockReserveOracle.attach(jsonData.mockReserveOracleAddress);
     // const aMockReserveOracleProxy = await mockReserveOracle.attach(jsonData.mockReserveOracleProxyAddress);
@@ -78,20 +79,61 @@ task("init-proxy-contracts", "Init the reserve")
     // Create Proxy and init IMPL
     await aBNFTRegistryProxy.createBNFT(jsonData.mintableERC721Address, {gasLimit: 10000000});
 
-    // const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
-    // const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
 
-    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), aLendPoolProxy.address)
-    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), aLendPoolConfiguratorProxy.address)
-    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), aBNFTRegistryProxy.address);
-    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), aLendPoolLoanProxy.address);
-    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), aMockReserveOracleProxy.address);
-    // await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), aMockDIAOracleProxy.address);
 
 });
 
+task("init-oracle-getter", "Init the reserve")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
 
 
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+
+    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter");
+    const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterAddress);
+    const aNFTOracleGetterProxy = await nftOracleGetter.attach(jsonData.nftOracleGetterProxyAddress);
+
+    const tx = await aNFTOracleGetterProxy.initialize(CHAIN_NAME,jsonData.mockDIAOracleAddress,jsonData.lendPoolAddressesProviderAddress,{gasLimit: 10000000});
+    await tx.wait();
+    console.log("NFTOracleGetter initialized");
+});
+
+task("set-addresses-proxy", "Init the reserve")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.aLendPoolProxyAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), jsonData.lendPoolConfiguratorProxyAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistryProxyAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), jsonData.lendPoolLoanProxyAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), jsonData.mockReserveOracleProxyAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), jsonData.nftOracleGetterProxyAddress);
+
+});
 
 
 
