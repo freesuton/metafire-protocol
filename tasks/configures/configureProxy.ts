@@ -135,6 +135,48 @@ task("set-addresses-proxy", "Init the reserve")
 
 });
 
+task("basic-config-proxy", "Init the reserve")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    const erc20Assets = [jsonData.wETHAddress];
+    const nftAssets = [jsonData.mintableERC721Address];
+
+    // Load the contract
+  // Initialize lend pool configurator
+  const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+    libraries: {
+      ConfiguratorLogic: jsonData.configuratorLogicAddress,
+    },
+  });
+  lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+  const aLendPoolConfiguratorProxy = await lendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    // set reserve interest rate address
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets, jsonData.interestRateAddress);
+    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,50,0);
+    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
+    // position 64. 1% -> 100
+    await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+});
+
 
 
 
