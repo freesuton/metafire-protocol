@@ -177,6 +177,69 @@ task("basic-config-proxy", "Init the reserve")
     await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
 });
 
+task("init-reserve-proxy", "Init the reserve")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    // Initialize lend pool configurator
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+        libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+        },
+    });
+    lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+    const aLendPoolConfiguratorProxy = await lendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+    
+    // init reserve
+    const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+    await aLendPoolConfiguratorProxy.batchInitReserve(initReserveInput, {gasLimit: 5000000});
+
+});
+
+task("init-nft-proxy", "Init the reserve")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .addParam("nftAddress", "The NFT address")
+  .setAction(async ( {nftAddress} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    // Initialize lend pool configurator
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+        libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+        },
+    });
+    lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+    const aLendPoolConfiguratorProxy = await lendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    // init NFT
+    const initNftInput: any = [[nftAddress]];
+    await aLendPoolConfiguratorProxy.batchInitNft(initNftInput, {gasLimit: 5000000});
+
+});
+
 
 
 
