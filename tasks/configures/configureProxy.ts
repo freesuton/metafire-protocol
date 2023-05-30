@@ -115,7 +115,6 @@ task("set-addresses-proxy", "Init the reserve")
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
     const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
-    const CHAIN_NAME = "Ethereum-";
 
     // Load logic address
     const path = './tasks/deploys/contractAddresses.json';
@@ -126,7 +125,7 @@ task("set-addresses-proxy", "Init the reserve")
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
 
-    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.aLendPoolProxyAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.lendPoolProxyAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), jsonData.lendPoolConfiguratorProxyAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistryProxyAddress);
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), jsonData.lendPoolLoanProxyAddress);
@@ -237,6 +236,50 @@ task("init-nft-proxy", "Init the reserve")
     // init NFT
     const initNftInput: any = [[nftAddress]];
     await aLendPoolConfiguratorProxy.batchInitNft(initNftInput, {gasLimit: 5000000});
+
+});
+
+task("deposit-proxy", " Deposit directly to the pool")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( {nftAddress} , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+ 
+
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+        libraries: {
+          SupplyLogic: jsonData.supplyLogicAddress,
+          BorrowLogic: jsonData.borrowLogicAddress,
+          LiquidateLogic: jsonData.liquidateLogicAddress,
+          ReserveLogic: jsonData.reserveLogicAddress,
+          NftLogic: jsonData.nftLogicAddress,
+        },
+      });
+
+      const lendPool = LendPool.attach(jsonData.lendPoolAddress);
+      const aLendPoolProxy = await lendPool.attach(jsonData.lendPoolProxyAddress);
+
+    //mint wETH
+
+    const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
+    const wETH = WETH9Mocked.attach(jsonData.wETHAddress);
+    await wETH.mint(oneEther.mul(100));
+    await wETH.approve(aLendPoolProxy.address,oneEther.mul(100));
+
+
+    const tx = await aLendPoolProxy.deposit(jsonData.wETHAddress, oneEther.mul(100), owner.address, 0, 0, {gasLimit: 5000000});
+    await tx.wait();
+    console.log("Deposit done");
 
 });
 
