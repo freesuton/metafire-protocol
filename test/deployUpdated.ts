@@ -299,6 +299,14 @@ describe("MetaFire Protocol Main Functions", async function () {
       balanceofNFT = await mintableERC721.balanceOf(owner.address);
       expect(balanceofNFT).to.equal(1);
 
+      const tx = await lendPool.deposit(wETH.address,oneEther,owner.address,0,0);
+      await tx.wait();
+
+      const events = await lendPool.queryFilter(lendPool.filters.ReserveDataUpdated(), tx.blockHash);
+      // expect(events.length).to.equal(5);
+      console.log(events);
+      console.log(events[0].args.liquidityRates);
+
     })
 
     it("Liquidate", async function () {
@@ -419,6 +427,29 @@ describe("MetaFire Protocol Main Functions", async function () {
       }
       await lendPoolConfigurator.updateMToken([UpdateMTokenInput]);
 
+
+    })
+
+    it("Event emits", async function () {
+
+      
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // console.log(reserveData);
+      await wETH.mint(oneEther.mul(100));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
+
+      const tx = await lendPool.deposit(wETH.address,oneEther,owner.address,0,0);
+      await tx.wait();
+
+      const events = await lendPool.queryFilter(lendPool.filters.ReserveDataUpdated(), tx.blockHash);
+      // expect(events.length).to.equal(5);
+      console.log(events);
+      console.log(events[0].args.liquidityRates);
 
     })
   })

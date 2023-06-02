@@ -283,6 +283,35 @@ task("deposit-proxy", " Deposit directly to the pool")
 
 });
 
+task("deploy-wETHGateway-proxy", "Deploy wETHGateway contract") 
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = await WETHGateway.deploy();
+    await wETHGateway.deployed();
+    
+    console.log(wETHGateway.address);
+    console.log("lendpool address provider", jsonData.lendPoolAddressesProviderAddress);
+    console.log("wETH address", jsonData.wETHAddress);
+    await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress,{gasLimit: 10000000});
+   
+    if(taskArgs.update){
+      const path = './tasks/deploys/contractAddresses.json';
+      console.log("Start to update addresses");
+      // load the json file
+      jsonData.wETHGatewayAddress = wETHGateway.address;
+      saveJsonFile(path, jsonData);
+  }
+});
 
 
 
