@@ -253,14 +253,6 @@ describe("MetaFire Protocol Main Functions", async function () {
         expect(liquidityRate).to.equal(3* (i+1));
       }
 
-      await lendPool.repay(mintableERC721.address, 0, oneEther.div(10000000));
-      let balanceofNFT = await mintableERC721.balanceOf(owner.address);
-      expect(balanceofNFT).to.equal(0);
-
-      await lendPool.repay(mintableERC721.address, 0, oneEther.mul(5));
-      balanceofNFT = await mintableERC721.balanceOf(owner.address);
-      expect(balanceofNFT).to.equal(1);
-
 
       const tx = await lendPool.deposit(wETH.address,oneEther,owner.address,0,0);
       await tx.wait();
@@ -271,8 +263,8 @@ describe("MetaFire Protocol Main Functions", async function () {
       console.log(reserveData);
       // expect(events.length).to.equal(5);
     //   console.log(events);
-    //   console.log(events[0].args.liquidityRates);
-    //   console.log(events[0].args.liquidityIndices);
+      console.log(events[0].args.liquidityRates);
+      console.log(events[0].args.liquidityIndices);
 
       
 

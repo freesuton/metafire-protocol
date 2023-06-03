@@ -181,8 +181,8 @@ contract InterestRate is IInterestRate {
       .rayMul(totalLiquidity);
 
     vars.currentLiquidityBaseRate = vars.currentLiquidityBaseRate
-      .rayDiv(weightedLiquiditySum);
-      // .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
+      .rayDiv(weightedLiquiditySum)
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR - (reserveFactor));
       
 
     for(uint256 i = 0; i < reserve.mTokenAddresses.length; i++) {
