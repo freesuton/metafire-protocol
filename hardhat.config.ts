@@ -9,6 +9,7 @@ require("hardhat-contract-sizer");
 import "./tasks/deploys/deploy";
 import "./tasks/configures/configure";
 import "./tasks/configures/configureProxy";
+import "./tasks/dataGetter/dataGetter";
 
 
 dotenv.config();
