@@ -207,10 +207,30 @@ task("init-reserve-proxy", "Init the reserve")
 
 });
 
+task("init-reserve-contract", "Init the reserve")
+  .setAction(async ( taskArgs , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+    const CHAIN_NAME = "Ethereum-";
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
+    const mockReserveOralce = await MockReserveOracle.attach(jsonData.mockReserveOracleProxyAddress);
+
+    await mockReserveOralce.initialize(jsonData.wETHAddress);
+});
+
 task("init-nft-proxy", "Init the reserve")
   .addFlag("update", "Whether to update the logic contract addresses")
-  .addParam("nftAddress", "The NFT address")
-  .setAction(async ( {nftAddress} , hre) => {
+  .addParam("nftaddress", "The NFT address")
+  .setAction(async ( {nftaddress} , hre) => {
 
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
@@ -234,7 +254,7 @@ task("init-nft-proxy", "Init the reserve")
     const aLendPoolConfiguratorProxy = await lendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
     // init NFT
-    const initNftInput: any = [[nftAddress]];
+    const initNftInput: any = [[nftaddress]];
     await aLendPoolConfiguratorProxy.batchInitNft(initNftInput, {gasLimit: 5000000});
 
 });
@@ -314,7 +334,6 @@ task("deploy-wETHGateway-proxy", "Deploy wETHGateway contract")
 });
 
 task("set-nft-price", "set oracle price for an NFT collection") 
-  .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
     const [owner, addr1] = await hre.ethers.getSigners();
@@ -335,12 +354,9 @@ task("set-nft-price", "set oracle price for an NFT collection")
 
     // Set NFT price
     const key: string = "Ethereum-" + mintableERC721.address;
-    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals,oneEther8Decimals,0,0,0,1685568168,{gasLimit: 1000000});
+    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.mul(10),oneEther8Decimals.mul(10),0,0,0,1675568168,{gasLimit: 1000000});
     await tx.wait();
     console.log(tx);
-
-
-
 });
 
 
@@ -356,11 +372,23 @@ task("borrow-lendpool", "Borrow directlly from LendPool")
     const path = './tasks/deploys/contractAddresses.json';
     const jsonData = await loadJsonFile(path);
 
-    // const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
-    // const mintableERC721 = await MintableERC721.attach(jsonData.mintableERC721Address);
+    const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
+    const mintableERC721 = await MintableERC721.attach(jsonData.mintableERC721Address);
+
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+  
+    const aLendPoolConfiguratorProxy = await lendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+  
+    const nftAssets = [jsonData.mintableERC721Address];
+    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,50,50);
 
     // await mintableERC721.mint(3);
-    // await mintableERC721.approve(jsonData.lendPoolProxyAddress,3);
+    // await mintableERC721.approve(jsonData.lendPoolProxyAddress,1);
 
     const LendPool = await hre.ethers.getContractFactory("LendPool", {
         libraries: {
@@ -371,10 +399,10 @@ task("borrow-lendpool", "Borrow directlly from LendPool")
           NftLogic: jsonData.nftLogicAddress,
         },
       });
-    const lendPool = LendPool.attach(jsonData.lendPoolLoanProxyAddress);
+    const lendPool = LendPool.attach(jsonData.lendPoolProxyAddress);
 
-    const tx = await lendPool.borrow(jsonData.wETHAddress, oneEther.div(20),jsonData.mintableERC721Address, 3, owner.address,0, {gasLimit: 1000000});
-    console.log(tx.hash);
+    const tx = await lendPool.borrow(jsonData.wETHAddress, oneEther.div(2),jsonData.mintableERC721Address, 1, owner.address,0, {gasLimit: 1000000});
+    console.log(tx);
 });
 
 

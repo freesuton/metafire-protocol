@@ -41,7 +41,6 @@ task("get-nft-price", "Get NFT price from nft price getter")
 });
 
 task("get-address", "Get contract address from address provider")
-  .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
 
@@ -59,9 +58,9 @@ task("get-address", "Get contract address from address provider")
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
     
-    const bytesValue = hre.ethers.utils.formatBytes32String("NFT_ORACLE")
+    const bytesValue = hre.ethers.utils.formatBytes32String("RESERVE_ORACLE")
     const address = await lendPoolAddressesProvider.getAddress(bytesValue);
-    console.log("NFT_ORACLE: ", address);
+    console.log("RESERVE_ORACLE: ", address);
 
 });
 
