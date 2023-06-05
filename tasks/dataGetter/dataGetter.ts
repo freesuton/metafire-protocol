@@ -41,7 +41,8 @@ task("get-nft-price", "Get NFT price from nft price getter")
 });
 
 task("get-address", "Get contract address from address provider")
-  .setAction(async ( taskArgs , hre) => {
+  .addParam("querystring", "bytesValue")
+  .setAction(async ( {querystring} , hre) => {
 
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
@@ -58,9 +59,9 @@ task("get-address", "Get contract address from address provider")
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
     
-    const bytesValue = hre.ethers.utils.formatBytes32String("RESERVE_ORACLE")
+    const bytesValue = hre.ethers.utils.formatBytes32String("LEND_POOL")
     const address = await lendPoolAddressesProvider.getAddress(bytesValue);
-    console.log("RESERVE_ORACLE: ", address);
+    console.log(querystring+": ", address);
 
 });
 
