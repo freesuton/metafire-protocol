@@ -19,7 +19,7 @@ contract MockDIAOracle is IDIAOracle {
     }
 
     function setValue(string memory key, uint64 value0, uint64 value1, uint64 value2, uint64 value3, uint64 value4, uint64 timestamp) override public {
-        require(msg.sender == oracleUpdater);
+        require(msg.sender == oracleUpdater, "Not Admin");
         uint256 cValue0 = (((uint256)(value0)) << 192) + (((uint256)(value1)) << 128) + (((uint256)(value2)) << 64);
         uint256 cValue1 = (((uint256)(value3)) << 192) + (((uint256)(value4)) << 128) + (((uint256)(timestamp)) << 64);
         Values storage cStruct = values[key];
@@ -40,7 +40,7 @@ contract MockDIAOracle is IDIAOracle {
     }
 
     function updateOracleUpdaterAddress(address newOracleUpdaterAddress) public {
-        require(msg.sender == oracleUpdater);
+        require(msg.sender == oracleUpdater, "Not Admin");
         oracleUpdater = newOracleUpdaterAddress;
         emit UpdaterAddressChange(newOracleUpdaterAddress);
     }

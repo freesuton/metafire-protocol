@@ -31,7 +31,9 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
         (uint64 value0,,,,,) = _diaOracle.getValue(key);
         uint256 convertedValue = uint256(value0) * 10**10;
         return convertedValue;
+        // return 10**19;
     }
+    
 
     function getChainName() public view returns (string memory) {
         return CHAIN_NAME;
