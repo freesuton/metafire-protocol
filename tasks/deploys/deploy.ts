@@ -302,21 +302,20 @@ task("deploy-proxy-contracts", "Deploy all proxy contracts")
 
     const MetaFireUpgradeableProxy = await hre.ethers.getContractFactory("MetaFireUpgradeableProxy");
 
-    lendPoolProxy = await MetaFireUpgradeableProxy.deploy(lendPool.address, metaFireProxyAdmin.address, "0x");
+    lendPoolProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolAddress, metaFireProxyAdmin.address, "0x");
     await lendPoolProxy.deployed();
-    lendPoolLoanProxy = await MetaFireUpgradeableProxy.deploy(lendPoolLoan.address,metaFireProxyAdmin.address,"0x");
+    lendPoolLoanProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolLoanAddress,metaFireProxyAdmin.address,"0x");
     await lendPoolLoanProxy.deployed();
-    lendPoolConfiguratorProxy = await MetaFireUpgradeableProxy.deploy(lendPoolConfigurator.address,metaFireProxyAdmin.address,"0x");
+    lendPoolConfiguratorProxy = await MetaFireUpgradeableProxy.deploy(jsonData.lendPoolConfiguratorAddress,metaFireProxyAdmin.address,"0x");
     await lendPoolConfiguratorProxy.deployed();
 
-    bNFTRegistryProxy = await MetaFireUpgradeableProxy.deploy(bNFTRegistry.address,metaFireProxyAdmin.address,"0x");
+    bNFTRegistryProxy = await MetaFireUpgradeableProxy.deploy(jsonData.bNFTRegistryAddress,metaFireProxyAdmin.address,"0x");
     await bNFTRegistryProxy.deployed();
 
-
-    mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(mockReserveOracle.address,metaFireProxyAdmin.address,"0x");
+    mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(jsonData.mockReserveOracleAddress,metaFireProxyAdmin.address,"0x");
     await mockReserveOracleProxy.deployed();
 
-    nftOracleGetterProxy = await MetaFireUpgradeableProxy.deploy(nftOracleGetter.address,metaFireProxyAdmin.address,"0x");
+    nftOracleGetterProxy = await MetaFireUpgradeableProxy.deploy(jsonData.nftOracleGetterAddress,metaFireProxyAdmin.address,"0x");
     await nftOracleGetterProxy.deployed();
 
     console.log("MetaFireProxyAdmin deployed to:", metaFireProxyAdmin.address);
@@ -326,7 +325,7 @@ task("deploy-proxy-contracts", "Deploy all proxy contracts")
     console.log("BNFTRegistryProxy deployed to:", bNFTRegistryProxy.address);
     console.log("MockReserveOracleProxy deployed to:", mockReserveOracleProxy.address);
     console.log("NFTOracleGetterProxy deployed to:", nftOracleGetterProxy.address);
-    
+
     
     if(taskArgs.update){
         const path = './tasks/deploys/contractAddresses.json';
@@ -344,7 +343,89 @@ task("deploy-proxy-contracts", "Deploy all proxy contracts")
     }
 });
 
-// task("deploy-oracle2", "Deploy the main contracts")
+task("deploy-sub-contrct", "Deploy the sub contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const InterestRate = await hre.ethers.getContractFactory("InterestRate");
+    // U: 65%, BR:10%, S1: 8%, d2: 100%
+    // distributeCoefficients_： 2:3:4:5
+    const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
+    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
+    
+
+    const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
+    wETH = await WETH9Mocked.deploy();
+
+    const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
+    mintableERC721 = await MintableERC721.deploy("mNFT","MNFT");
+
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.interestRateAddress = interestRate.address;
+        jsonData.wETHAddress = wETH.address;
+        jsonData.mintableERC721Address = mintableERC721.address;
+
+        saveJsonFile(path, jsonData);
+    }
+});
+
+
+task("init-proxy-contracts", " Init the proxy contracts")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+
+    // all thoese objects are proxy contract
+    const LendPool = await hre.ethers.getContractFactory("LendPool");
+    const lendPool = LendPool.attach(jsonData.lendPoolAddress);
+
+    const LendPoolLoan = await hre.ethers.getContractFactory("LendPoolLoan");
+    const lendPoolLoan = LendPoolLoan.attach(jsonData.lendPoolLoanAddress);
+
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
+    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+
+    const BNFTRegistry = await hre.ethers.getContractFactory("BNFTRegistry");
+    const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryAddress);
+
+    const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
+    const mockReserveOracle = MockReserveOracle.attach(jsonData.mockReserveOracleAddress);
+
+    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter");
+    const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterAddress);
+
+    await lendPool.initialize(jsonData.lendPoolAddressesProviderAddress);
+    await lendPoolLoan.initialize(jsonData.lendPoolAddressesProviderAddress);
+    await lendPoolConfigurator.initialize(jsonData.lendPoolAddressesProviderAddress);
+    await bNFTRegistry.initialize(jsonData.bNFTAddress,"M","M");
+    await bNFTRegistry.createBNFT(jsonData.mintableERC721Address);
+    await mockReserveOracle.initialize(jsonData.wETHAddress);
+    await nftOracleGetter.initialize("Ethereum-", jsonData.mockDIAOracleAddress, jsonData.lendPoolAddressesProviderAddress);
+
+    
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+
+        saveJsonFile(path, jsonData);
+    }
+});
+
+// task("init-proxy-contracts", " Init the proxy contracts")
 //   .addFlag("update", "Whether to update the logic contract addresses")
 //   .setAction(async ( taskArgs , hre) => {
 
