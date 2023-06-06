@@ -343,7 +343,7 @@ task("deploy-proxy-contracts", "Deploy all proxy contracts")
     }
 });
 
-task("deploy-sub-contrct", "Deploy the sub contracts")
+task("deploy-sub-contrcts", "Deploy the sub contracts")
   .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
@@ -357,7 +357,7 @@ task("deploy-sub-contrct", "Deploy the sub contracts")
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
     const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
-    interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
+    interestRate = await InterestRate.deploy(jsonData.lendPoolAddressesProviderAddress,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
     
 
     const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
@@ -389,40 +389,64 @@ task("init-proxy-contracts", " Init the proxy contracts")
 
 
     // all thoese objects are proxy contract
-    const LendPool = await hre.ethers.getContractFactory("LendPool");
-    const lendPool = LendPool.attach(jsonData.lendPoolAddress);
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+      libraries: {
+        SupplyLogic: jsonData.supplyLogicAddress,
+        BorrowLogic: jsonData.borrowLogicAddress,
+        LiquidateLogic: jsonData.liquidateLogicAddress,
+        ReserveLogic: jsonData.reserveLogicAddress,
+        NftLogic: jsonData.nftLogicAddress
+      },
+    });
+    const lendPool = LendPool.attach(jsonData.lendPoolProxyAddress);
 
     const LendPoolLoan = await hre.ethers.getContractFactory("LendPoolLoan");
-    const lendPoolLoan = LendPoolLoan.attach(jsonData.lendPoolLoanAddress);
+    const lendPoolLoan = LendPoolLoan.attach(jsonData.lendPoolLoanProxyAddress);
 
-    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator");
-    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorAddress);
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
     const BNFTRegistry = await hre.ethers.getContractFactory("BNFTRegistry");
-    const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryAddress);
+    const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryProxyAddress);
 
     const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
-    const mockReserveOracle = MockReserveOracle.attach(jsonData.mockReserveOracleAddress);
+    const mockReserveOracle = MockReserveOracle.attach(jsonData.mockReserveOracleProxyAddress);
 
-    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter");
-    const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterAddress);
+    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: jsonData.addressCheckSumUtilsAddress}});
+    const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterProxyAddress);
 
-    await lendPool.initialize(jsonData.lendPoolAddressesProviderAddress);
-    await lendPoolLoan.initialize(jsonData.lendPoolAddressesProviderAddress);
-    await lendPoolConfigurator.initialize(jsonData.lendPoolAddressesProviderAddress);
-    await bNFTRegistry.initialize(jsonData.bNFTAddress,"M","M");
-    await bNFTRegistry.createBNFT(jsonData.mintableERC721Address);
-    await mockReserveOracle.initialize(jsonData.wETHAddress);
-    await nftOracleGetter.initialize("Ethereum-", jsonData.mockDIAOracleAddress, jsonData.lendPoolAddressesProviderAddress);
+    await lendPool.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
+    await lendPoolLoan.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
+    await lendPoolConfigurator.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
+    await bNFTRegistry.initialize(jsonData.bNFTAddress,"M","M", {gasLimit: 10000000});
+    await bNFTRegistry.createBNFT(jsonData.mintableERC721Address, {gasLimit: 10000000});
+    await mockReserveOracle.initialize(jsonData.wETHAddress, {gasLimit: 10000000});
+    await nftOracleGetter.initialize("Ethereum-", jsonData.mockDIAOracleAddress, jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
 
     
-    if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
-        console.log("Start to update addresses");
-        // load the json file
+});
 
-        saveJsonFile(path, jsonData);
-    }
+task("set-addresses", " Init the proxy contracts")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+    
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.lendPoolProxyAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), jsonData.lendPoolConfiguratorProxyAddress)
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistryProxyAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_LOAN"), jsonData.lendPoolLoanProxyAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), jsonData.mockReserveOracleProxyAddress);
+    await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), jsonData.nftOracleGetterProxyAddress);
+
 });
 
 // task("init-proxy-contracts", " Init the proxy contracts")

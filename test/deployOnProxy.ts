@@ -42,6 +42,7 @@ describe("MetaFire Protocol Main Functions", async function () {
   let bNFTRegistryProxy: MetaFireUpgradeableProxy;
   let mockNFTOracleProxy: MetaFireUpgradeableProxy;
   let mockReserveOracleProxy: MetaFireUpgradeableProxy;
+  let nftOracleGetterProxy: any;
 
 
   let aLendPoolProxy: LendPool;
@@ -53,7 +54,7 @@ describe("MetaFire Protocol Main Functions", async function () {
   let aMockNFTOracleProxy: MockNFTOracle;
   let aMockReserveOracleProxy: MockReserveOracle;
   let aNFTOracleGetterProxy: any;
-  let nftOracleGetterProxy: any;
+  
 
   let aDebtTokenProxy: DebtToken;
 //   let aMTokenProxy: MToken;
