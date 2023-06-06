@@ -352,14 +352,10 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     it("Interest calculation of Deposit, Borrow, Repay", async function () {
 
-     
-
       const lendPool = aLendPoolProxy;
       const mockNFTOracle = aMockNFTOracleProxy;
 
       const nftAssets = [mintableERC721.address]
-
-
   
       const key: string = "Ethereum-" + mintableERC721.address;
       const oPrice = await  mockDIAOracle.getValue(key);
