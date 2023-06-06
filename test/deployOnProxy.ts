@@ -187,7 +187,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     await addressCheckSumUtils.deployed();
 
     const NFTOracleGetter = await ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
-     nftOracleGetter = await NFTOracleGetter.deploy();
+    nftOracleGetter = await NFTOracleGetter.deploy();
     nftOracleGetter.deployed();
     
 
