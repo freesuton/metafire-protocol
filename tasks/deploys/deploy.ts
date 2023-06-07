@@ -450,7 +450,6 @@ task("set-addresses", " Init the proxy contracts")
 });
 
 task("init-pool", " Init the proxy contracts")
-  .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
@@ -464,22 +463,26 @@ task("init-pool", " Init the proxy contracts")
     // set lendpool admin
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
-    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
     const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
       libraries: {
         ConfiguratorLogic: jsonData.configuratorLogicAddress,
       },
     });
+
     const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+
 
     // init reserve
     const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
-    await lendPoolConfigurator.batchInitReserve(initReserveInput);
+    await lendPoolConfigurator.batchInitReserve(initReserveInput, {gasLimit: 10000000});
 
     // init NFT
     const initNftInput: any = [[jsonData.mintableERC721Address]];
-    await lendPoolConfigurator.batchInitNft(initNftInput);
+    await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
 
     
     if(taskArgs.update){
@@ -491,21 +494,47 @@ task("init-pool", " Init the proxy contracts")
     }
 });
 
-// task("init-proxy-contracts", " Init the proxy contracts")
-//   .addFlag("update", "Whether to update the logic contract addresses")
-//   .setAction(async ( taskArgs , hre) => {
+task("contraction-configuration", " Init the proxy contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
 
-//     // Load logic address
-//     const path = './tasks/deploys/contractAddresses.json';
-//     const jsonData = loadJsonFile(path);
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner, addr1] = await hre.ethers.getSigners();
 
 
-    
-//     if(taskArgs.update){
-//         const path = './tasks/deploys/contractAddresses.json';
-//         console.log("Start to update addresses");
-//         // load the json file
+    const erc20Assets = [jsonData.wETHAddress];
+    const nftAssets = [jsonData.mintableERC721Address];
 
-//         saveJsonFile(path, jsonData);
-//     }
-// });
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+
+    const aLendPoolConfiguratorProxy = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    // set reserve interest rate address
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,50,0);
+    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
+    // position 64. 1% -> 100
+    await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+    //}
+
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+
+        saveJsonFile(path, jsonData);
+    }
+});
