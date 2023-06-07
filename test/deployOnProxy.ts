@@ -42,6 +42,7 @@ describe("MetaFire Protocol Main Functions", async function () {
   let bNFTRegistryProxy: MetaFireUpgradeableProxy;
   let mockNFTOracleProxy: MetaFireUpgradeableProxy;
   let mockReserveOracleProxy: MetaFireUpgradeableProxy;
+  let nftOracleGetterProxy: any;
 
 
   let aLendPoolProxy: LendPool;
@@ -52,6 +53,8 @@ describe("MetaFire Protocol Main Functions", async function () {
   let aBNFTRegistryProxy: any;
   let aMockNFTOracleProxy: MockNFTOracle;
   let aMockReserveOracleProxy: MockReserveOracle;
+  let aNFTOracleGetterProxy: any;
+  
 
   let aDebtTokenProxy: DebtToken;
 //   let aMTokenProxy: MToken;
@@ -73,6 +76,9 @@ describe("MetaFire Protocol Main Functions", async function () {
   let bNFTRegistry: any;
   let mockNFTOracle: MockNFTOracle;
   let mockReserveOracle: MockReserveOracle;
+  let mockDIAOracle:any;
+  let addressCheckSumUtils:any;
+  let nftOracleGetter: any;
 
 
 
@@ -170,6 +176,20 @@ describe("MetaFire Protocol Main Functions", async function () {
     const MockReserveOracle = await ethers.getContractFactory("MockReserveOracle");
     mockReserveOracle = await MockReserveOracle.deploy();
     await mockReserveOracle.deployed();
+
+    const MockDIAOracle = await ethers.getContractFactory("MockDIAOracle");
+    mockDIAOracle = await MockDIAOracle.deploy();
+    await mockDIAOracle.deployed();
+
+
+
+    const AddressChecksumUtils = await ethers.getContractFactory("AddressChecksumUtils");
+    addressCheckSumUtils = await AddressChecksumUtils.deploy();
+    await addressCheckSumUtils.deployed();
+
+    const NFTOracleGetter = await ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
+    nftOracleGetter = await NFTOracleGetter.deploy();
+    nftOracleGetter.deployed();
     
 
     /**
@@ -195,6 +215,9 @@ describe("MetaFire Protocol Main Functions", async function () {
     await mockNFTOracleProxy.deployed();
     mockReserveOracleProxy = await MetaFireUpgradeableProxy.deploy(mockReserveOracle.address,metaFireProxyAdmin.address,"0x");
     await mockReserveOracleProxy.deployed();
+
+     nftOracleGetterProxy = await MetaFireUpgradeableProxy.deploy(nftOracleGetter.address,metaFireProxyAdmin.address,"0x");
+    await nftOracleGetterProxy.deployed();
 
     /**
      * Deploy sub contracts
@@ -223,6 +246,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     aBNFTRegistryProxy = BNFTRegistry.attach(bNFTRegistryProxy.address);
     aMockNFTOracleProxy = MockNFTOracle.attach(mockNFTOracleProxy.address);
     aMockReserveOracleProxy = MockReserveOracle.attach(mockReserveOracleProxy.address);
+     aNFTOracleGetterProxy = NFTOracleGetter.attach(nftOracleGetterProxy.address);
 
 
     await aLendPoolProxy.initialize(lendPoolAddressesProvider.address);
@@ -232,8 +256,10 @@ describe("MetaFire Protocol Main Functions", async function () {
     await aBNFTRegistryProxy.initialize(bNFT.address,"M","M");
     // Create Proxy and init IMPL
     await aBNFTRegistryProxy.createBNFT(mintableERC721.address);
-
-
+    // Init oracles
+    await aMockNFTOracleProxy.initialize(owner.address,oneEther.div(10).mul(2),oneEther.div(10),30,10,600);
+    await aMockReserveOracleProxy.initialize(wETH.address);
+    await aNFTOracleGetterProxy.initialize("Ethereum-", mockDIAOracle.address, lendPoolAddressesProvider.address);
 
 
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL"), aLendPoolProxy.address)
@@ -241,8 +267,10 @@ describe("MetaFire Protocol Main Functions", async function () {
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("BNFT_REGISTRY"), aBNFTRegistryProxy.address);
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("LEND_POOL_LOAN"), aLendPoolLoanProxy.address);
     await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("RESERVE_ORACLE"), aMockReserveOracleProxy.address);
-    await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("NFT_ORACLE"), aMockNFTOracleProxy.address);
-  
+    // await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("NFT_ORACLE"), aMockNFTOracleProxy.address);
+    await lendPoolAddressesProvider.setAddress(ethers.utils.formatBytes32String("NFT_ORACLE"), aNFTOracleGetterProxy.address);
+
+
     // set lendpool admin
     await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
@@ -272,110 +300,118 @@ describe("MetaFire Protocol Main Functions", async function () {
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
     await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
     //}
+
+    const oneEther8Decimals = ethers.BigNumber.from("100000000");
+    // Set NFT price
+    const key: string = "Ethereum-" + mintableERC721.address;
+    await mockDIAOracle.setValue(key, oneEther8Decimals.mul(10),oneEther8Decimals.mul(10),0,0,0,1674382846);
 })
    
   describe("Deposit and Withdraw", async function () {
   
     let reserveData;
-    it("Deposit and Withdraw", async function () {
+    // it("Deposit and Withdraw", async function () {
       
-
-      reserveData = await aLendPoolProxy.getReserveData(wETH.address);
-
-      // console.log(reserveData);
-      await wETH.mint(oneEther.mul(100));
-      await wETH.approve(aLendPoolProxy.address,oneEther.mul(100));
-      // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
-      // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
-      // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
-      // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
-
-      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-        // instantiate mtoken proxy contract
-        const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
-        // deposit
-        await aLendPoolProxy.deposit(wETH.address,oneEther.mul(i+1),owner.address,i,0);
-        const deposited = await proxy.scaledBalanceOf(owner.address);
-        // console.log("deposited",deposited.toString());
-        expect(deposited).to.equal(oneEther.mul(i+1));
-      }
-
-      let liquidity = await wETH.balanceOf(aLendPoolProxy.address);
-      console.log("liquidity: "+liquidity);
-      expect(liquidity).to.equal(oneEther.mul(10));
-
-      reserveData = await aLendPoolProxy.getReserveData(wETH.address);
-
-      await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
-      await ethers.provider.send("evm_mine");
-
-      
-      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-        await aLendPoolProxy.withdraw(wETH.address,oneEther.mul(i+1),owner.address,i);
-        const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]).scaledBalanceOf(owner.address);
-        // console.log(mTokenBalance.toString());
-        expect(mTokenBalance).to.equal(0);
-      }
-    })
-
-    // it("Interest calculation of Deposit, Borrow, Repay", async function () {
-
-    //   //set nft oracle price to 2 ethers
-    //   await mockNFTOracle.setAssets(nftAssets);
-    //   await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(4));
-    //   const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
-    //   expect(nftPrice).to.equal(oneEther.mul(4));
-
-    //   // set reserve asset price 1 ether
-    //   const price = await mockReserveOracle.getAssetPrice(wETH.address);
-    //   expect(price).to.equal(oneEther);
-
-    //   reserveData = await lendPool.getReserveData(wETH.address);
-
-    //   // mint ETH
-    //   await wETH.mint(oneEther.mul(10000));
-    //   await wETH.approve(lendPool.address,oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
-
-    //   // mint NFT
-    //   await mintableERC721.mint(0);
-    //   await mintableERC721.approve(lendPool.address, 0);
-
-    //   // deposit
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,0,0);
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,1,0);
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,2,0);
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,3,0);
-    //   //borrow
-    //   await lendPool.borrow(wETH.address, oneEther.mul(2), mintableERC721.address, 0, owner.address,0 );
-
+    //   const lendPool = aLendPoolProxy;
     //   reserveData = await lendPool.getReserveData(wETH.address);
 
     //   // console.log(reserveData);
-    //   console.log("Current Liquidity Rate: " + reserveData[3]);
-    //   console.log("Current Borrow Rate: " + reserveData[4]);
-
-    //   const borrowRate = reserveData[4].mul(100).div(ray);
-    //   expect(borrowRate).to.equal(16);
+    //   await wETH.mint(oneEther.mul(100));
+    //   await wETH.approve(lendPool.address,oneEther.mul(100));
+    //   // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+    //   // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+    //   // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+    //   // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
 
     //   for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-    //     const liquidityRate = reserveData[3][i].mul(100).div(ray);
-    //     console.log("Current Liquidity Rate of mToken"+i+": " + reserveData[3][i]);
-    //     // expect(liquidityRate).to.equal(2* (i+1));
+    //     // instantiate mtoken proxy contract
+    //     const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
+    //     // deposit
+    //     await lendPool.deposit(wETH.address,oneEther.mul(i+1),owner.address,i,0);
+    //     const deposited = await proxy.scaledBalanceOf(owner.address);
+    //     // console.log("deposited",deposited.toString());
+    //     expect(deposited).to.equal(oneEther.mul(i+1));
     //   }
 
-    //   await lendPool.repay(mintableERC721.address, 0, oneEther.div(10000000));
-    //   let balanceofNFT = await mintableERC721.balanceOf(owner.address);
-    //   expect(balanceofNFT).to.equal(0);
+    //   let liquidity = await wETH.balanceOf(lendPool.address);
+    //   console.log("liquidity: "+liquidity);
+    //   expect(liquidity).to.equal(oneEther.mul(10));
 
-    //   await lendPool.repay(mintableERC721.address, 0, oneEther.mul(5));
-    //   balanceofNFT = await mintableERC721.balanceOf(owner.address);
-    //   expect(balanceofNFT).to.equal(1);
+    //   reserveData = await lendPool.getReserveData(wETH.address);
 
+    //   await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
+    //   await ethers.provider.send("evm_mine");
+
+      
+    //   for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+    //     await lendPool.withdraw(wETH.address,oneEther.mul(i+1),owner.address,i);
+    //     const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]).scaledBalanceOf(owner.address);
+    //     // console.log(mTokenBalance.toString());
+    //     expect(mTokenBalance).to.equal(0);
+    //   }
     // })
+
+    it("Interest calculation of Deposit, Borrow, Repay", async function () {
+
+      const lendPool = aLendPoolProxy;
+      const mockNFTOracle = aMockNFTOracleProxy;
+
+      const nftAssets = [mintableERC721.address]
+  
+      const key: string = "Ethereum-" + mintableERC721.address;
+      const oPrice = await  mockDIAOracle.getValue(key);
+      const floorPrice = await aNFTOracleGetterProxy.getAssetPrice(mintableERC721.address);
+      // expect(floorPrice).to.equal(oneEther);
+      console.log("floorPrice",floorPrice.toString());
+      expect(floorPrice).to.equal(oneEther.mul(10));
+     
+      // // set reserve asset price 1 ether
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // mint ETH
+      await wETH.mint(oneEther.mul(10000));
+      await wETH.approve(lendPool.address,oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
+
+      // // mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
+
+      // // deposit
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,0,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,1,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,2,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,3,0);
+      // //borrow
+      await lendPool.borrow(wETH.address, oneEther.mul(2), mintableERC721.address, 0, owner.address,0 ,{gasLimit:10000000});
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // console.log(reserveData);
+      console.log("Current Liquidity Rate: " + reserveData[3]);
+      console.log("Current Borrow Rate: " + reserveData[4]);
+
+      const borrowRate = reserveData[4].mul(100).div(ray);
+      expect(borrowRate).to.equal(16);
+
+      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+        const liquidityRate = reserveData[3][i].mul(100).div(ray);
+        console.log("Current Liquidity Rate of mToken"+i+": " + reserveData[3][i]);
+        // expect(liquidityRate).to.equal(2* (i+1));
+      }
+
+      await lendPool.repay(mintableERC721.address, 0, oneEther.div(10000000));
+      let balanceofNFT = await mintableERC721.balanceOf(owner.address);
+      expect(balanceofNFT).to.equal(0);
+
+      await lendPool.repay(mintableERC721.address, 0, oneEther.mul(5));
+      balanceofNFT = await mintableERC721.balanceOf(owner.address);
+      expect(balanceofNFT).to.equal(1);
+
+    })
 
     // it("Liquidate", async function () {
     //   // set nft oracle price to 2 ethers

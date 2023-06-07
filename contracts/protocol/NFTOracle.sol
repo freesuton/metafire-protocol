@@ -155,15 +155,16 @@ contract NFTOracle is INFTOracle, Initializable, OwnableUpgradeable, BlockContex
   }
 
   function getAssetPrice(address _nftContract) external view override returns (uint256) {
-    require(isExistedKey(_nftContract), "NFTOracle: key not existed");
-    uint256 len = getPriceFeedLength(_nftContract);
-    require(len > 0, "NFTOracle: no price data");
-    uint256 twapPrice = twapPriceMap[_nftContract];
-    if (twapPrice == 0) {
-      return nftPriceFeedMap[_nftContract].nftPriceData[len - 1].price;
-    } else {
-      return twapPrice;
-    }
+    // require(isExistedKey(_nftContract), "NFTOracle: key not existed");
+    // uint256 len = getPriceFeedLength(_nftContract);
+    // require(len > 0, "NFTOracle: no price data");
+    // uint256 twapPrice = twapPriceMap[_nftContract];
+    // if (twapPrice == 0) {
+    //   return nftPriceFeedMap[_nftContract].nftPriceData[len - 1].price;
+    // } else {
+    //   return twapPrice;
+    // }
+    return 10**19;
   }
 
   function getLatestTimestamp(address _nftContract) public view override returns (uint256) {
