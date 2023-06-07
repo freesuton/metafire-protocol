@@ -495,7 +495,6 @@ task("init-pool", " Init the proxy contracts")
 });
 
 task("contraction-configuration", " Init the proxy contracts")
-  .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
@@ -514,17 +513,18 @@ task("contraction-configuration", " Init the proxy contracts")
       },
     });
 
+  
     const aLendPoolConfiguratorProxy = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
     await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
     // set reserve interest rate address
-    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
     await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,50,0);
     await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
     await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
     // position 64. 1% -> 100
     await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
-    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,interestRate.address);
+    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
     await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
     //}
@@ -537,4 +537,75 @@ task("contraction-configuration", " Init the proxy contracts")
 
         saveJsonFile(path, jsonData);
     }
+});
+
+task("init-pool", " Init the proxy contracts")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+
+
+    // set lendpool admin
+    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+
+    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+
+
+    // init reserve
+    const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+    await lendPoolConfigurator.batchInitReserve(initReserveInput, {gasLimit: 10000000});
+
+    // init NFT
+    const initNftInput: any = [[jsonData.mintableERC721Address]];
+    await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
+
+    
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+
+        saveJsonFile(path, jsonData);
+    }
+});
+
+task("set-oracle-value", " Init the proxy contracts")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+
+
+
+    const oneEther8Decimals = hre.ethers.BigNumber.from("100000000");
+    // Set NFT price
+    const key: string = "Ethereum-" + jsonData.mintableERC721Address;
+
+    const MockDIAOracle = await hre.ethers.getContractFactory("MockDIAOracle");
+    const mockDIAOracle = MockDIAOracle.attach(jsonData.mockDIAOracleAddress);
+
+    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.mul(10),oneEther8Decimals.mul(10),0,0,0,1674382846);
+
+    await tx.wait();
+    console.log("Set NFT price success", tx.hash);
+
 });
