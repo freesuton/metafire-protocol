@@ -439,7 +439,7 @@ task("set-addresses", " Init the proxy contracts")
 
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
-    
+
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL"), jsonData.lendPoolProxyAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("LEND_POOL_CONFIGURATOR"), jsonData.lendPoolConfiguratorProxyAddress)
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("BNFT_REGISTRY"), jsonData.bNFTRegistryProxyAddress);
@@ -447,6 +447,48 @@ task("set-addresses", " Init the proxy contracts")
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("RESERVE_ORACLE"), jsonData.mockReserveOracleProxyAddress);
     await lendPoolAddressesProvider.setAddress(hre.ethers.utils.formatBytes32String("NFT_ORACLE"), jsonData.nftOracleGetterProxyAddress);
 
+});
+
+task("init-pool", " Init the proxy contracts")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+
+
+    // set lendpool admin
+    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    // init reserve
+    const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+    await lendPoolConfigurator.batchInitReserve(initReserveInput);
+
+    // init NFT
+    const initNftInput: any = [[jsonData.mintableERC721Address]];
+    await lendPoolConfigurator.batchInitNft(initNftInput);
+
+    
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // load the json file
+
+        saveJsonFile(path, jsonData);
+    }
 });
 
 // task("init-proxy-contracts", " Init the proxy contracts")
