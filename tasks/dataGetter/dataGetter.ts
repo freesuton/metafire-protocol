@@ -40,30 +40,32 @@ task("get-nft-price", "Get NFT price from nft price getter")
     console.log("NFT price: ", nftPrice.toString());
 });
 
-task("get-address", "Get contract address from address provider")
-  .addParam("querystring", "bytesValue")
-  .setAction(async ( {querystring} , hre) => {
+// task("get-address", "Get contract address from address provider")
+//   .addParam("querystring", "bytesValue")
+//   .setAction(async ( taskArgs , hre) => {
 
 
-    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
-    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
-    const CHAIN_NAME = "Ethereum-";
+//     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+//     const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+//     const CHAIN_NAME = "Ethereum-";
 
-    // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
-    const jsonData = await loadJsonFile(path);
+//     // Load logic address
+//     const path = './tasks/deploys/contractAddresses.json';
+//     const jsonData = await loadJsonFile(path);
 
-    const [owner] = await hre.ethers.getSigners();
+//     const [owner] = await hre.ethers.getSigners();
 
 
-    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
-    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
+//     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+//     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
     
-    const bytesValue = hre.ethers.utils.formatBytes32String("LEND_POOL")
-    const address = await lendPoolAddressesProvider.getAddress(bytesValue);
-    console.log(querystring+": ", address);
+//     const bytesValue = hre.ethers.utils.formatBytes32String("LEND_POOL")
+//     const address = await lendPoolAddressesProvider.getAddress(bytesValue);
+//     console.log(querystring+": ", address);
 
-});
+// });
+
+
 
 
 

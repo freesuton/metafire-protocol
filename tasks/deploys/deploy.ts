@@ -591,11 +591,6 @@ task("set-oracle-value", " Init the proxy contracts")
     const path = './tasks/deploys/contractAddresses.json';
     const jsonData = loadJsonFile(path);
 
-    const [owner, addr1] = await hre.ethers.getSigners();
-
-
-
-
     const oneEther8Decimals = hre.ethers.BigNumber.from("100000000");
     // Set NFT price
     const key: string = "Ethereum-" + jsonData.mintableERC721Address;
@@ -607,5 +602,87 @@ task("set-oracle-value", " Init the proxy contracts")
 
     await tx.wait();
     console.log("Set NFT price success", tx.hash);
+
+});
+
+
+task("deposit-borrow", " Init the proxy contracts")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+      libraries: {
+        SupplyLogic: jsonData.supplyLogicAddress,
+        BorrowLogic: jsonData.borrowLogicAddress,
+        LiquidateLogic: jsonData.liquidateLogicAddress,
+        ReserveLogic: jsonData.reserveLogicAddress,
+        NftLogic: jsonData.nftLogicAddress
+      },
+    });
+
+    const lendPool = LendPool.attach(jsonData.lendPoolProxyAddress);
+
+    const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
+    const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
+
+    const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
+    const wETH = WETH9Mocked.attach(jsonData.wETHAddress);
+
+
+    let reserveData = await lendPool.getReserveData(jsonData.wETHAddress);
+
+    // // mint ETH
+    // await wETH.mint(oneEther.mul(100));
+    // await wETH.approve(lendPool.address,oneEther.mul(1000));
+
+
+    // // deposit
+    // await lendPool.deposit(wETH.address,oneEther.mul(100),owner.address,0,0,{gasLimit:10000000});
+
+    // // mint NFT
+    // await mintableERC721.mint(1);
+    // await mintableERC721.approve(lendPool.address, 0);
+
+    //borrow
+    await lendPool.borrow(wETH.address, oneEther.mul(2), mintableERC721.address, 0, owner.address,0 ,{gasLimit:5000000});
+
+});
+
+
+task("get-reserve-data", "Get contract address from address provider")
+  .setAction(async ( taskArgs,hre ) => {
+
+
+    // const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = await loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+      libraries: {
+        SupplyLogic: jsonData.supplyLogicAddress,
+        BorrowLogic: jsonData.borrowLogicAddress,
+        LiquidateLogic: jsonData.liquidateLogicAddress,
+        ReserveLogic: jsonData.reserveLogicAddress,
+        NftLogic: jsonData.nftLogicAddress
+      },
+    });
+
+    const lendPool = LendPool.attach(jsonData.lendPoolProxyAddress);
+
+    const reserveData = await lendPool.getReserveData(jsonData.wETHAddress);
+    console.log("reserveData: ", reserveData);
 
 });
