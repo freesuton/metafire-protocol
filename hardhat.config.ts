@@ -11,6 +11,7 @@ import "./tasks/deploys/deploy";
 // import "./tasks/configures/configureProxy";
 import "./tasks/dataGetter/dataGetter";
 // import "./tasks/configures/migrateOracle";
+import "./tasks/protocolOperation/protocolOperation";
 
 dotenv.config();
 

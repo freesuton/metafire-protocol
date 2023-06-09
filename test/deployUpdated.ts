@@ -360,6 +360,10 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     it("Deposit and Withdraw via WETH Gateway", async function () {
 
+      // set nft oracle price to 2 ethers
+      await mockNFTOracle.setAssets(nftAssets);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(10));
+
       const WETHGateway = await ethers.getContractFactory("WETHGateway");
       wETHGateway = await WETHGateway.deploy();
       await wETHGateway.deployed();
@@ -373,8 +377,21 @@ describe("MetaFire Protocol Main Functions", async function () {
       // await wETH.approve(lendPool.address,oneEther.mul(100));
       // await wETH.approve(wETHGateway.address,oneEther.mul(100));
 
-      await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
+      await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(10)});
       await wETHGateway.connect(addr1).depositETH(addr1.address,0,0,{value:oneEther.mul(1)});
+
+      const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
+      console.log("debtToken address"+reserveData.debtTokenAddress);
+      const debtToken = DebtTokenImpl.attach(reserveData.debtTokenAddress);
+      // approve delegation
+      await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
+
+      //borrow
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(wETHGateway.address, 0);
+      await wETHGateway.approveNFTTransfer(mintableERC721.address, true);
+
+      await wETHGateway.borrowETH(oneEther.div(2),mintableERC721.address,0,owner.address,0,{gasLimit:1000000});
 
       const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
     

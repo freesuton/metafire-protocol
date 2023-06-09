@@ -631,6 +631,7 @@ task("deposit-borrow", " Init the proxy contracts")
 
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
+    await  mintableERC721.approve(lendPool.address, 3);
 
     const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
     const wETH = WETH9Mocked.attach(jsonData.wETHAddress);
@@ -651,10 +652,40 @@ task("deposit-borrow", " Init the proxy contracts")
     // await mintableERC721.approve(lendPool.address, 0);
 
     //borrow
-    await lendPool.borrow(wETH.address, oneEther.mul(2), mintableERC721.address, 0, owner.address,0 ,{gasLimit:5000000});
+    await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 3, owner.address,0 ,{gasLimit:5000000});
 
 });
 
+task("deploy-gateway", "Deploy WETH Gateway")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner, addr1] = await hre.ethers.getSigners();
+
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = await WETHGateway.deploy();
+    await wETHGateway.deployed();
+
+    console.log("WETHGateway deployed to",wETHGateway.address)
+
+    await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress,{gasLimit: 1000000});
+
+    await wETHGateway.approveNFTTransfer(jsonData.mintableERC721Address, true);
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // // load the json file
+        jsonData.wETHGatewayAddress = wETHGateway.address;
+
+        saveJsonFile(path, jsonData);
+    }
+});
 
 task("get-reserve-data", "Get contract address from address provider")
   .setAction(async ( taskArgs,hre ) => {
