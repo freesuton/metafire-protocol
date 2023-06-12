@@ -58,8 +58,8 @@ task("mint-nft", " Init the proxy contracts")
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
 
-    await mintableERC721.mint(3);
-    await mintableERC721.approve(jsonData.lendPoolProxyAddress, 3);
+    await mintableERC721.mint(4,{gasLimit:2000000});
+    await mintableERC721.approve(jsonData.lendPoolProxyAddress, 4, {gasLimit:2000000});
 
 });
 
@@ -86,12 +86,81 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
 
-    await mintableERC721.approve(jsonData.wETHGatewayAddress, 3);
+    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 4);
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
+    // await wETHGateway.approveNFTTransfer(jsonData.mintableERC721Address, true);
 
-    const tx = await wETHGateway.borrowETH(oneEther.div(200),mintableERC721.address,3,owner.address,0,{gasLimit:2000000});
+    // const DebtToken = await hre.ethers.getContractFactory("DebtToken");
+    // const debtToken = DebtToken.attach(jsonData.debtTokenAddress);
+
+    // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
+
+    const tx = await wETHGateway.borrowETH(oneEther.div(100),mintableERC721.address,4,owner.address,0,{gasLimit:2000000});
     console.log(tx);
 
+});
+
+
+
+// Update contract
+task("update-library", " Update  library contract for a proxy")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const BorrowLogic = await hre.ethers.getContractFactory("BorrowLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress}});
+    const borrowLogic = await BorrowLogic.deploy();
+    await borrowLogic.deployed();
+  
+    console.log("BorrowLogic deployed to:", borrowLogic.address);
+
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // // load the json file
+        jsonData.borrowLogicAddress = borrowLogic.address;
+        saveJsonFile(path, jsonData);
+    }
+});
+
+task("update-impl", " Update implementation contract for a proxy")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+        libraries: {
+          SupplyLogic: jsonData.supplyLogicAddress,
+          BorrowLogic: jsonData.borrowLogicAddress,
+          LiquidateLogic: jsonData.liquidateLogicAddress,
+          ReserveLogic: jsonData.reserveLogicAddress,
+          NftLogic: jsonData.nftLogicAddress
+        },
+      });
+  
+    const lendPool = await LendPool.deploy();
+    await lendPool.deployed();
+
+    const MetaFireProxyAdmin = await hre.ethers.getContractFactory("MetaFireProxyAdmin");
+    const metaFireProxyAdmin = MetaFireProxyAdmin.attach(jsonData.metaFireProxyAdminAddress);
+    const tx = await metaFireProxyAdmin.upgrade(jsonData.lendPoolProxyAddress,lendPool.address);
+    console.log(tx);
+
+
+    if(taskArgs.update){
+        const path = './tasks/deploys/contractAddresses.json';
+        console.log("Start to update addresses");
+        // // load the json file
+        jsonData.lendPoolAddressII = lendPool.address;
+        saveJsonFile(path, jsonData);
+    }
 });
