@@ -58,8 +58,8 @@ task("mint-nft", " Init the proxy contracts")
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
 
-    await mintableERC721.mint(4,{gasLimit:2000000});
-    await mintableERC721.approve(jsonData.lendPoolProxyAddress, 4, {gasLimit:2000000});
+    await mintableERC721.mint(6,{gasLimit:2000000});
+    await mintableERC721.approve(jsonData.lendPoolProxyAddress, 6, {gasLimit:2000000});
 
 });
 
@@ -86,7 +86,8 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
 
-    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 4);
+    // await mintableERC721.mint(5,{gasLimit:2000000});
+    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 5, {gasLimit:2000000});
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
@@ -96,8 +97,8 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     // const debtToken = DebtToken.attach(jsonData.debtTokenAddress);
 
     // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
-
-    const tx = await wETHGateway.borrowETH(oneEther.div(100),mintableERC721.address,4,owner.address,0,{gasLimit:2000000});
+    await wETHGateway.approveNFTTransfer("0xB5Ce3dE00a9E221c798e36Ce2E501d7414809457", true);
+    const tx = await wETHGateway.borrowETH(oneEther.div(1000),"0xB5Ce3dE00a9E221c798e36Ce2E501d7414809457",3,owner.address,0,{gasLimit:2000000});
     console.log(tx);
 
 });
