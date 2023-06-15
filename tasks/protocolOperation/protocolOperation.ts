@@ -164,3 +164,36 @@ task("update-impl", " Update implementation contract for a proxy")
         saveJsonFile(path, jsonData);
     }
 });
+
+
+task("whitelist-nft", " add nft asset to the whitelist")
+  .addFlag("update", "Whether to update the logic contract addresses")
+  .addParam("nftaddress", "The address of the nft asset")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const nftAssets = [taskArgs.nftaddress];
+
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    // console.log("Start to whitelist nft"+ taskArgs.nftaddress);
+    const BNFTRegistry = await hre.ethers.getContractFactory("BNFTRegistry");
+    const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryProxyAddress);
+
+    await bNFTRegistry.createBNFT(taskArgs.nftaddress, {gasLimit: 10000000});
+
+    // init NFT
+    const initNftInput: any = [[taskArgs.nftaddress]];
+    await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
+
+    //set max limit
+    await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
+});

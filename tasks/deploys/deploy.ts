@@ -585,6 +585,7 @@ task("init-pool", " Init the proxy contracts")
 });
 
 task("set-oracle-value", " Init the proxy contracts")
+  .addParam("nftaddress", "The address of the nft asset")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
@@ -593,12 +594,12 @@ task("set-oracle-value", " Init the proxy contracts")
 
     const oneEther8Decimals = hre.ethers.BigNumber.from("100000000");
     // Set NFT price
-    const key: string = "Ethereum-" + jsonData.mintableERC721Address;
+    const key: string = "Ethereum-" + taskArgs.nftaddress;
 
     const MockDIAOracle = await hre.ethers.getContractFactory("MockDIAOracle");
     const mockDIAOracle = MockDIAOracle.attach(jsonData.mockDIAOracleAddress);
 
-    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.mul(10),oneEther8Decimals.mul(10),0,0,0,1674382846);
+    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.mul(2),oneEther8Decimals.mul(2),0,0,0,1674382846);
 
     await tx.wait();
     console.log("Set NFT price success", tx.hash);
