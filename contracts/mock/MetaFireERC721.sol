@@ -14,8 +14,11 @@ contract MewERC721 is ERC721Enumerable {
   uint256 public tokenCount;
   uint256 private tokenCap = 5000;
   mapping (uint256 => string) private _tokenURIs;
-  constructor(string memory name, string memory symbol, string memory _baseUri) ERC721(name, symbol) {
+  uint8 private _imageNum;
+
+  constructor(string memory name, string memory symbol, string memory _baseUri, uint8 imageNum) ERC721(name, symbol) {
     baseURI = _baseUri;
+    _imageNum = imageNum;
   }
 
     /**
@@ -30,7 +33,8 @@ contract MewERC721 is ERC721Enumerable {
         require(mintCounts[_msgSender()] <= 10, "exceed mint limit");
         tokenCount += 1;
         _mint(_msgSender(), tokenCount);
-        _setTokenURI(tokenCount);
+
+        _setTokenURI(tokenCount % _imageNum);
 
         return true; 
     }
@@ -40,14 +44,19 @@ contract MewERC721 is ERC721Enumerable {
     }
 
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        return baseURI;
+        return _tokenURIs[tokenId];
     }
 
     function setBaseURI(string memory baseURI_) public {
         baseURI = baseURI_;
     }
 
-    function _setTokenURI(uint256 tokenId) internal virtual {
-        _tokenURIs[tokenId] = _baseURI();
+    function _setTokenURI(uint256 _tokenId) internal virtual {
+        string cusTokenURI= abi.encodePacked(
+            baseURI, 
+            Strings.toString(_tokenId),
+            ".json"
+        );
+        _tokenURIs[tokenId] = cusTokenURI;
     }
 }
