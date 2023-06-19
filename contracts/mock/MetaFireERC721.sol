@@ -15,10 +15,12 @@ contract MewERC721 is ERC721Enumerable {
   uint256 private tokenCap = 5000;
   mapping (uint256 => string) private _tokenURIs;
   uint8 private _imageNum;
+  uint256 public mintPrice;
 
-  constructor(string memory name, string memory symbol, string memory _baseUri, uint8 imageNum) ERC721(name, symbol) {
+  constructor(string memory name, string memory symbol, uint256 _mintPrice,string memory _baseUri, uint8 imageNum) ERC721(name, symbol) {
     baseURI = _baseUri;
     _imageNum = imageNum;
+    mintPrice = _mintPrice;
   }
 
     /**
@@ -26,7 +28,7 @@ contract MewERC721 is ERC721Enumerable {
     * @return A boolean that indicates if the operation was successful.
     */
     function mint() public payable returns (bool) {
-        require(msg.value >= 0.01 ether, "Insufficient ETH");
+        require(msg.value >= mintPrice, "Insufficient ETH");
         require(tokenCount <= tokenCap, "exceed mint limit");
 
         mintCounts[_msgSender()] += 1;
@@ -58,5 +60,9 @@ contract MewERC721 is ERC721Enumerable {
             ".json"
         );
         _tokenURIs[tokenId] = cusTokenURI;
+    }
+
+    function setMintPrice(uint256 _mintPrice) public {
+        mintPrice = _mintPrice;
     }
 }
