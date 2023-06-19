@@ -15,12 +15,12 @@ contract MetaFireERC721 is ERC721Enumerable {
   uint256 public tokenCount;
   uint256 private tokenCap = 5000;
   mapping (uint256 => string) private _tokenURIs;
-  uint8 private _imageNum;
+  uint8 private imageNum;
   uint256 public mintPrice;
 
-  constructor(string memory nftName, string memory nftSymbol, uint256 _mintPrice,string memory _baseUri, uint8 imageNum) ERC721(nftName, nftSymbol) {
+  constructor(string memory nftName, string memory nftSymbol, uint256 _mintPrice,string memory _baseUri, uint8 _imageNum) ERC721(nftName, nftSymbol) {
     baseURI = _baseUri;
-    _imageNum = imageNum;
+    imageNum = _imageNum;
     mintPrice = _mintPrice;
     
   }
@@ -39,10 +39,10 @@ contract MetaFireERC721 is ERC721Enumerable {
         _mint(_msgSender(), tokenCount);
 
         uint256 metadataId;
-        if (tokenCount % _imageNum == 0) {
-            metadataId = _imageNum;
+        if (tokenCount % imageNum == 0) {
+            metadataId = imageNum;
         } else {
-            metadataId = tokenCount % _imageNum;
+            metadataId = tokenCount % imageNum;
         }
 
         _setTokenURI(metadataId);
