@@ -3,12 +3,13 @@ pragma solidity 0.8.4;
 
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {ERC721Enumerable} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 /**
  * @title MintableERC721
  * @dev ERC721 minting logic
  */
-contract MewERC721 is ERC721Enumerable {
+contract MetaFireERC721 is ERC721Enumerable {
   string public baseURI;
   mapping(address => uint256) public mintCounts;
   uint256 public tokenCount;
@@ -17,10 +18,11 @@ contract MewERC721 is ERC721Enumerable {
   uint8 private _imageNum;
   uint256 public mintPrice;
 
-  constructor(string memory name, string memory symbol, uint256 _mintPrice,string memory _baseUri, uint8 imageNum) ERC721(name, symbol) {
+  constructor(string memory nftName, string memory nftSymbol, uint256 _mintPrice,string memory _baseUri, uint8 imageNum) ERC721(nftName, nftSymbol) {
     baseURI = _baseUri;
     _imageNum = imageNum;
     mintPrice = _mintPrice;
+    
   }
 
     /**
@@ -36,7 +38,14 @@ contract MewERC721 is ERC721Enumerable {
         tokenCount += 1;
         _mint(_msgSender(), tokenCount);
 
-        _setTokenURI(tokenCount % _imageNum);
+        uint256 metadataId;
+        if (tokenCount % _imageNum == 0) {
+            metadataId = _imageNum;
+        } else {
+            metadataId = tokenCount % _imageNum;
+        }
+
+        _setTokenURI(metadataId);
 
         return true; 
     }
@@ -54,12 +63,13 @@ contract MewERC721 is ERC721Enumerable {
     }
 
     function _setTokenURI(uint256 _tokenId) internal virtual {
-        string cusTokenURI= abi.encodePacked(
+        bytes memory encodedTokenURI = abi.encodePacked(
             baseURI, 
             Strings.toString(_tokenId),
             ".json"
         );
-        _tokenURIs[tokenId] = cusTokenURI;
+        string memory cusTokenURI = string(encodedTokenURI);
+        _tokenURIs[_tokenId] = cusTokenURI;
     }
 
     function setMintPrice(uint256 _mintPrice) public {

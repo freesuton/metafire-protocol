@@ -19,7 +19,7 @@ async function main() {
   // Deploy and init needed contracts
   
   const MetaFireERC721 = await ethers.getContractFactory("MetaFireERC721");
-  metaFireERC721 = await metaFireERC721.deploy("MF","METAFIRE", oneEther.div(100),"https://ipfs.io/ipfs/QmdSgXVpWVwcyU9r5goNqbWZZmXPjGkmZG3bzkmARHrid8/");
+  metaFireERC721 = await MetaFireERC721.deploy("MF","METAFIRE", oneEther.div(100),"https://ipfs.io/ipfs/QmPpor57Mrddf9bQauT1BKciN54VkH8oxLrGS8tq8Mcb6u/",6);
   await metaFireERC721.deployed();
 
   await metaFireERC721.mint({value:oneEther.div(100)});
