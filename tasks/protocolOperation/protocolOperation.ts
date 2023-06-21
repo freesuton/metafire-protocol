@@ -168,7 +168,6 @@ task("update-impl", " Update implementation contract for a proxy")
 
 
 task("whitelist-nft", " add nft asset to the whitelist")
-  .addFlag("update", "Whether to update the logic contract addresses")
   .addParam("nftaddress", "The address of the nft asset")
   .setAction(async ( taskArgs , hre) => {
 
@@ -197,4 +196,10 @@ task("whitelist-nft", " add nft asset to the whitelist")
 
     //set max limit
     await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
+
+    // give approval
+    await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
 });
