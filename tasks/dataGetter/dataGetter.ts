@@ -17,7 +17,6 @@ let mintableERC721: MintableERC721;
 
 
 task("get-nft-price", "Get NFT price from nft price getter")
-  .addFlag("update", "Whether to update the logic contract addresses")
   .setAction(async ( taskArgs , hre) => {
 
 
@@ -32,11 +31,11 @@ task("get-nft-price", "Get NFT price from nft price getter")
     const [owner] = await hre.ethers.getSigners();
 
 
-    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: jsonData.addressChecksumUtilsAddress}});
+    const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: "0x4e269B02e861156A7c1BeD894558b21d5311c2c6"}});
     const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterAddress);
     const aNFTOracleGetterProxy = await nftOracleGetter.attach(jsonData.nftOracleGetterProxyAddress);
 
-    const nftPrice = await aNFTOracleGetterProxy.getAssetPrice(jsonData.mintableERC721Address);
+    const nftPrice = await aNFTOracleGetterProxy.getAssetPrice("0x70837050491F667564f21aA4a7C14b162fe5c813");
     console.log("NFT price: ", nftPrice.toString());
 });
 

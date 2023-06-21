@@ -58,8 +58,8 @@ task("mint-nft", " Init the proxy contracts")
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
 
-    await mintableERC721.mint(6,{gasLimit:2000000});
-    await mintableERC721.approve(jsonData.lendPoolProxyAddress, 6, {gasLimit:2000000});
+    await mintableERC721.mint(7,{gasLimit:2000000});
+    await mintableERC721.approve(jsonData.lendPoolProxyAddress, 7, {gasLimit:2000000});
 
 });
 
@@ -84,10 +84,10 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     // await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
 
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
-    const mintableERC721 = MintableERC721.attach(jsonData.mintableERC721Address);
+    const mintableERC721 = MintableERC721.attach("0x70837050491F667564f21aA4a7C14b162fe5c813");
 
     // await mintableERC721.mint(5,{gasLimit:2000000});
-    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 5, {gasLimit:2000000});
+    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 1, {gasLimit:2000000});
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
@@ -97,8 +97,8 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     // const debtToken = DebtToken.attach(jsonData.debtTokenAddress);
 
     // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
-    await wETHGateway.approveNFTTransfer("0xB5Ce3dE00a9E221c798e36Ce2E501d7414809457", true);
-    const tx = await wETHGateway.borrowETH(oneEther.div(1000),"0xB5Ce3dE00a9E221c798e36Ce2E501d7414809457",3,owner.address,0,{gasLimit:2000000});
+    // await wETHGateway.approveNFTTransfer("0x70837050491F667564f21aA4a7C14b162fe5c813", true);
+    const tx = await wETHGateway.borrowETH(oneEther.div(1000),"0x70837050491F667564f21aA4a7C14b162fe5c813",1,owner.address,0,{gasLimit:2000000});
     console.log(tx);
 
 });
@@ -188,11 +188,14 @@ task("whitelist-nft", " add nft asset to the whitelist")
     const BNFTRegistry = await hre.ethers.getContractFactory("BNFTRegistry");
     const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryProxyAddress);
 
-    await bNFTRegistry.createBNFT(taskArgs.nftaddress, {gasLimit: 10000000});
-
+    const tx = await bNFTRegistry.createBNFT(taskArgs.nftaddress, {gasLimit: 1000000});
+    console.log(tx);
     // init NFT
     const initNftInput: any = [[taskArgs.nftaddress]];
     await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
+
+    // set NFT configuration
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
 
     //set max limit
     await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
