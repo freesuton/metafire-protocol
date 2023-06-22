@@ -15,12 +15,12 @@ contract MetaFireERC721 is ERC721Enumerable {
   uint256 public tokenCount;
   uint256 private tokenCap = 5000;
   mapping (uint256 => string) private _tokenURIs;
-  uint8 private imageNum;
+  uint256 private _imageNum;
   uint256 public mintPrice;
 
-  constructor(string memory nftName, string memory nftSymbol, uint256 _mintPrice,string memory _baseUri, uint8 _imageNum) ERC721(nftName, nftSymbol) {
+  constructor(string memory nftName, string memory nftSymbol, uint256 _mintPrice,string memory _baseUri, uint8 imageNum) ERC721(nftName, nftSymbol) {
     baseURI = _baseUri;
-    imageNum = _imageNum;
+    _imageNum = imageNum;
     mintPrice = _mintPrice;
     
   }
@@ -39,13 +39,13 @@ contract MetaFireERC721 is ERC721Enumerable {
         _mint(_msgSender(), tokenCount);
 
         uint256 metadataId;
-        if (tokenCount % imageNum == 0) {
-            metadataId = imageNum;
+        if (tokenCount % _imageNum == 0) {
+            metadataId = _imageNum;
         } else {
-            metadataId = tokenCount % imageNum;
+            metadataId = tokenCount % _imageNum;
         }
 
-        _setTokenURI(metadataId);
+        _setTokenURI(tokenCount, metadataId);
 
         return true; 
     }
@@ -62,10 +62,10 @@ contract MetaFireERC721 is ERC721Enumerable {
         baseURI = baseURI_;
     }
 
-    function _setTokenURI(uint256 _tokenId) internal virtual {
+    function _setTokenURI(uint256 _tokenId, uint256 _metadataId) internal virtual {
         bytes memory encodedTokenURI = abi.encodePacked(
             baseURI, 
-            Strings.toString(_tokenId),
+            Strings.toString(_metadataId),
             ".json"
         );
         string memory cusTokenURI = string(encodedTokenURI);
