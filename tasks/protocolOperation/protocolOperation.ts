@@ -41,7 +41,7 @@ task("deposit-via-gateway", " Init the proxy contracts")
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
 
     // await wETH.approve(wETHGateway.address,oneEther.mul(100));
-    await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
+    await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.div(10)});
 
 });
 
@@ -74,15 +74,6 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const path = './tasks/deploys/contractAddresses.json';
     const jsonData = loadJsonFile(path);
 
-    // const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
-    //     libraries: {
-    //       ConfiguratorLogic: jsonData.configuratorLogicAddress,
-    //     },
-    //   });
-    // const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
-
-    // const nftAssets = [jsonData.mintableERC721Address];
-    // await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
 
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
     const mintableERC721 = MintableERC721.attach(taskArgs.nftaddress);
@@ -205,4 +196,25 @@ task("whitelist-nft", " add nft asset to the whitelist")
 
     // give approval
     await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
+});
+
+task("repay-via-gateway", "Repay loan via gateway")
+  .addParam("nftaddress", "The address of the nft asset")
+  .addParam("tokenid", "The token id of the nft asset")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const nftAssets = [taskArgs.nftaddress];
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
+
+  
+
+    const tx = await wETHGateway.repayETH(taskArgs.nftaddress, taskArgs.tokenid,oneEther.div(1000),{value:oneEther.div(1000),gasLimit: 2000000});
+    console.log(tx);
 });
