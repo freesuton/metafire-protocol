@@ -599,7 +599,7 @@ task("set-oracle-value", " Init the proxy contracts")
     const MockDIAOracle = await hre.ethers.getContractFactory("MockDIAOracle");
     const mockDIAOracle = MockDIAOracle.attach(jsonData.mockDIAOracleAddress);
 
-    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.div(10),oneEther8Decimals.div(10),0,0,0,1674382846);
+    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.div(100).mul(8),oneEther8Decimals.div(10),0,0,0,1674382846);
 
     await tx.wait();
     console.log("Set NFT price success", tx.hash);

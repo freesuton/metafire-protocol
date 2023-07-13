@@ -35,7 +35,7 @@ task("get-nft-price", "Get NFT price from nft price getter")
     const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterAddress);
     const aNFTOracleGetterProxy = await nftOracleGetter.attach(jsonData.nftOracleGetterProxyAddress);
 
-    const nftPrice = await aNFTOracleGetterProxy.getAssetPrice("0x70837050491F667564f21aA4a7C14b162fe5c813");
+    const nftPrice = await aNFTOracleGetterProxy.getAssetPrice("0x889fbf30d42602cF8086fd54874F5040deF086BE");
     console.log("NFT price: ", nftPrice.toString());
 });
 

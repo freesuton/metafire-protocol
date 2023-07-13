@@ -79,7 +79,7 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const mintableERC721 = MintableERC721.attach(taskArgs.nftaddress);
 
     // await mintableERC721.mint(5,{gasLimit:2000000});
-    await mintableERC721.approve(jsonData.wETHGatewayAddress, 1, {gasLimit:2000000});
+    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 9, {gasLimit:1000000});
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
@@ -88,8 +88,8 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     // const debtToken = DebtToken.attach(jsonData.debtTokenAddress);
 
     // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
-    await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
-    const tx = await wETHGateway.borrowETH(oneEther.div(1000),taskArgs.nftaddress,1,owner.address,0,{gasLimit:2000000});
+    // await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
+    const tx = await wETHGateway.borrowETH(oneEther.div(20),taskArgs.nftaddress,9,owner.address,0,{gasLimit:2000000});
     console.log(tx);
 
 });
@@ -216,5 +216,27 @@ task("repay-via-gateway", "Repay loan via gateway")
   
 
     const tx = await wETHGateway.repayETH(taskArgs.nftaddress, taskArgs.tokenid,oneEther.div(1000),{value:oneEther.div(1000),gasLimit: 2000000});
+    console.log(tx);
+});
+
+task("auction-via-gateway", "Repay loan via gateway")
+  .addParam("nftaddress", "The address of the nft asset")
+  .addParam("tokenid", "The token id of the nft asset")
+  .setAction(async ( taskArgs , hre) => {
+
+    const [owner] = await hre.ethers.getSigners();
+    
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const nftAssets = [taskArgs.nftaddress];
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
+
+    // const tx = await wETHGateway.repayETH(taskArgs.nftaddress, taskArgs.tokenid,oneEther.div(1000),{value:oneEther.div(1000),gasLimit: 2000000});
+    const tx = await wETHGateway.auctionETH(taskArgs.nftaddress, taskArgs.tokenid,owner.address, {value:oneEther.div(20),gasLimit: 2000000});
     console.log(tx);
 });
