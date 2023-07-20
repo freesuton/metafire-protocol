@@ -166,6 +166,35 @@ task("deploy-update-mToken", "Deploy new mToken implementation and update the lo
     console.log(tx);
 });
 
+task("update-mtoken-lock-period", "Update mToken lock period")
+  .addParam("address", "The mToken address")
+  .addParam("period", "Period of lock")
+  .setAction(async ( taskArgs , hre) => {
+
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
+    // burnLockMTokenImpl = await BurnLockMTokenImpl.deploy();
+    // await burnLockMTokenImpl.deployed();
+    const burnLockMToken = BurnLockMTokenImpl.attach(taskArgs.address);
+
+    let lockPeriod = await burnLockMToken.LOCK_PERIOD();
+    console.log("Current lock period: ", lockPeriod.toString());
+    const tx = await burnLockMToken.setLockPeriod(taskArgs.period);
+    lockPeriod = await burnLockMToken.LOCK_PERIOD();
+    console.log("New lock period: ", lockPeriod.toString());
+    
+    console.log(tx);
+});
+
 task("deposit-via-gateway", "Deploy new mToken implementation and update the logic")
   // .addParam("address", "The NFT address")
   .setAction(async ( {} , hre) => {

@@ -64,12 +64,28 @@ task("get-nft-price", "Get NFT price from nft price getter")
 
 // });
 
+task("get-mtoken-lock-period", "Update mToken lock period")
+  .addParam("address", "The mToken address")
+  .setAction(async ( taskArgs , hre) => {
 
 
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
 
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
 
+    const [owner] = await hre.ethers.getSigners();
 
+    const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
+    // burnLockMTokenImpl = await BurnLockMTokenImpl.deploy();
+    // await burnLockMTokenImpl.deployed();
+    const burnLockMToken = BurnLockMTokenImpl.attach(taskArgs.address);
 
+    let lockPeriod = await burnLockMToken.LOCK_PERIOD();
+    console.log("Current lock period: ", lockPeriod.toString());
+});
 
 
 

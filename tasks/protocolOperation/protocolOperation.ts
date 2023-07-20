@@ -237,6 +237,7 @@ task("auction-via-gateway", "Repay loan via gateway")
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
 
     // const tx = await wETHGateway.repayETH(taskArgs.nftaddress, taskArgs.tokenid,oneEther.div(1000),{value:oneEther.div(1000),gasLimit: 2000000});
-    const tx = await wETHGateway.auctionETH(taskArgs.nftaddress, taskArgs.tokenid,owner.address, {value:oneEther.div(20),gasLimit: 2000000});
+    const tx = await wETHGateway.auctionETH(taskArgs.nftaddress, taskArgs.tokenid,owner.address, {value:oneEther.div(10),gasLimit: 2000000});
     console.log(tx);
 });
+
