@@ -46,6 +46,11 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     _;
   }
 
+  modifier onlyPoolAdmin() {
+    require(_addressProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+    _;
+  }
+
   /**
    * @dev Initializes the mToken
    * @param addressProvider The address of the address provider where this mToken will be used
@@ -347,7 +352,7 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
   }
 
   //@TODO: remove this function after testing
-  function setLockPeriod(uint256 lockPeriod) external {
+  function setLockPeriod(uint256 lockPeriod) external onlyPoolAdmin {
     LOCK_PERIOD = lockPeriod;
   }
 }
