@@ -68,9 +68,8 @@ task("init-nft", "Init the NFT")
     await lendPoolConfigurator.batchInitNft(initNftInput);
 });
 
-task("basic-config", "Init the NFT")
-  .addParam("address", "The NFT address")
-  .setAction(async ( {address} , hre) => {
+task("basic-config", "Configure the protocol")
+  .setAction(async (  hre) => {
 
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
@@ -104,6 +103,32 @@ task("basic-config", "Init the NFT")
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
     await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
 });
+
+task("set-nft-auction", "Set NFT auction config")
+  .setAction(async (taskArguments, hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    // configuration
+    const erc20Assets = [jsonData.wETHAddress];
+
+    // Load the contract
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    // (nftaddress, hours, hours, percentage: 1% = 100)
+    const tx = await lendPoolConfigurator.configureNftAsAuction(erc20Assets, 12,24, 500);
+    console.log(tx);
+
+});
+
+
 
 task("approve-weth", "Init the NFT")
   // .addParam("address", "The NFT address")
