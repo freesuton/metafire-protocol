@@ -265,6 +265,52 @@ library GenericLogic {
 
     return (vars.borrowAmount, vars.thresholdPrice, vars.liquidatePrice);
   }
+  
+  struct CalcLiquidatingBuyPriceLocalVars {
+    uint256 ltv;
+    uint256 liquidationThreshold;
+    uint256 liquidatingBuyBonus;
+    uint256 nftPriceInETH;
+    uint256 nftPriceInReserve;
+    uint256 reserveDecimals;
+    uint256 reservePriceInETH;
+    uint256 thresholdPrice;
+    uint256 liquidatePrice;
+    uint256 borrowAmount;
+  }
+
+  //TODO: finish this function
+  function calculateLoanLiquidatePrice(
+    uint256 loanId,
+    address reserveAsset,
+    DataTypes.ReserveData storage reserveData,
+    address nftAsset,
+    DataTypes.NftData storage nftData,
+    address poolLoan,
+    address reserveOracle,
+    address nftOracle
+  )
+    internal
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    CalcLiquidatingBuyPriceLocalVars memory vars;
+
+    /*
+     * 0                   CR                  LH                  100
+     * |___________________|___________________|___________________|
+     *  <       Borrowing with Interest        <
+     * CR: Callteral Ratio;
+     * LH: Liquidate Threshold;
+     * Liquidate Trigger: Borrowing with Interest > thresholdPrice;
+     * Liquidate Price: (100% - BonusRatio) * NFT Price;
+     */
+     
+  }
 
   struct CalcLoanBidFineLocalVars {
     uint256 reserveDecimals;

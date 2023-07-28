@@ -269,7 +269,28 @@ library LiquidateLogic {
     // update state MUST BEFORE get borrow amount which is depent on latest borrow index
     reserveData.updateState();
 
-    
+    //TODO: write a new liquidating buy price function
+    (vars.borrowAmount, vars.thresholdPrice, vars.liquidatingBuyPrice) = GenericLogic.calculateLoanLiquidatingBuyPrice(
+      vars.loanId,
+      loanData.reserveAsset,
+      reserveData,
+      loanData.nftAsset,
+      nftData,
+      vars.loanAddress,
+      vars.reserveOracle,
+      vars.nftOracle
+    );
+
+    // loan's accumulated debt must exceed threshold (heath factor below 1.0)
+    require(vars.borrowAmount > vars.thresholdPrice, Errors.LP_BORROW_NOT_EXCEED_LIQUIDATION_THRESHOLD);
+
+    // bid price must greater than borrow debt
+    require(params.liquidatingBuyPrice >= vars.borrowAmount, Errors.LPL_BID_PRICE_LESS_THAN_BORROW);
+
+    // bid price must greater than liquidate price
+    require(params.liquidatingBuyPrice >= vars.liquidatingBuyPrice, Errors.LPL_BID_PRICE_LESS_THAN_LIQUIDATION_PRICE);
+
+  
   }
 
   struct RedeemLocalVars {
