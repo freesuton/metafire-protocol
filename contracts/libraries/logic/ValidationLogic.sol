@@ -211,7 +211,7 @@ library ValidationLogic {
     require(bidPrice > 0, Errors.VL_INVALID_AMOUNT);
   }
 
-    /**
+  /**
    * @dev Validates the liquidating buy
    * @param reserveData The reserve data of the principal
    * @param nftData The data of the underlying NFT
@@ -235,7 +235,7 @@ library ValidationLogic {
     require(nftData.configuration.getActive(), Errors.VL_NO_ACTIVE_NFT);
 
     require(
-      loanData.state == DataTypes.LoanState.Active || loanData.state != DataTypes.LoanState.Auction,
+      loanData.state == DataTypes.LoanState.Active,
       Errors.LPL_INVALID_LOAN_STATE
     );
 
