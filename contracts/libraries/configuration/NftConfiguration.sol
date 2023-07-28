@@ -20,7 +20,8 @@ library NftConfiguration {
   uint256 constant REDEEM_FINE_MASK =           0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant REDEEM_THRESHOLD_MASK =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
   uint256 constant MIN_BIDFINE_MASK      =      0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
-
+  uint256 constant LIQUIDATING_BUY_BONUS_MASK = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFF0000FFFFffffFFFFFFFFFFFFFFFFFFFFFFFF; // prettier-ignore
+ 
   /// @dev For the LTV, the start bit is 0 (up to 15), hence no bitshifting is needed
   uint256 constant LIQUIDATION_THRESHOLD_START_BIT_POSITION = 16;
   uint256 constant LIQUIDATION_BONUS_START_BIT_POSITION = 32;
@@ -31,6 +32,7 @@ library NftConfiguration {
   uint256 constant REDEEM_FINE_START_BIT_POSITION = 80;
   uint256 constant REDEEM_THRESHOLD_START_BIT_POSITION = 96;
   uint256 constant MIN_BIDFINE_START_BIT_POSITION = 112;
+  uint256 constant LIQUIDATING_BUY_BONUS_START_BIT_POSITION = 128;
 
   uint256 constant MAX_VALID_LTV = 65535;
   uint256 constant MAX_VALID_LIQUIDATION_THRESHOLD = 65535;
@@ -40,6 +42,7 @@ library NftConfiguration {
   uint256 constant MAX_VALID_REDEEM_FINE = 65535;
   uint256 constant MAX_VALID_REDEEM_THRESHOLD = 65535;
   uint256 constant MAX_VALID_MIN_BIDFINE = 65535;
+  uint256 constant MAX_VALID_LIQUIDATING_BUY_BONUS = 65535;
 
   /**
    * @dev Sets the Loan to Value of the NFT
@@ -99,6 +102,26 @@ library NftConfiguration {
    **/
   function getLiquidationBonus(DataTypes.NftConfigurationMap storage self) internal view returns (uint256) {
     return (self.data & ~LIQUIDATION_BONUS_MASK) >> LIQUIDATION_BONUS_START_BIT_POSITION;
+  }
+
+    /**
+   * @dev Sets the liquidating buy bonus of the NFT
+   * @param self The NFT configuration
+   * @param bonus The new liquidating buy bonus
+   **/
+  function setLiquidatingBuyBonus(DataTypes.NftConfigurationMap memory self, uint256 bonus) internal pure {
+    require(bonus <= MAX_VALID_LIQUIDATING_BUY_BONUS, Errors.RC_INVALID_LIQ_BONUS);
+
+    self.data = (self.data & LIQUIDATING_BUY_BONUS_MASK) | (bonus << LIQUIDATING_BUY_BONUS_START_BIT_POSITION);
+  }
+
+  /**
+   * @dev Gets the liquidating buy bonus of the NFT
+   * @param self The NFT configuration
+   * @return The liquidating buy bonus
+   **/
+  function getLiquidatingBuyBonus(DataTypes.NftConfigurationMap storage self) internal view returns (uint256) {
+    return (self.data & ~LIQUIDATING_BUY_BONUS_MASK) >> LIQUIDATING_BUY_BONUS_START_BIT_POSITION;
   }
 
   /**
