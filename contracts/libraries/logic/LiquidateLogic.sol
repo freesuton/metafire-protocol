@@ -245,7 +245,7 @@ library LiquidateLogic {
     mapping(address => DataTypes.ReserveData) storage reservesData,
     mapping(address => DataTypes.NftData) storage nftsData,
     DataTypes.ExecuteLendPoolStates memory poolStates,
-    DataTypes.ExecuteAuctionParams memory params
+    DataTypes.ExecuteLiquidatingBuyParams memory params
   ) external {
     require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
 
@@ -264,6 +264,12 @@ library LiquidateLogic {
     DataTypes.ReserveData storage reserveData = reservesData[loanData.reserveAsset];
     DataTypes.NftData storage nftData = nftsData[loanData.nftAsset];
 
+    ValidationLogic.validateAuction(reserveData, nftData, loanData, params.liquidatingBuyPrice);
+
+    // update state MUST BEFORE get borrow amount which is depent on latest borrow index
+    reserveData.updateState();
+
+    
   }
 
   struct RedeemLocalVars {
