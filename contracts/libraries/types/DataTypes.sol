@@ -176,6 +176,14 @@ library DataTypes {
     address onBehalfOf;
   }
 
+  struct ExecuteLiquidatingBuyParams {
+    address initiator;
+    address nftAsset;
+    uint256 nftTokenId;
+    uint256 liquidatingBuyPrice;
+    address onBehalfOf;
+  }
+
   struct ExecuteRedeemParams {
     address initiator;
     address nftAsset;

@@ -249,6 +249,20 @@ library LiquidateLogic {
   ) external {
     require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
 
+    LiquidatingBuyLocalVars memory vars;
+    vars.initiator = params.initiator;
+
+    vars.loanAddress = addressesProvider.getLendPoolLoan();
+    vars.reserveOracle = addressesProvider.getReserveOracle();
+    vars.nftOracle = addressesProvider.getNFTOracle();
+
+    vars.loanId = ILendPoolLoan(vars.loanAddress).getCollateralLoanId(params.nftAsset, params.nftTokenId);
+    require(vars.loanId != 0, Errors.LP_NFT_IS_NOT_USED_AS_COLLATERAL);
+
+    DataTypes.LoanData memory loanData = ILendPoolLoan(vars.loanAddress).getLoan(vars.loanId);
+
+    DataTypes.ReserveData storage reserveData = reservesData[loanData.reserveAsset];
+    DataTypes.NftData storage nftData = nftsData[loanData.nftAsset];
 
   }
 
