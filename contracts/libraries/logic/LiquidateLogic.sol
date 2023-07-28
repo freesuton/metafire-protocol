@@ -112,6 +112,18 @@ library LiquidateLogic {
     uint256 extraAuctionDuration;
   }
 
+
+  struct LiquidatingBuyLocalVars {
+    address loanAddress;
+    address reserveOracle;
+    address nftOracle;
+    address initiator;
+    uint256 loanId;
+    uint256 thresholdPrice;
+    uint256 liquidatingBuyPrice;
+    uint256 borrowAmount;
+  }
+
   /**
    * @notice Implements the auction feature. Through `auction()`, users auction assets in the protocol.
    * @dev Emits the `Auction()` event.
@@ -218,6 +230,26 @@ library LiquidateLogic {
       loanData.borrower,
       vars.loanId
     );
+  }
+
+  /**
+   * @notice Implements the liquidating buy feature. Through `liquidatingBuy()`, users liquidate assets in the protocol.
+   * @dev Emits the `LiquidatingBuy()` event.
+   * @param reservesData The state of all the reserves
+   * @param nftsData The state of all the nfts
+   * @param poolStates The state of the lend pool
+   * @param params The additional parameters needed to execute the auction function
+   */
+  function executeLiquidatingBuy(
+    ILendPoolAddressesProvider addressesProvider,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => DataTypes.NftData) storage nftsData,
+    DataTypes.ExecuteLendPoolStates memory poolStates,
+    DataTypes.ExecuteAuctionParams memory params
+  ) external {
+    require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
+
+
   }
 
   struct RedeemLocalVars {
