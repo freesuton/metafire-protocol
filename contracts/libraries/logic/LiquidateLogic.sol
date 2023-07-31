@@ -290,7 +290,32 @@ library LiquidateLogic {
     // bid price must greater than liquidate price
     require(params.liquidatingBuyPrice >= vars.liquidatingBuyPrice, Errors.LPL_BID_PRICE_LESS_THAN_LIQUIDATION_PRICE);
 
-  
+    ILendPoolLoan(vars.loanAddress).liquidatingBuyLoan(
+      vars.initiator,
+      vars.loanId,
+      nftData.bNftAddress,
+      params.onBehalfOf,
+      params.liquidatingBuyPrice,
+      vars.borrowAmount,
+      reserveData.variableBorrowIndex
+    );
+
+    // lock highest bidder bid price amount to lend pool
+    IERC20Upgradeable(loanData.reserveAsset).safeTransferFrom(vars.initiator, address(this), params.liquidatingBuyPrice);
+
+    IDebtToken(reserveData.debtTokenAddress).burn(
+      loanData.borrower,
+      vars.borrowAmount,
+      reserveData.variableBorrowIndex
+    );
+
+    // transfer erc721 to bidder
+    IERC721Upgradeable(loanData.nftAsset).safeTransferFrom(address(this), loanData.bidderAddress, params.nftTokenId);
+
+    // update interest rate according latest borrow amount (utilizaton)
+    reserveData.updateInterestRates(loanData.reserveAsset, address(0), 0, 0);
+
+
   }
 
   struct RedeemLocalVars {

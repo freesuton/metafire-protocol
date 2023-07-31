@@ -337,6 +337,64 @@ contract LendPoolLoan is Initializable, ILendPoolLoan, ContextUpgradeable, IERC7
     _handleAfterLoanRepaid(loan.nftAsset, loan.nftTokenId);
   }
 
+  /**
+   * @inheritdoc ILendPoolLoan
+   */
+  function liquidatingBuyLoan(
+    address initiator,
+    uint256 loanId,
+    address bNftAddress,
+    address onBehalfOf,
+    uint256 bidPrice,
+    uint256 borrowAmount,
+    uint256 borrowIndex
+  ) external override onlyLendPool {
+    // Must use storage to change state
+    DataTypes.LoanData storage loan = _loans[loanId];
+    address previousBidder = loan.bidderAddress;
+    uint256 previousPrice = loan.bidPrice;
+
+    _handleBeforeLoanRepaid(loan.nftAsset, loan.nftTokenId);
+
+
+    require(loan.state == DataTypes.LoanState.Active, Errors.LPL_INVALID_LOAN_STATE);
+
+    loan.state = DataTypes.LoanState.Defaulted;
+    loan.bidStartTimestamp = block.timestamp;
+    loan.firstBidderAddress = onBehalfOf;
+
+
+    loan.bidBorrowAmount = borrowAmount;
+    loan.bidderAddress = onBehalfOf;
+    loan.bidPrice = bidPrice;
+
+    _nftToLoanIds[loan.nftAsset][loan.nftTokenId] = 0;
+
+    require(_userNftCollateral[loan.borrower][loan.nftAsset] >= 1, Errors.LP_INVALIED_USER_NFT_AMOUNT);
+    _userNftCollateral[loan.borrower][loan.nftAsset] -= 1;
+
+    require(_nftTotalCollateral[loan.nftAsset] >= 1, Errors.LP_INVALIED_NFT_AMOUNT);
+    _nftTotalCollateral[loan.nftAsset] -= 1;
+
+    // burn bNFT and transfer underlying NFT asset to user
+    IBNFT(bNftAddress).burn(loan.nftTokenId);
+
+    IERC721Upgradeable(loan.nftAsset).safeTransferFrom(address(this), _msgSender(), loan.nftTokenId);
+
+    emit LoanLiquidatingBought(
+      initiator,
+      loanId,
+      loan.nftAsset,
+      loan.nftTokenId,
+      loan.bidBorrowAmount,
+      borrowIndex,
+      onBehalfOf,
+      bidPrice,
+      previousBidder,
+      previousPrice
+    );
+  }
+
   function approveLoanRepaidInterceptor(address interceptor, bool approved) public override onlyLendPoolConfigurator {
     _loanRepaidInterceptorWhitelist[interceptor] = approved;
   }
