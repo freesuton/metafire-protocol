@@ -72,6 +72,21 @@ interface ILendPoolLoan {
   );
 
   /**
+   * @dev Emitted when a loan is liquidating bought by the liquidator
+   * @param user The address initiating the action
+   */
+  event LoanLiquidatingBought(
+    address indexed user,
+    uint256 indexed loanId,
+    address nftAsset,
+    uint256 nftTokenId,
+    uint256 amount,
+    uint256 borrowIndex,
+    address buyer,
+    uint256 price
+  );
+
+  /**
    * @dev Emitted when a loan is redeemed
    * @param user The address initiating the action
    */
