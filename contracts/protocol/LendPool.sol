@@ -360,6 +360,27 @@ contract LendPool is
       );
   }
 
+  function liquidatingBuy(
+    address nftAsset,
+    uint256 nftTokenId,
+    uint256 liquidatingBuyPrice,
+    address onBehalfOf
+  ) external override nonReentrant whenNotPaused {
+    LiquidateLogic.executeLiquidatingBuy(
+      _addressesProvider,
+      _reserves,
+      _nfts,
+      _buildLendPoolVars(),
+      DataTypes.ExecuteLiquidatingBuyParams({
+        initiator: _msgSender(),
+        nftAsset: nftAsset,
+        nftTokenId: nftTokenId,
+        liquidatingBuyPrice: liquidatingBuyPrice,
+        onBehalfOf: onBehalfOf
+      })
+    );
+  }
+
   function onERC721Received(
     address operator,
     address from,
