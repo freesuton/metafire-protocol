@@ -113,17 +113,6 @@ library LiquidateLogic {
   }
 
 
-  struct LiquidatingBuyLocalVars {
-    address loanAddress;
-    address reserveOracle;
-    address nftOracle;
-    address initiator;
-    uint256 loanId;
-    uint256 thresholdPrice;
-    uint256 liquidatingBuyPrice;
-    uint256 borrowAmount;
-  }
-
   /**
    * @notice Implements the auction feature. Through `auction()`, users auction assets in the protocol.
    * @dev Emits the `Auction()` event.
@@ -232,6 +221,17 @@ library LiquidateLogic {
     );
   }
 
+  struct LiquidatingBuyLocalVars {
+    address loanAddress;
+    address reserveOracle;
+    address nftOracle;
+    address initiator;
+    uint256 loanId;
+    uint256 thresholdPrice;
+    uint256 liquidatingBuyPrice;
+    uint256 borrowAmount;
+  }
+  
   /**
    * @notice Implements the liquidating buy feature. Through `liquidatingBuy()`, users liquidate assets in the protocol.
    * @dev Emits the `LiquidatingBuy()` event.
@@ -284,7 +284,7 @@ library LiquidateLogic {
     // loan's accumulated debt must exceed threshold (heath factor below 1.0)
     require(vars.borrowAmount > vars.thresholdPrice, Errors.LP_BORROW_NOT_EXCEED_LIQUIDATION_THRESHOLD);
 
-    // bid price must greater than borrow debt
+    // liquidatingBuyPrice price must greater than borrow debt
     require(params.liquidatingBuyPrice >= vars.borrowAmount, Errors.LPL_BID_PRICE_LESS_THAN_BORROW);
 
     // bid price must greater than liquidate price
@@ -315,7 +315,7 @@ library LiquidateLogic {
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(loanData.reserveAsset, address(0), 0, 0);
 
-
+    return (vars.extraDebtAmount);
   }
 
   struct RedeemLocalVars {

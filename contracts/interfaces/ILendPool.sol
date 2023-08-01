@@ -305,6 +305,20 @@ interface ILendPool {
   ) external returns (uint256);
 
   /**
+   * @dev Function to liquidating buy a non-healthy position collateral-wise
+   * @param nftAsset The address of the underlying NFT used as collateral
+   * @param nftTokenId The token ID of the underlying NFT used as collateral
+   * @param liquidatingBuyPrice The bid price of the liquidator want to buy the underlying NFT
+   * @param onBehalfOf Address of the user who will get the underlying NFT, same as msg.sender if the user
+   **/
+  function liquidatingBuy(
+    address nftAsset,
+    uint256 nftTokenId,
+    uint256 liquidatingBuyPrice,
+    address onBehalfOf
+  ) external;
+
+  /**
    * @dev Validates and finalizes an mToken transfer
    * - Only callable by the overlying mToken of the `asset`
    * @param asset The address of the underlying asset of the mToken
