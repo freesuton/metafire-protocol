@@ -87,6 +87,29 @@ task("get-mtoken-lock-period", "Update mToken lock period")
     console.log("Current lock period: ", lockPeriod.toString());
 });
 
+task("get-reserve-data", "Update mToken lock period")
+  .setAction(async ( taskArgs , hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const [owner] = await hre.ethers.getSigners();
+
+    const LendPool = await hre.ethers.getContractFactory("LendPool", {
+      libraries: {
+        SupplyLogic: jsonData.supplyLogicAddress,
+        BorrowLogic: jsonData.borrowLogicAddress,
+        LiquidateLogic: jsonData.liquidateLogicAddress,
+        ReserveLogic: jsonData.reserveLogicAddress,
+        NftLogic: jsonData.nftLogicAddress
+      },
+    });
+    const lendPool = LendPool.attach(jsonData.lendPoolProxyAddress);
+    const reserveData = await lendPool.getReserveData(jsonData.wETHAddress);
+    console.log("reserveData: ", reserveData);
+});
+
 
 
 
