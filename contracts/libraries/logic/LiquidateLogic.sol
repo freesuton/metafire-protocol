@@ -98,6 +98,18 @@ library LiquidateLogic {
     uint256 loanId
   );
 
+  event LiquidatingBuy(
+    address user,
+    address indexed reserve,
+    uint256 liquidatingBuyPrice,
+    uint256 remainAmount,
+    address indexed nftAsset,
+    uint256 nftTokenId,
+    address onBehalfOf,
+    address indexed borrower,
+    uint256 loanId
+  );
+
   struct AuctionLocalVars {
     address loanAddress;
     address reserveOracle;
@@ -329,6 +341,7 @@ library LiquidateLogic {
       vars.initiator,
       loanData.reserveAsset,
       params.liquidatingBuyPrice,
+      vars.remainAmount,
       params.nftAsset,
       params.nftTokenId,
       params.onBehalfOf,
