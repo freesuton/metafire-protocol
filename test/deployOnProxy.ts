@@ -310,46 +310,46 @@ describe("MetaFire Protocol Main Functions", async function () {
   describe("Deposit and Withdraw", async function () {
   
     let reserveData;
-    // it("Deposit and Withdraw", async function () {
+    it("Deposit and Withdraw", async function () {
       
-    //   const lendPool = aLendPoolProxy;
-    //   reserveData = await lendPool.getReserveData(wETH.address);
+      const lendPool = aLendPoolProxy;
+      reserveData = await lendPool.getReserveData(wETH.address);
 
-    //   // console.log(reserveData);
-    //   await wETH.mint(oneEther.mul(100));
-    //   await wETH.approve(lendPool.address,oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
+      // console.log(reserveData);
+      await wETH.mint(oneEther.mul(100));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
 
-    //   for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-    //     // instantiate mtoken proxy contract
-    //     const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
-    //     // deposit
-    //     await lendPool.deposit(wETH.address,oneEther.mul(i+1),owner.address,i,0);
-    //     const deposited = await proxy.scaledBalanceOf(owner.address);
-    //     // console.log("deposited",deposited.toString());
-    //     expect(deposited).to.equal(oneEther.mul(i+1));
-    //   }
+      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+        // instantiate mtoken proxy contract
+        const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
+        // deposit
+        await lendPool.deposit(wETH.address,oneEther.mul(i+1),owner.address,i,0);
+        const deposited = await proxy.scaledBalanceOf(owner.address);
+        // console.log("deposited",deposited.toString());
+        expect(deposited).to.equal(oneEther.mul(i+1));
+      }
 
-    //   let liquidity = await wETH.balanceOf(lendPool.address);
-    //   console.log("liquidity: "+liquidity);
-    //   expect(liquidity).to.equal(oneEther.mul(10));
+      let liquidity = await wETH.balanceOf(lendPool.address);
+      console.log("liquidity: "+liquidity);
+      expect(liquidity).to.equal(oneEther.mul(10));
 
-    //   reserveData = await lendPool.getReserveData(wETH.address);
+      reserveData = await lendPool.getReserveData(wETH.address);
 
-    //   await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
-    //   await ethers.provider.send("evm_mine");
+      await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
+      await ethers.provider.send("evm_mine");
 
       
-    //   for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-    //     await lendPool.withdraw(wETH.address,oneEther.mul(i+1),owner.address,i);
-    //     const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]).scaledBalanceOf(owner.address);
-    //     // console.log(mTokenBalance.toString());
-    //     expect(mTokenBalance).to.equal(0);
-    //   }
-    // })
+      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+        await lendPool.withdraw(wETH.address,oneEther.mul(i+1),owner.address,i);
+        const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]).scaledBalanceOf(owner.address);
+        // console.log(mTokenBalance.toString());
+        expect(mTokenBalance).to.equal(0);
+      }
+    })
 
     it("Interest calculation of Deposit, Borrow, Repay", async function () {
 
@@ -469,46 +469,46 @@ describe("MetaFire Protocol Main Functions", async function () {
     // })
 
 
-    // it("Deposit and Withdraw via WETH Gateway", async function () {
+    it("Deposit and Withdraw via WETH Gateway", async function () {
 
-    //   const WETHGateway = await ethers.getContractFactory("WETHGateway");
-    //   wETHGateway = await WETHGateway.deploy();
-    //   await wETHGateway.deployed();
+      const WETHGateway = await ethers.getContractFactory("WETHGateway");
+      wETHGateway = await WETHGateway.deploy();
+      await wETHGateway.deployed();
 
-    //   await wETHGateway.initialize(lendPoolAddressesProvider.address, wETH.address);
+      await wETHGateway.initialize(lendPoolAddressesProvider.address, wETH.address);
       
-    //   reserveData = await lendPool.getReserveData(wETH.address);
+      reserveData = await lendPool.getReserveData(wETH.address);
 
-    //   // console.log(reserveData);
-    //   await wETH.mint(oneEther.mul(100));
-    //   // await wETH.approve(lendPool.address,oneEther.mul(100));
-    //   // await wETH.approve(wETHGateway.address,oneEther.mul(100));
+      // console.log(reserveData);
+      await wETH.mint(oneEther.mul(100));
+      // await wETH.approve(lendPool.address,oneEther.mul(100));
+      // await wETH.approve(wETHGateway.address,oneEther.mul(100));
 
-    //   await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
-    //   await wETHGateway.connect(addr1).depositETH(addr1.address,0,0,{value:oneEther.mul(1)});
+      await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(1)});
+      await wETHGateway.connect(addr1).depositETH(addr1.address,0,0,{value:oneEther.mul(1)});
 
-    //   const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
+      const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
     
-    //   const deposited = await proxy.scaledBalanceOf(owner.address);
-    //   // console.log("deposited",deposited.toString());
-    //   expect(deposited).to.equal(oneEther);
+      const deposited = await proxy.scaledBalanceOf(owner.address);
+      // console.log("deposited",deposited.toString());
+      expect(deposited).to.equal(oneEther);
 
-    //   let liquidity = await wETH.balanceOf(lendPool.address);
-    //   console.log("liquidity: "+liquidity);
-    //   expect(liquidity).to.equal(oneEther.mul(2));
+      let liquidity = await wETH.balanceOf(lendPool.address);
+      console.log("liquidity: "+liquidity);
+      expect(liquidity).to.equal(oneEther.mul(2));
     
-    //   //withdraw via gateway
-    //   await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
-    //   await ethers.provider.send("evm_mine");
+      //withdraw via gateway
+      await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
+      await ethers.provider.send("evm_mine");
 
-    //   // await wETH.approve(wETHGateway.address,oneEther.mul(100));
-    //   await proxy.approve(wETHGateway.address,oneEther.mul(100));
+      // await wETH.approve(wETHGateway.address,oneEther.mul(100));
+      await proxy.approve(wETHGateway.address,oneEther.mul(100));
 
-    //   await wETHGateway.withdrawETH(oneEther.mul(1),owner.address,0,{gasLimit: 10000000});
-    //   const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]).scaledBalanceOf(owner.address);
-    //   console.log(mTokenBalance.toString());
-    //   expect(mTokenBalance).to.equal(0);
-    // })
+      await wETHGateway.withdrawETH(oneEther.mul(1),owner.address,0,{gasLimit: 10000000});
+      const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]).scaledBalanceOf(owner.address);
+      console.log(mTokenBalance.toString());
+      expect(mTokenBalance).to.equal(0);
+    })
 
     // it("deploy new mToken and update", async function () {
 

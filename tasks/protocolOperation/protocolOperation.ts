@@ -95,6 +95,35 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
 });
 
 
+task("withdraw-via-gateway", " Borrow fund via gateway")
+  .setAction(async ( taskArgs , hre) => {
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const [owner] = await hre.ethers.getSigners();
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
+
+    // const DebtToken = await hre.ethers.getContractFactory("DebtToken");
+    // const debtToken = DebtToken.attach(jsonData.debtTokenAddress);
+
+    // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
+    // await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
+    const MToken = await hre.ethers.getContractFactory("BurnLockMToken");
+    const mToken = MToken.attach("0x9bd84f3310408A90cB04385ad8A39F4222CD1475");
+    await mToken.approve(wETHGateway.address,oneEther.mul(100));
+    const tx = await wETHGateway.withdrawETH(oneEther.div(1000),owner.address,0,{gasLimit:1000000});
+    console.log(tx);
+
+});
+
+
 
 // Update contract
 task("update-library", " Update  library contract for a proxy")
