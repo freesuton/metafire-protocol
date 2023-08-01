@@ -230,8 +230,9 @@ library LiquidateLogic {
     uint256 thresholdPrice;
     uint256 liquidatingBuyPrice;
     uint256 borrowAmount;
+    uint256 remainAmount;
   }
-  
+
   /**
    * @notice Implements the liquidating buy feature. Through `liquidatingBuy()`, users liquidate assets in the protocol.
    * @dev Emits the `LiquidatingBuy()` event.
@@ -290,6 +291,10 @@ library LiquidateLogic {
     // bid price must greater than liquidate price
     require(params.liquidatingBuyPrice >= vars.liquidatingBuyPrice, Errors.LPL_BID_PRICE_LESS_THAN_LIQUIDATION_PRICE);
 
+    if (params.liquidatingBuyPrice > vars.borrowAmount) {
+      vars.remainAmount = params.liquidatingBuyPrice - vars.borrowAmount;
+    }
+
     ILendPoolLoan(vars.loanAddress).liquidatingBuyLoan(
       vars.initiator,
       vars.loanId,
@@ -309,13 +314,27 @@ library LiquidateLogic {
       reserveData.variableBorrowIndex
     );
 
+    // transfer remain amount to borrower
+    if (vars.remainAmount > 0) {
+      IERC20Upgradeable(loanData.reserveAsset).safeTransfer(loanData.borrower, vars.remainAmount);
+    }
+
     // transfer erc721 to bidder
     IERC721Upgradeable(loanData.nftAsset).safeTransferFrom(address(this), loanData.bidderAddress, params.nftTokenId);
 
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(loanData.reserveAsset, address(0), 0, 0);
 
-    return (vars.extraDebtAmount);
+    emit LiquidatingBuy(
+      vars.initiator,
+      loanData.reserveAsset,
+      params.liquidatingBuyPrice,
+      params.nftAsset,
+      params.nftTokenId,
+      params.onBehalfOf,
+      loanData.borrower,
+      vars.loanId
+    );
   }
 
   struct RedeemLocalVars {

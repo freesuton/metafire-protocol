@@ -95,6 +95,18 @@ interface ILendPool {
     uint256 loanId
   );
 
+  event LiquidatingBuy(
+    address user,
+    address indexed reserve,
+    uint256 liquidatingBuyPrice,
+    uint256 remainAmount,
+    address indexed nftAsset,
+    uint256 nftTokenId,
+    address onBehalfOf,
+    address indexed borrower,
+    uint256 loanId
+  );
+
   /**
    * @dev Emitted on redeem()
    * @param user The address of the user initiating the redeem(), providing the funds
