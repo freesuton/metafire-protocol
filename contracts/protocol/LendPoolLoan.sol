@@ -389,9 +389,7 @@ contract LendPoolLoan is Initializable, ILendPoolLoan, ContextUpgradeable, IERC7
       loan.bidBorrowAmount,
       borrowIndex,
       onBehalfOf,
-      bidPrice,
-      previousBidder,
-      previousPrice
+      bidPrice
     );
   }
 

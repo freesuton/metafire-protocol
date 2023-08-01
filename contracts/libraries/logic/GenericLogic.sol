@@ -324,7 +324,7 @@ library GenericLogic {
 
     vars.thresholdPrice = vars.nftPriceInReserve.percentMul(vars.liquidationThreshold);
 
-    if (vars.liquidationBonus < PercentageMath.PERCENTAGE_FACTOR) {
+    if (vars.liquidatingBuyBonus < PercentageMath.PERCENTAGE_FACTOR) {
       vars.liquidatingBuyPrice = vars.nftPriceInReserve.percentMul(PercentageMath.PERCENTAGE_FACTOR - vars.liquidatingBuyBonus);
     }
 
