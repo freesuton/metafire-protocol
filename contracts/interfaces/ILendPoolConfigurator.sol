@@ -12,6 +12,7 @@ interface ILendPoolConfigurator {
     uint256 baseLTV;
     uint256 liquidationThreshold;
     uint256 liquidationBonus;
+    uint256 liquidatingBuyBonus;
     uint256 redeemDuration;
     uint256 auctionDuration;
     uint256 redeemFine;

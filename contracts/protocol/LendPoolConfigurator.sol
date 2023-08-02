@@ -355,6 +355,7 @@ contract LendPoolConfigurator is Initializable, ILendPoolConfigurator {
       currentConfig.setLtv(inputs[i].baseLTV);
       currentConfig.setLiquidationThreshold(inputs[i].liquidationThreshold);
       currentConfig.setLiquidationBonus(inputs[i].liquidationBonus);
+      currentConfig.setLiquidatingBuyBonus(inputs[i].liquidatingBuyBonus);
 
       // auction parameters
       currentConfig.setRedeemDuration(inputs[i].redeemDuration);
@@ -369,7 +370,8 @@ contract LendPoolConfigurator is Initializable, ILendPoolConfigurator {
         inputs[i].asset,
         inputs[i].baseLTV,
         inputs[i].liquidationThreshold,
-        inputs[i].liquidationBonus
+        inputs[i].liquidationBonus,
+        inputs[i].liquidatingBuyBonus
       );
       emit NftAuctionChanged(
         inputs[i].asset,
