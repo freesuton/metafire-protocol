@@ -401,6 +401,8 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       // liquidateing buy
 
+      // Set liquidating buy bonus
+      await lendPoolConfigurator.setLiquidationBonus(500);
       await lendPool.connect(addr1).liquidatingBuy(mintableERC721.address, 0, oneEther.mul(2), addr1.address);
 
       // auction

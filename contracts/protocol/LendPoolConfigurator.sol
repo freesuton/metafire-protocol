@@ -234,7 +234,8 @@ contract LendPoolConfigurator is Initializable, ILendPoolConfigurator {
     address[] calldata assets,
     uint256 ltv,
     uint256 liquidationThreshold,
-    uint256 liquidationBonus
+    uint256 liquidationBonus,
+    uint256 liquidatingBuyBonus
   ) external onlyPoolAdmin {
     ILendPool cachedPool = _getLendPool();
     for (uint256 i = 0; i < assets.length; i++) {
@@ -255,12 +256,14 @@ contract LendPoolConfigurator is Initializable, ILendPoolConfigurator {
       currentConfig.setLtv(ltv);
       currentConfig.setLiquidationThreshold(liquidationThreshold);
       currentConfig.setLiquidationBonus(liquidationBonus);
+      currentConfig.setLiquidatingBuyBonus(liquidatingBuyBonus);
 
       cachedPool.setNftConfiguration(assets[i], currentConfig.data);
 
-      emit NftConfigurationChanged(assets[i], ltv, liquidationThreshold, liquidationBonus);
+      emit NftConfigurationChanged(assets[i], ltv, liquidationThreshold, liquidationBonus, liquidatingBuyBonus);
     }
   }
+  
 
   /**
    * @dev Configures the NFT auction parameters
