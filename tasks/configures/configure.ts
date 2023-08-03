@@ -104,6 +104,30 @@ task("basic-config", "Configure the protocol")
     await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
 });
 
+task("configure-nft-collateral", "Configure Nft As Collateral")
+  .setAction(async (  hre) => {
+
+    // Load logic address
+    const path = './tasks/deploys/contractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    // configuration
+    const nftAssets = [jsonData.mintableERC721Address];
+
+
+    // Load the contract
+    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+      libraries: {
+        ConfiguratorLogic: jsonData.configuratorLogicAddress,
+      },
+    });
+    const lendPoolConfigurator = await LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
+    const tx = await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 1000);
+    console.log(tx);
+});
+
 task("set-nft-auction", "Set NFT auction config")
   .setAction(async (taskArguments, hre) => {
 
