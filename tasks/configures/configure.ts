@@ -101,7 +101,7 @@ task("basic-config", "Configure the protocol")
     await lendPoolConfigurator.setReserveFactor(erc20Assets,3000);
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500, 500);
 });
 
 task("set-nft-auction", "Set NFT auction config")
