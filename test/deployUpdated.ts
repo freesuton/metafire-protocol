@@ -413,9 +413,10 @@ describe("MetaFire Protocol Main Functions", async function () {
 
 
 
-      // auction
-      await lendPool.connect(addr1).liquidatingBuy(mintableERC721.address, 0, oneEther.mul(10), addr1.address,{gasLimit: 20000000});
-
+      // liquidating buy with 95% of the floor price
+      await lendPool.connect(addr1).liquidatingBuy(mintableERC721.address, 0, oneEther.mul(95).div(10), addr1.address,{gasLimit: 20000000});
+      const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
+      expect(addr1NftBalance).to.equal(1);
     })
 
 
