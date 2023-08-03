@@ -332,7 +332,7 @@ library LiquidateLogic {
     }
 
     // transfer erc721 to bidder
-    IERC721Upgradeable(loanData.nftAsset).safeTransferFrom(address(this), loanData.bidderAddress, params.nftTokenId);
+    IERC721Upgradeable(loanData.nftAsset).safeTransferFrom(address(this), params.onBehalfOf, params.nftTokenId);
 
     // update interest rate according latest borrow amount (utilizaton)
     reserveData.updateInterestRates(loanData.reserveAsset, address(0), 0, 0);

@@ -364,6 +364,60 @@ describe("MetaFire Protocol Main Functions", async function () {
       expect(addr1NftBalance).to.equal(1);
     })
 
+    it("Liquidating Buy", async function () {
+      // set nft oracle price to 1 ethers
+      await mockNFTOracle.setAssets(nftAssets);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.div(5));
+      const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
+      console.log("nftPrice: "+nftPrice.toString());
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // mint ETH and approve
+      await wETH.mint(oneEther.mul(100));
+      await wETH.connect(addr1).mint(oneEther.mul(10));
+
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
+      await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(100));
+
+      //mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
+
+      // deposit
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,0,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,1,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,2,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,3,0, {gasLimit: 20000000});
+
+      //borrow 50% of the collateral
+      await lendPool.borrow(wETH.address, oneEther.mul(5), mintableERC721.address, 0, owner.address, 0, {gasLimit: 20000000});
+
+      let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      let healthFactor = nftDebtData[5];
+      console.log("healthFactor: "+healthFactor.toString());
+      expect(healthFactor).to.equal(oneEther);
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*365]);
+      await ethers.provider.send("evm_mine");
+
+      nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      healthFactor = nftDebtData[5];
+      console.log("------");
+      console.log("healthFactor: "+healthFactor.toString());
+      expect(healthFactor).lessThan(oneEther.mul(10));
+
+
+
+      // auction
+      await lendPool.connect(addr1).liquidatingBuy(mintableERC721.address, 0, oneEther.mul(10), addr1.address,{gasLimit: 20000000});
+
+    })
+
 
 
     it("Deposit and Withdraw via WETH Gateway", async function () {
