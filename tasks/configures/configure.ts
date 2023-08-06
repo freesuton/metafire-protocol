@@ -112,7 +112,7 @@ task("configure-nft-collateral", "Configure Nft As Collateral")
     const jsonData = loadJsonFile(path);
 
     // configuration
-    const nftAssets = [jsonData.mintableERC721Address];
+    const nftAssets = ["0x889fbf30d42602cF8086fd54874F5040deF086BE"];
     // console.log(jsonData.configuratorLogicAddress)
     // console.log(nftAssets)
     // console.log(jsonData.lendPoolConfiguratorProxyAddress)
