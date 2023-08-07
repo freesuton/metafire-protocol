@@ -599,7 +599,7 @@ task("set-oracle-value", " Init the proxy contracts")
     const MockDIAOracle = await hre.ethers.getContractFactory("MockDIAOracle");
     const mockDIAOracle = MockDIAOracle.attach(jsonData.mockDIAOracleAddress);
 
-    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.div(100).mul(8),oneEther8Decimals.div(10),0,0,0,1674382846);
+    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.div(100),oneEther8Decimals.div(10),0,0,0,1684382846);
 
     await tx.wait();
     console.log("Set NFT price success", tx.hash);
@@ -641,19 +641,19 @@ task("deposit-borrow", " Init the proxy contracts")
     let reserveData = await lendPool.getReserveData(jsonData.wETHAddress);
 
     // // mint ETH
-    // await wETH.mint(oneEther.mul(100));
-    // await wETH.approve(lendPool.address,oneEther.mul(1000));
+    await wETH.mint(oneEther.mul(1));
+    await wETH.approve(lendPool.address,oneEther.mul(1000));
 
 
     // // deposit
-    // await lendPool.deposit(wETH.address,oneEther.mul(100),owner.address,0,0,{gasLimit:10000000});
-
+    const tx= await lendPool.deposit(wETH.address,oneEther,owner.address,0,0,{gasLimit:10000000});
+    console.log(tx.hash);
     // // mint NFT
     // await mintableERC721.mint(1);
     // await mintableERC721.approve(lendPool.address, 0);
 
     //borrow
-    await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 3, owner.address,0 ,{gasLimit:5000000});
+    // await lendPool.borrow(wETH.address, oneEther.div(2), mintableERC721.address, 3, owner.address,0 ,{gasLimit:5000000});
 
 });
 

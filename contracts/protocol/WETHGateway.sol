@@ -262,6 +262,26 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
     cachedPool.auction(nftAsset, nftTokenId, msg.value, onBehalfOf);
   }
 
+  function liquidatingBuyETH(
+    address nftAsset,
+    uint256 nftTokenId,
+    address onBehalfOf
+  ) external payable override nonReentrant {
+    _checkValidCallerAndOnBehalfOf(onBehalfOf);
+
+    ILendPool cachedPool = _getLendPool();
+    ILendPoolLoan cachedPoolLoan = _getLendPoolLoan();
+
+    uint256 loanId = cachedPoolLoan.getCollateralLoanId(nftAsset, nftTokenId);
+    require(loanId > 0, "collateral loan id not exist");
+
+    DataTypes.LoanData memory loan = cachedPoolLoan.getLoan(loanId);
+    require(loan.reserveAsset == address(WETH), "loan reserve not WETH");
+
+    WETH.deposit{value: msg.value}();
+    cachedPool.liquidatingBuy(nftAsset, nftTokenId, msg.value, onBehalfOf);
+  }
+
   function redeemETH(
     address nftAsset,
     uint256 nftTokenId,
