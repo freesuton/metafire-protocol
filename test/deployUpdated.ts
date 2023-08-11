@@ -483,7 +483,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       // expect(mTokenBalance).to.equal(0);
 
       //liquidate buy
-      await wETHGateway.connect(addr1).liquidatingBuyETH(mintableERC721.address, 0, addr1.address,{value:oneEther, gasLimit: 20000000});
+      await wETHGateway.connect(addr1).liquidatingBuyETH(mintableERC721.address, 0, addr1.address,{value:oneEther.mul(10), gasLimit: 20000000});
     })
 
     it("deploy new mToken and update", async function () {

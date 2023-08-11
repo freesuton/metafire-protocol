@@ -79,7 +79,7 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const mintableERC721 = MintableERC721.attach(taskArgs.nftaddress);
 
     // await mintableERC721.mint(5,{gasLimit:2000000});
-    await mintableERC721.approve(jsonData.wETHGatewayAddress, 25, {gasLimit:1000000});
+    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 5, {gasLimit:1000000});
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
@@ -89,7 +89,7 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
 
     // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
     // await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
-    const tx = await wETHGateway.borrowETH(oneEther.div(20),taskArgs.nftaddress,25,owner.address,0,{gasLimit:2000000});
+    const tx = await wETHGateway.borrowETH(oneEther.div(20),taskArgs.nftaddress,5,owner.address,0,{gasLimit:2000000});
     console.log(tx);
 
 });
@@ -215,7 +215,7 @@ task("whitelist-nft", " add nft asset to the whitelist")
     await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
 
     // set NFT configuration
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500, 500);
 
     //set max limit
     await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);

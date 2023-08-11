@@ -38,7 +38,8 @@ task("init-reserve", "Init the reserve")
 
     // init reserve
     const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
-    await lendPoolConfigurator.batchInitReserve(initReserveInput);
+    const tx = await lendPoolConfigurator.batchInitReserve(initReserveInput,{gasLimit: 10000000});
+    console.log(tx);
 });
 
 task("init-nft", "Init the NFT")
@@ -122,7 +123,7 @@ task("set-nft-auction", "Set NFT auction config")
     });
     lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
-    // (nftaddress, hours, hours, percentage: 1% = 100)
+    // (nftaddress, redeemDuration-hours, auctionDuration-hours, percentage: 1% = 100)
     const tx = await lendPoolConfigurator.configureNftAsAuction(erc20Assets, 12,24, 500);
     console.log(tx);
 
@@ -213,11 +214,11 @@ task("update-mtoken-lock-period", "Update mToken lock period")
 
     let lockPeriod = await burnLockMToken.LOCK_PERIOD();
     console.log("Current lock period: ", lockPeriod.toString());
-    const tx = await burnLockMToken.setLockPeriod(taskArgs.period);
+    // const tx = await burnLockMToken.setLockPeriod(taskArgs.period);
     lockPeriod = await burnLockMToken.LOCK_PERIOD();
     console.log("New lock period: ", lockPeriod.toString());
     
-    console.log(tx);
+    // console.log(tx);
 });
 
 task("deposit-via-gateway", "Deploy new mToken implementation and update the logic")

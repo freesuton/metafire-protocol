@@ -519,7 +519,7 @@ task("contraction-configuration", " Init the proxy contracts")
     await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
     // set reserve interest rate address
     await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
-    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,50,0);
+    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,9999,9999999);
     await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
     await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
     // position 64. 1% -> 100
@@ -527,6 +527,8 @@ task("contraction-configuration", " Init the proxy contracts")
     await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus, liquidatingBuyBonus
     await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 1000, 500);
+    // (nftaddress, redeemDuration-hours, auctionDuration-hours, percentage: 1% = 100)
+    await lendPoolConfigurator.configureNftAsAuction(erc20Assets, 12,24, 500);
     //}
 
 
@@ -599,7 +601,7 @@ task("set-oracle-value", " Init the proxy contracts")
     const MockDIAOracle = await hre.ethers.getContractFactory("MockDIAOracle");
     const mockDIAOracle = MockDIAOracle.attach(jsonData.mockDIAOracleAddress);
 
-    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.div(100),oneEther8Decimals.div(10),0,0,0,1684382846);
+    const tx = await mockDIAOracle.setValue(key, oneEther8Decimals.div(10),oneEther8Decimals.div(10),0,0,0,1684382846);
 
     await tx.wait();
     console.log("Set NFT price success", tx.hash);
@@ -676,7 +678,7 @@ task("deploy-gateway", "Deploy WETH Gateway")
 
     await wETHGateway.initialize(jsonData.lendPoolAddressesProviderAddress, jsonData.wETHAddress,{gasLimit: 1000000});
 
-    await wETHGateway.approveNFTTransfer(jsonData.mintableERC721Address, true);
+    await wETHGateway.approveNFTTransfer(jsonData.mintableERC721Address, true, {gasLimit: 1000000});
 
     if(taskArgs.update){
         const path = './tasks/deploys/contractAddresses.json';
