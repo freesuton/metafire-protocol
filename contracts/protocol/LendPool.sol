@@ -123,7 +123,7 @@ contract LendPool is
    * @param onBehalfOf The address that will receive the mTokens, same as msg.sender if the user
    *   wants to receive them on his own wallet, or a different address if the beneficiary of mTokens
    *   is a different wallet
-   * @param period The period of the deposit
+   * @param period The index of period of the deposit
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
    **/
@@ -156,6 +156,7 @@ contract LendPool is
    * @param to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
+   * @param period The index of period of the deposit
    * @return The final amount withdrawn
    **/
   function withdraw(
