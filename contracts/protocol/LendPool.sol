@@ -362,6 +362,15 @@ contract LendPool is
       );
   }
 
+  /**
+   * @dev Function to liquidate buy a non-healthy NFT loan whose liquidation factor is beyond 1.
+   * - The caller (liquidator) buy collateral asset of the user getting liquidated, and receives
+   *   the collateral asset
+   * @param nftAsset The address of the underlying NFT used as collateral
+   * @param nftTokenId The token ID of the underlying NFT used as collateral
+   * @param liquidatingBuyPrice The price of the liquidating buy
+   * @param onBehalfOf Address of the user who will get the underlying NFT, same as msg.sender if the user
+   **/
   function liquidatingBuy(
     address nftAsset,
     uint256 nftTokenId,
