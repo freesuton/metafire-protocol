@@ -13,6 +13,7 @@ import "./tasks/configures/configure";
 import "./tasks/dataGetter/dataGetter";
 // import "./tasks/configures/migrateOracle";
 import "./tasks/protocolOperation/protocolOperation";
+import "hardhat-gas-reporter";
 
 const proxyUrl = "http://127.0.0.1:7890" 
 const { ProxyAgent, setGlobalDispatcher } = require("undici") ;
@@ -62,7 +63,14 @@ const config: HardhatUserConfig = {
     }
   },
   etherscan: {
-    apiKey: "UAGAZ33ZK73A9FF386293RTTDPI354SK4K"
+    apiKey: process.env.ETHERSCAN_API_KEY
+  },
+  gasReporter: {
+    currency: 'USD',  // Currency in which gas prices are displayed (optional)
+    gasPrice: 11,     // Denominated in gwei (optional)
+    // outputFile: 'gas-reporter-output.txt', // Save the report to a file (optional)
+    enabled: true
+    // ... other options
   }
 };
 
