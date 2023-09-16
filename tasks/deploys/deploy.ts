@@ -127,7 +127,7 @@ task("deploy-libraries", "Deploy the logic library contracts")
 
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         const jsonData = loadJsonFile(path);
@@ -150,7 +150,7 @@ task("deploy-main-imple", "Deploy the main contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
@@ -190,7 +190,7 @@ task("deploy-main-imple", "Deploy the main contracts")
 
     
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         jsonData.lendPoolAddressesProviderAddress = lendPoolAddressesProvider.address;
@@ -208,7 +208,7 @@ task("deploy-sub-imple", "Deploy the main contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     // sub imple contracts
@@ -234,7 +234,7 @@ task("deploy-sub-imple", "Deploy the main contracts")
     console.log("BNFTRegistry deployed to:", bNFTRegistry.address);
     
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
 
@@ -252,7 +252,7 @@ task("deploy-oracle", "Deploy the main contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const MockReserveOracle = await hre.ethers.getContractFactory("MockReserveOracle");
@@ -276,7 +276,7 @@ task("deploy-oracle", "Deploy the main contracts")
     console.log("AddressChecksumUtils deployed to:", addressCheckSumUtils.address);
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         jsonData.mockReserveOracleAddress = mockReserveOracle.address;
@@ -293,7 +293,7 @@ task("deploy-proxy-contracts", "Deploy all proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const MetaFireProxyAdmin = await hre.ethers.getContractFactory("MetaFireProxyAdmin");
@@ -328,7 +328,7 @@ task("deploy-proxy-contracts", "Deploy all proxy contracts")
 
     
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         jsonData.metaFireProxyAdminAddress = metaFireProxyAdmin.address;
@@ -350,7 +350,7 @@ task("deploy-sub-contrcts", "Deploy the sub contracts")
     const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const InterestRate = await hre.ethers.getContractFactory("InterestRate");
@@ -368,7 +368,7 @@ task("deploy-sub-contrcts", "Deploy the sub contracts")
 
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
         jsonData.interestRateAddress = interestRate.address;
@@ -384,7 +384,7 @@ task("init-proxy-contracts", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
 
@@ -434,7 +434,7 @@ task("set-addresses", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
@@ -453,7 +453,7 @@ task("init-pool", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const [owner, addr1] = await hre.ethers.getSigners();
@@ -486,7 +486,7 @@ task("init-pool", " Init the proxy contracts")
 
     
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
 
@@ -498,7 +498,7 @@ task("contraction-configuration", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const [owner, addr1] = await hre.ethers.getSigners();
@@ -533,7 +533,7 @@ task("contraction-configuration", " Init the proxy contracts")
 
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
 
@@ -545,7 +545,7 @@ task("init-pool", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const [owner, addr1] = await hre.ethers.getSigners();
@@ -578,7 +578,7 @@ task("init-pool", " Init the proxy contracts")
 
     
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // load the json file
 
@@ -591,7 +591,7 @@ task("set-oracle-value", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const oneEther8Decimals = hre.ethers.BigNumber.from("100000000");
@@ -613,7 +613,7 @@ task("deposit-borrow", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const [owner, addr1] = await hre.ethers.getSigners();
@@ -664,7 +664,7 @@ task("deploy-gateway", "Deploy WETH Gateway")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const [owner, addr1] = await hre.ethers.getSigners();
@@ -681,7 +681,7 @@ task("deploy-gateway", "Deploy WETH Gateway")
     await wETHGateway.approveNFTTransfer(jsonData.mintableERC721Address, true, {gasLimit: 1000000});
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // // load the json file
         jsonData.wETHGatewayAddress = wETHGateway.address;
@@ -698,7 +698,7 @@ task("get-reserve-data", "Get contract address from address provider")
 
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = await loadJsonFile(path);
 
     const [owner] = await hre.ethers.getSigners();
