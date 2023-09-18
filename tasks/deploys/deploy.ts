@@ -458,7 +458,6 @@ task("init-pool", " Init the proxy contracts")
     const [owner, addr1] = await hre.ethers.getSigners();
 
 
-
     // set lendpool admin
     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
@@ -471,17 +470,17 @@ task("init-pool", " Init the proxy contracts")
 
     const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
-    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+    // await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
 
 
     // init reserve
     const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
-    await lendPoolConfigurator.batchInitReserve(initReserveInput, {gasLimit: 10000000});
+    await lendPoolConfigurator.batchInitReserve(initReserveInput);
 
     // init NFT
     const initNftInput: any = [[jsonData.mintableERC721Address]];
-    await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
+    await lendPoolConfigurator.batchInitNft(initNftInput);
 
     
     if(taskArgs.update){
@@ -515,19 +514,19 @@ task("contraction-configuration", " Init the proxy contracts")
   
     const aLendPoolConfiguratorProxy = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
-    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
-    // set reserve interest rate address
-    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
-    await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,9999,9999999);
-    await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
-    await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
+    // await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    // // set reserve interest rate address
+    // await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
+    // await aLendPoolConfiguratorProxy.setNftMaxSupplyAndTokenId(nftAssets,9999,9999999);
+    // await aLendPoolConfiguratorProxy.setBorrowingFlagOnReserve(erc20Assets, true);
+    // await aLendPoolConfiguratorProxy.setActiveFlagOnReserve(erc20Assets, true);
     // position 64. 1% -> 100
-    await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
-    await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
-    // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus, liquidatingBuyBonus
-    await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 5000, 1000, 500);
-    // (nftaddress, redeemDuration-hours, auctionDuration-hours, percentage: 1% = 100)
-    await lendPoolConfigurator.configureNftAsAuction(erc20Assets, 12,24, 500);
+    // await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
+    // await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
+    // // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus(auction), liquidatingBuyBonus
+    // await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 8000, 1000, 500);
+    // (nftaddress, redeemDuration-hours, auctionDuration-hours,redeemFine percentage: 1% = 100)
+    await aLendPoolConfiguratorProxy.configureNftAsAuction(erc20Assets, 24,24, 500);
     //}
 
 
@@ -540,50 +539,50 @@ task("contraction-configuration", " Init the proxy contracts")
     }
 });
 
-task("init-pool", " Init the proxy contracts")
-  .setAction(async ( taskArgs , hre) => {
+// task("init-pool", " Init the proxy contracts")
+//   .setAction(async ( taskArgs , hre) => {
 
-    // Load logic address
-    const path = './tasks/deploys/mainnetContractAddresses.json';
-    const jsonData = loadJsonFile(path);
+//     // Load logic address
+//     const path = './tasks/deploys/mainnetContractAddresses.json';
+//     const jsonData = loadJsonFile(path);
 
-    const [owner, addr1] = await hre.ethers.getSigners();
-
-
-
-    // set lendpool admin
-    const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
-    const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
-
-    const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
-      libraries: {
-        ConfiguratorLogic: jsonData.configuratorLogicAddress,
-      },
-    });
-
-    const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
-
-    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+//     const [owner, addr1] = await hre.ethers.getSigners();
 
 
 
-    // init reserve
-    const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
-    await lendPoolConfigurator.batchInitReserve(initReserveInput, {gasLimit: 10000000});
+//     // set lendpool admin
+//     const LendPoolAddressesProvider = await hre.ethers.getContractFactory("LendPoolAddressesProvider");
+//     const lendPoolAddressesProvider = LendPoolAddressesProvider.attach(jsonData.lendPoolAddressesProviderAddress);
 
-    // init NFT
-    const initNftInput: any = [[jsonData.mintableERC721Address]];
-    await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
+//     const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
+//       libraries: {
+//         ConfiguratorLogic: jsonData.configuratorLogicAddress,
+//       },
+//     });
+
+//     const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
+
+//     await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+
+
+//     // init reserve
+//     const initReserveInput: any = [[jsonData.burnLockMTokenImplAddress, jsonData.debtTokenImplAddress, 18, jsonData.interestRateAddress,jsonData.wETHAddress,owner.address,"WETH","MToken","MT","DebtToken","DT"]];
+//     await lendPoolConfigurator.batchInitReserve(initReserveInput, {gasLimit: 10000000});
+
+//     // init NFT
+//     const initNftInput: any = [[jsonData.mintableERC721Address]];
+//     await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
 
     
-    if(taskArgs.update){
-        const path = './tasks/deploys/mainnetContractAddresses.json';
-        console.log("Start to update addresses");
-        // load the json file
+//     if(taskArgs.update){
+//         const path = './tasks/deploys/mainnetContractAddresses.json';
+//         console.log("Start to update addresses");
+//         // load the json file
 
-        saveJsonFile(path, jsonData);
-    }
-});
+//         saveJsonFile(path, jsonData);
+//     }
+// });
 
 task("set-oracle-value", " Init the proxy contracts")
   .addParam("nftaddress", "The address of the nft asset")
