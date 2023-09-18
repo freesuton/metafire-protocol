@@ -80,7 +80,7 @@ const config: HardhatUserConfig = {
     currency: 'USD',  // Currency in which gas prices are displayed (optional)
     gasPrice: 11,     // Denominated in gwei (optional)
     // outputFile: 'gas-reporter-output.txt', // Save the report to a file (optional)
-    enabled: true
+    enabled: false
     // ... other options
   }
 };

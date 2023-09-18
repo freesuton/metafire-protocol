@@ -128,7 +128,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     const InterestRate = await ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
-    const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
+    const distributeCoefficients= [ray.mul(100),ray.mul(120),ray.mul(140),ray.mul(160)];
     interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
    
 

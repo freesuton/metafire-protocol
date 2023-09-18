@@ -354,10 +354,10 @@ task("deploy-sub-contrcts", "Deploy the sub contracts")
     const jsonData = loadJsonFile(path);
 
     const InterestRate = await hre.ethers.getContractFactory("InterestRate");
-    // U: 65%, BR:10%, S1: 8%, d2: 100%
-    // distributeCoefficients_： 2:3:4:5
-    const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
-    interestRate = await InterestRate.deploy(jsonData.lendPoolAddressesProviderAddress,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
+    // U: 80%, BR:15%, S1: 8%, s2: 100%
+    // distributeCoefficients_： 10:12:14:16
+    const distributeCoefficients= [ray.mul(10),ray.mul(12),ray.mul(14),ray.mul(16)];
+    interestRate = await InterestRate.deploy(jsonData.lendPoolAddressesProviderAddress,ray.div(100).mul(80),ray.div(100).mul(20),ray.div(100).mul(8),ray, distributeCoefficients);
     
 
     const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
@@ -419,15 +419,14 @@ task("init-proxy-contracts", " Init the proxy contracts")
     const NFTOracleGetter = await hre.ethers.getContractFactory("NFTOracleGetter",{libraries: {AddressChecksumUtils: jsonData.addressCheckSumUtilsAddress}});
     const nftOracleGetter = NFTOracleGetter.attach(jsonData.nftOracleGetterProxyAddress);
 
-    await lendPool.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
-    await lendPoolLoan.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
-    await lendPoolConfigurator.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
-    await bNFTRegistry.initialize(jsonData.bNFTAddress,"M","M", {gasLimit: 10000000});
-    await bNFTRegistry.createBNFT(jsonData.mintableERC721Address, {gasLimit: 10000000});
-    await mockReserveOracle.initialize(jsonData.wETHAddress, {gasLimit: 10000000});
-    await nftOracleGetter.initialize("Ethereum-", jsonData.mockDIAOracleAddress, jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
+    // await lendPool.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 10000000});
+    // await lendPoolLoan.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 500000});
+    // await lendPoolConfigurator.initialize(jsonData.lendPoolAddressesProviderAddress, {gasLimit: 200000});
+    // await bNFTRegistry.initialize(jsonData.bNFTAddress,"M","M", {gasLimit: 200000});
+    await bNFTRegistry.createBNFT(jsonData.mintableERC721Address, {gasLimit: 1000000});
+    // await mockReserveOracle.initialize(jsonData.wETHAddress, {gasLimit: 200000});
+    // await nftOracleGetter.initialize("Ethereum-", jsonData.mockDIAOracleAddress, jsonData.lendPoolAddressesProviderAddress, {gasLimit: 200000});
 
-    
 });
 
 task("set-addresses", " Init the proxy contracts")
