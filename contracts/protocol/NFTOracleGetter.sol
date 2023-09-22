@@ -6,6 +6,7 @@ import {IDIAOracle} from "../interfaces/IDIAOracle.sol";
 import {AddressChecksumUtils} from "../utils/AddressChecksumUtils.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 
 contract NFTOracleGetter is INFTOracleGetter, Initializable{
@@ -13,7 +14,8 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
     ILendPoolAddressesProvider internal _addressesProvider;
     IDIAOracle internal _diaOracle;
     string private CHAIN_NAME;
-    
+    AggregatorV3Interface internal nftFloorPriceFeed;
+
     function initialize(string memory chainName_, IDIAOracle oracle ,ILendPoolAddressesProvider provider) public initializer {
         _addressesProvider = provider;
         _diaOracle = oracle;
@@ -32,6 +34,24 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
         uint256 convertedValue = uint256(value0) * 10**10;
         return convertedValue;
         // return 10**19;
+    }
+
+    /**
+     * @dev Get NFT floor price from Chainlink Oralce
+     * @param address of the NFT Oralce
+     */
+    function getNFTPriceFromLink( address asset) override external view returns (        
+        uint256 answer
+    ){
+        (
+            /*uint80 roundID*/,
+            int nftFloorPrice,
+            /*uint startedAt*/,
+            /*uint timeStamp*/,
+            /*uint80 answeredInRound*/
+        ) = AggregatorV3Interface( asset).latestRoundData();
+        require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0");
+        return uint256(nftFloorPrice);
     }
     
 

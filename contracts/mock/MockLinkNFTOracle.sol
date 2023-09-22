@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.7;
+pragma solidity ^0.8.4;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract MockLinkNFTOracle {
-    uint80 public internal id;
-    uint256 public internal nftFloorPrice;
+    uint80 internal id;
+    uint256 internal nftFloorPrice;
 
 
     constructor(uint80 _nftFloorPrice) {
@@ -29,8 +29,8 @@ contract MockLinkNFTOracle {
         return (id, int256(nftFloorPrice), 0, 0, 0);
     }
 
-    function latestRoundData() public view returns (uint80, int, uint, uint, uint80) {
-        return nftFloorPriceFeed.latestRoundData();
-    }
+    // function latestRoundData() public view returns (uint80, int, uint, uint, uint80) {
+    //     return nftFloorPriceFeed.latestRoundData();
+    // }
 
 }
