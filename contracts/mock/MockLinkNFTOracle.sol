@@ -3,33 +3,30 @@ pragma solidity ^0.8.7;
 
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
-contract NFTFloorPriceConsumerV3 {
-    AggregatorV3Interface internal nftFloorPriceFeed;
+contract MockLinkNFTOracle {
+    uint80 public internal id;
+    uint256 public internal nftFloorPrice;
 
-    /**
-     * Network: Goerli - No Sepolia feeds available at this time
-     * Aggregator: CryptoPunks
-     * Address: 0x5c13b249846540F81c093Bc342b5d963a7518145
-     */
-    constructor() {
-        nftFloorPriceFeed = AggregatorV3Interface(
-            0x5c13b249846540F81c093Bc342b5d963a7518145
-        );
+
+    constructor(uint80 _nftFloorPrice) {
+        nftFloorPrice = _nftFloorPrice;
     }
 
+    function setLatestPrice(uint80 _id, uint256 _nftPrice) public {
+        id = _id;
+        nftFloorPrice = _nftPrice;
+    }
     /**
      * Returns the latest price
      */
-    function getLatestPrice() public view returns (int) {
-        // prettier-ignore
-        (
-            /*uint80 roundID*/,
-            int nftFloorPrice,
-            /*uint startedAt*/,
-            /*uint timeStamp*/,
-            /*uint80 answeredInRound*/
-        ) = nftFloorPriceFeed.latestRoundData();
-        return nftFloorPrice;
+    function latestRoundData() public view returns (      
+        uint80 roundId,
+        int256 answer,
+        uint256 startedAt,
+        uint256 updatedAt,
+        uint80 answeredInRound
+    ) {
+        return (id, int256(nftFloorPrice), 0, 0, 0);
     }
 
     function latestRoundData() public view returns (uint80, int, uint, uint, uint80) {
