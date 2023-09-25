@@ -5,14 +5,14 @@ import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 contract MockLinkNFTOracle {
     uint80 internal id;
-    uint256 internal nftFloorPrice;
+    int256 internal nftFloorPrice;
 
 
-    constructor(uint80 _nftFloorPrice) {
+    constructor(int80 _nftFloorPrice) {
         nftFloorPrice = _nftFloorPrice;
     }
 
-    function setLatestPrice(uint80 _id, uint256 _nftPrice) public {
+    function setLatestPrice(uint80 _id, int256 _nftPrice) public {
         id = _id;
         nftFloorPrice = _nftPrice;
     }
@@ -26,7 +26,7 @@ contract MockLinkNFTOracle {
         uint256 updatedAt,
         uint80 answeredInRound
     ) {
-        return (id, int256(nftFloorPrice), 0, 0, 0);
+        return (id, nftFloorPrice, 0, 0, 0);
     }
 
     // function latestRoundData() public view returns (uint80, int, uint, uint, uint80) {

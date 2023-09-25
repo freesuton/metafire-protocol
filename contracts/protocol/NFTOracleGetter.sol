@@ -24,25 +24,22 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
 
     /* CAUTION: Price uint is ETH based (WEI, 18 decimals) */
     /***********
-    @dev returns the asset price in ETH
-        */
-    function getAssetPrice( address asset) override external view returns (uint256){
+    @dev returns the asset price in ETH from DIA oracle
+    //     */
+    // function getAssetPrice( address asset) override external view returns (uint256){
 
-        string memory key = getKey(asset);
+    //     string memory key = getKey(asset);
 
-        (uint64 value0,,,,,) = _diaOracle.getValue(key);
-        uint256 convertedValue = uint256(value0) * 10**10;
-        return convertedValue;
-        // return 10**19;
-    }
+    //     (uint64 value0,,,,,) = _diaOracle.getValue(key);
+    //     uint256 convertedValue = uint256(value0) * 10**10;
+    //     return convertedValue;
+    // }
 
     /**
      * @dev Get NFT floor price from Chainlink Oralce
-     * @param address of the NFT Oralce
+     * @param asset of the NFT Oralce
      */
-    function getNFTPriceFromLink( address asset) override external view returns (        
-        uint256 answer
-    ){
+    function getAssetPrice( address asset) override external view returns ( uint256 ){
         (
             /*uint80 roundID*/,
             int nftFloorPrice,
@@ -50,7 +47,7 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
             /*uint timeStamp*/,
             /*uint80 answeredInRound*/
         ) = AggregatorV3Interface( asset).latestRoundData();
-        require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0");
+        require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0 or less than 0");
         return uint256(nftFloorPrice);
     }
     
