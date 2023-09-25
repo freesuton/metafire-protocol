@@ -9,7 +9,7 @@ import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvid
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 
-contract NFTOracleGetter is INFTOracleGetter, Initializable{
+contract NFTLinkOracleGetter is INFTOracleGetter, Initializable{
 
     ILendPoolAddressesProvider internal _addressesProvider;
     IDIAOracle internal _diaOracle;

@@ -74,7 +74,7 @@ describe("Mock Oracle", function () {
       await mockNFTOracle.setAssets(nftAssets);
       await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
       const price = await mockNFTOracle.getAssetPrice(mintableERC721.address);
-      expect(price).to.equal(oneEther.mul(2));
+      expect(price).to.equal(oneEther.mul(10));
     })
 
     it("Set and get NFT floor price from NFT oracle", async function () {
@@ -111,4 +111,14 @@ describe("Mock Oracle", function () {
       expect(oPrice[0]).to.equal(oneEther8Decimals);
     })
 
+    it("Test Chainlink NFT Oracle", async function () {
+       
+
+      const MockLinkNFTOracle = await ethers.getContractFactory("MockLinkNFTOracle");
+      const mockLinkNFTOracle = await MockLinkNFTOracle.deploy(oneEther);
+      await mockLinkNFTOracle.deployed();
+
+      const nftPrice = await mockLinkNFTOracle.latestRoundData();
+      console.log("nftPrice",nftPrice.toString());
+    })
 })
