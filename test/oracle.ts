@@ -118,7 +118,16 @@ describe("Mock Oracle", function () {
       const mockLinkNFTOracle = await MockLinkNFTOracle.deploy(oneEther);
       await mockLinkNFTOracle.deployed();
 
-      const nftPrice = await mockLinkNFTOracle.latestRoundData();
+      const AddressChecksumUtils = await ethers.getContractFactory("AddressChecksumUtils");
+      const addressCheckSumUtils = await AddressChecksumUtils.deploy();
+      await addressCheckSumUtils.deployed();
+
+      const NFTLinkOracleGetter = await ethers.getContractFactory("NFTLinkOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
+      const nftLinkOracleGetter = await NFTLinkOracleGetter.deploy();
+      await nftLinkOracleGetter.deployed();
+
+
+      const nftPrice = await nftLinkOracleGetter.getAssetPrice(mockLinkNFTOracle.address);
       console.log("nftPrice",nftPrice.toString());
     })
 })
