@@ -122,7 +122,7 @@ describe("Mock Oracle", function () {
       const addressCheckSumUtils = await AddressChecksumUtils.deploy();
       await addressCheckSumUtils.deployed();
 
-      const NFTLinkOracleGetter = await ethers.getContractFactory("NFTLinkOracleGetter",{libraries: {AddressChecksumUtils: addressCheckSumUtils.address}});
+      const NFTLinkOracleGetter = await ethers.getContractFactory("NFTLinkOracleGetter");
       const nftLinkOracleGetter = await NFTLinkOracleGetter.deploy();
       await nftLinkOracleGetter.deployed();
 

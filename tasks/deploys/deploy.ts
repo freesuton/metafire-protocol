@@ -597,6 +597,31 @@ task("set-oracle-value", " Init the proxy contracts")
 
 });
 
+task("deploy-chainlink-oracle", " Init the proxy contracts")
+.addParam("provideraddress", "The address of address provider")
+  .setAction(async ( taskArgs , hre) => {
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+
+    // Load logic address
+    const path = './tasks/deploys/mainnetContractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+    const MockLinkNFTOracle = await hre.ethers.getContractFactory("MockLinkNFTOracle");
+    const mockLinkNFTOracle = await MockLinkNFTOracle.deploy(oneEther);
+    await mockLinkNFTOracle.deployed();
+
+    const NFTLinkOracleGetter = await hre.ethers.getContractFactory("NFTLinkOracleGetter");
+    const nftLinkOracleGetter = await NFTLinkOracleGetter.deploy();
+    await nftLinkOracleGetter.deployed();
+
+    await nftLinkOracleGetter.initialize( taskArgs.provideraddress, {gasLimit: 200000});
+
+    console.log("MockLinkNFTOracle deployed to:", mockLinkNFTOracle.address);
+    console.log("NFTLinkOracleGetter deployed to:", nftLinkOracleGetter.address);
+
+});
+
 
 task("deposit-borrow", " Init the proxy contracts")
   .setAction(async ( taskArgs , hre) => {
