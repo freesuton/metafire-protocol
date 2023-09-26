@@ -7,7 +7,7 @@ import {AddressChecksumUtils} from "../utils/AddressChecksumUtils.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
-
+import {Errors} from "../libraries/helpers/Errors.sol";
 
 contract NFTLinkOracleGetter is INFTOracleGetter, Initializable{
 
@@ -16,6 +16,11 @@ contract NFTLinkOracleGetter is INFTOracleGetter, Initializable{
     // NFT Address => Chainlink Oracle Address
     mapping(address => address) internal _oracleAddresses;
     AggregatorV3Interface internal nftFloorPriceFeed;
+
+    modifier onlyPoolAdmin() {
+        require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
+        _;
+    }
 
     function initialize(ILendPoolAddressesProvider provider) public initializer {
         _addressesProvider = provider;
@@ -29,7 +34,7 @@ contract NFTLinkOracleGetter is INFTOracleGetter, Initializable{
      * @param asset of the NFT Oralce
      */
     function getAssetPrice( address asset) override external view returns ( uint256 ){
-        const oracleAddress = _oracleAddresses[asset];
+        address oracleAddress = _oracleAddresses[asset];
         require( oracleAddress != address(0), "NFTOracleGetter: Oracle address is not set");
         (
             /*uint80 roundID*/,
@@ -41,5 +46,9 @@ contract NFTLinkOracleGetter is INFTOracleGetter, Initializable{
 
         require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0 or less than 0");
         return uint256(nftFloorPrice);
+    }
+
+    function addOracle(address asset, address oracleAddress) external onlyPoolAdmin {
+        _oracleAddresses[asset] = oracleAddress;
     }
 }
