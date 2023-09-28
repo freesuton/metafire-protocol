@@ -470,7 +470,7 @@ task("init-pool", " Init the proxy contracts")
 
     const lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
-    // await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+    await lendPoolAddressesProvider.setPoolAdmin(owner.address);
 
 
 
@@ -480,7 +480,7 @@ task("init-pool", " Init the proxy contracts")
 
     // init NFT
     const initNftInput: any = [[jsonData.mintableERC721Address]];
-    // await lendPoolConfigurator.batchInitNft(initNftInput);
+    await lendPoolConfigurator.batchInitNft(initNftInput);
 
 });
 
@@ -597,8 +597,9 @@ task("set-oracle-value", " Init the proxy contracts")
 
 });
 
-task("deploy-chainlink-oracle", " Init the proxy contracts")
-.addParam("provideraddress", "The address of address provider")
+task("deploy-chainlink-oracle", "Deploy chainlink oracle getter")
+// .addParam("provideraddress", "The address of address provider")
+// .addParam("nftaddress", "The address of the nft asset")
   .setAction(async ( taskArgs , hre) => {
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
@@ -608,17 +609,18 @@ task("deploy-chainlink-oracle", " Init the proxy contracts")
     const jsonData = loadJsonFile(path);
 
     const MockLinkNFTOracle = await hre.ethers.getContractFactory("MockLinkNFTOracle");
-    const mockLinkNFTOracle = await MockLinkNFTOracle.deploy(oneEther);
+    const mockLinkNFTOracle = await MockLinkNFTOracle.deploy(oneEther.div(100));
     await mockLinkNFTOracle.deployed();
 
-    const NFTLinkOracleGetter = await hre.ethers.getContractFactory("NFTLinkOracleGetter");
-    const nftLinkOracleGetter = await NFTLinkOracleGetter.deploy();
-    await nftLinkOracleGetter.deployed();
+    // const NFTLinkOracleGetter = await hre.ethers.getContractFactory("NFTLinkOracleGetter");
+    // const nftLinkOracleGetter = await NFTLinkOracleGetter.deploy();
+    // await nftLinkOracleGetter.deployed();
 
-    await nftLinkOracleGetter.initialize( taskArgs.provideraddress, {gasLimit: 200000});
+    // await nftLinkOracleGetter.initialize(taskArgs.provideraddress, {gasLimit: 10000000});
+    // await nftLinkOracleGetter.addOracle(taskArgs.nftaddress,mockLinkNFTOracle.address, {gasLimit: 10000000});
 
     console.log("MockLinkNFTOracle deployed to:", mockLinkNFTOracle.address);
-    console.log("NFTLinkOracleGetter deployed to:", nftLinkOracleGetter.address);
+    // console.log("NFTLinkOracleGetter deployed to:", nftLinkOracleGetter.address);
 
 });
 
