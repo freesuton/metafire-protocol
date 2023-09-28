@@ -10,7 +10,7 @@ import {IPunks} from "../interfaces/IPunks.sol";
 /**
  * @title EmergencyTokenRecovery
  * @notice Add Emergency Recovery Logic to contract implementation
- * @author Bend
+ * @author MetaFire
  **/
 abstract contract EmergencyTokenRecoveryUpgradeable is OwnableUpgradeable {
   event EmergencyEtherTransfer(address indexed to, uint256 amount);

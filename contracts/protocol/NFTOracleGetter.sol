@@ -6,6 +6,7 @@ import {IDIAOracle} from "../interfaces/IDIAOracle.sol";
 import {AddressChecksumUtils} from "../utils/AddressChecksumUtils.sol";
 import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 
 contract NFTOracleGetter is INFTOracleGetter, Initializable{
@@ -13,7 +14,8 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
     ILendPoolAddressesProvider internal _addressesProvider;
     IDIAOracle internal _diaOracle;
     string private CHAIN_NAME;
-    
+    AggregatorV3Interface internal nftFloorPriceFeed;
+
     function initialize(string memory chainName_, IDIAOracle oracle ,ILendPoolAddressesProvider provider) public initializer {
         _addressesProvider = provider;
         _diaOracle = oracle;
@@ -22,8 +24,8 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
 
     /* CAUTION: Price uint is ETH based (WEI, 18 decimals) */
     /***********
-    @dev returns the asset price in ETH
-        */
+    @dev returns the asset price in ETH from DIA oracle
+    */
     function getAssetPrice( address asset) override external view returns (uint256){
 
         string memory key = getKey(asset);
@@ -31,7 +33,6 @@ contract NFTOracleGetter is INFTOracleGetter, Initializable{
         (uint64 value0,,,,,) = _diaOracle.getValue(key);
         uint256 convertedValue = uint256(value0) * 10**10;
         return convertedValue;
-        // return 10**19;
     }
     
 

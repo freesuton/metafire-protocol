@@ -212,6 +212,37 @@ library ValidationLogic {
   }
 
   /**
+   * @dev Validates the liquidating buy
+   * @param reserveData The reserve data of the principal
+   * @param nftData The data of the underlying NFT
+   * @param loanData The loan data of the underlying NFT
+   * @param liquidatingBuyPrice The liquidating buy price
+   **/
+  function validateLiquidatingBuy(
+    DataTypes.ReserveData storage reserveData,
+    DataTypes.NftData storage nftData,
+    DataTypes.LoanData memory loanData,
+    uint256 liquidatingBuyPrice
+  ) internal view {
+    require(nftData.bNftAddress != address(0), Errors.LPC_INVALIED_BNFT_ADDRESS);
+    
+    for(uint256 i = 0; i < reserveData.mTokenAddresses.length; i++) {
+      require(reserveData.mTokenAddresses[i] != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
+    }
+
+    require(reserveData.configuration.getActive(), Errors.VL_NO_ACTIVE_RESERVE);
+
+    require(nftData.configuration.getActive(), Errors.VL_NO_ACTIVE_NFT);
+
+    require(
+      loanData.state == DataTypes.LoanState.Active,
+      Errors.LPL_INVALID_LOAN_STATE
+    );
+
+    require(liquidatingBuyPrice > 0, Errors.VL_INVALID_AMOUNT);
+  }
+
+  /**
    * @dev Validates a redeem action
    * @param reserveData The reserve state
    * @param nftData The nft state

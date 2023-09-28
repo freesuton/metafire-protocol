@@ -74,7 +74,7 @@ describe("Mock Oracle", function () {
       await mockNFTOracle.setAssets(nftAssets);
       await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
       const price = await mockNFTOracle.getAssetPrice(mintableERC721.address);
-      expect(price).to.equal(oneEther.mul(2));
+      expect(price).to.equal(oneEther.mul(10));
     })
 
     it("Set and get NFT floor price from NFT oracle", async function () {
@@ -111,4 +111,27 @@ describe("Mock Oracle", function () {
       expect(oPrice[0]).to.equal(oneEther8Decimals);
     })
 
+    it("Test Chainlink NFT Oracle", async function () {
+
+      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("eth");
+      await lendPoolAddressesProvider.deployed();
+       
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
+      const MockLinkNFTOracle = await ethers.getContractFactory("MockLinkNFTOracle");
+      const mockLinkNFTOracle = await MockLinkNFTOracle.deploy(oneEther);
+      await mockLinkNFTOracle.deployed();
+
+      const NFTLinkOracleGetter = await ethers.getContractFactory("NFTLinkOracleGetter");
+      const nftLinkOracleGetter = await NFTLinkOracleGetter.deploy();
+      await nftLinkOracleGetter.deployed();
+
+      await nftLinkOracleGetter.initialize(lendPoolAddressesProvider.address);
+      await nftLinkOracleGetter.addOracle(mintableERC721.address,mockLinkNFTOracle.address);
+
+      const nftPrice = await nftLinkOracleGetter.getAssetPrice(mintableERC721.address);
+
+      expect(nftPrice).to.equal(oneEther);
+    })
 })

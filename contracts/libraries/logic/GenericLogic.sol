@@ -265,6 +265,76 @@ library GenericLogic {
 
     return (vars.borrowAmount, vars.thresholdPrice, vars.liquidatePrice);
   }
+  
+  struct CalcLiquidatingBuyPriceLocalVars {
+    uint256 ltv;
+    uint256 liquidationThreshold;
+    uint256 liquidatingBuyBonus;
+    uint256 nftPriceInETH;
+    uint256 nftPriceInReserve;
+    uint256 reserveDecimals;
+    uint256 reservePriceInETH;
+    uint256 thresholdPrice;
+    uint256 liquidatingBuyPrice;
+    uint256 borrowAmount;
+  }
+
+  //TODO: finish this function
+  function calculateLoanLiquidatingBuyPrice(
+    uint256 loanId,
+    address reserveAsset,
+    DataTypes.ReserveData storage reserveData,
+    address nftAsset,
+    DataTypes.NftData storage nftData,
+    address poolLoan,
+    address reserveOracle,
+    address nftOracle
+  )
+    internal
+    view
+    returns (
+      uint256,
+      uint256,
+      uint256
+    )
+  {
+    CalcLiquidatingBuyPriceLocalVars memory vars;
+
+    /*
+     * 0                   CR                  LH                  100
+     * |___________________|___________________|___________________|
+     *  <       Borrowing with Interest        <
+     * CR: Callteral Ratio;
+     * LH: Liquidate Threshold;
+     * Liquidate Trigger: Borrowing with Interest > thresholdPrice;
+     * Liquidate Price: (100% - BonusRatio) * NFT Price;
+     */
+
+    vars.reserveDecimals = reserveData.configuration.getDecimals();
+
+    (, vars.borrowAmount) = ILendPoolLoan(poolLoan).getLoanReserveBorrowAmount(loanId);
+     
+    (vars.ltv, vars.liquidationThreshold, ) = nftData.configuration.getCollateralParams();
+    vars.liquidatingBuyBonus = nftData.configuration.getLiquidatingBuyBonus();
+
+    vars.nftPriceInETH = INFTOracleGetter(nftOracle).getAssetPrice(nftAsset);
+    vars.reservePriceInETH = IReserveOracleGetter(reserveOracle).getAssetPrice(reserveAsset);
+
+    vars.nftPriceInReserve = ((10**vars.reserveDecimals) * vars.nftPriceInETH) / vars.reservePriceInETH;
+
+    vars.thresholdPrice = vars.nftPriceInReserve.percentMul(vars.liquidationThreshold);
+
+    if (vars.liquidatingBuyBonus < PercentageMath.PERCENTAGE_FACTOR) {
+      vars.liquidatingBuyPrice = vars.nftPriceInReserve.percentMul(PercentageMath.PERCENTAGE_FACTOR - vars.liquidatingBuyBonus);
+    }
+
+    if (vars.liquidatingBuyPrice < vars.borrowAmount) {
+      vars.liquidatingBuyPrice = vars.borrowAmount;
+    }
+
+    return (vars.borrowAmount, vars.thresholdPrice, vars.liquidatingBuyPrice);
+
+  }
 
   struct CalcLoanBidFineLocalVars {
     uint256 reserveDecimals;

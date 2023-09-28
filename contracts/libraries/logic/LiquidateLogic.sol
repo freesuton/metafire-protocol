@@ -98,6 +98,18 @@ library LiquidateLogic {
     uint256 loanId
   );
 
+  event LiquidatingBuy(
+    address user,
+    address indexed reserve,
+    uint256 liquidatingBuyPrice,
+    uint256 remainAmount,
+    address indexed nftAsset,
+    uint256 nftTokenId,
+    address onBehalfOf,
+    address indexed borrower,
+    uint256 loanId
+  );
+
   struct AuctionLocalVars {
     address loanAddress;
     address reserveOracle;
@@ -111,6 +123,7 @@ library LiquidateLogic {
     uint256 minBidDelta;
     uint256 extraAuctionDuration;
   }
+
 
   /**
    * @notice Implements the auction feature. Through `auction()`, users auction assets in the protocol.
@@ -212,6 +225,123 @@ library LiquidateLogic {
       vars.initiator,
       loanData.reserveAsset,
       params.bidPrice,
+      params.nftAsset,
+      params.nftTokenId,
+      params.onBehalfOf,
+      loanData.borrower,
+      vars.loanId
+    );
+  }
+
+  struct LiquidatingBuyLocalVars {
+    address loanAddress;
+    address reserveOracle;
+    address nftOracle;
+    address initiator;
+    uint256 loanId;
+    uint256 thresholdPrice;
+    uint256 liquidatingBuyPrice;
+    uint256 borrowAmount;
+    uint256 remainAmount;
+  }
+
+  /**
+   * @notice Implements the liquidating buy feature. Through `liquidatingBuy()`, users liquidate assets in the protocol.
+   * @dev Emits the `LiquidatingBuy()` event.
+   * @param reservesData The state of all the reserves
+   * @param nftsData The state of all the nfts
+   * @param poolStates The state of the lend pool
+   * @param params The additional parameters needed to execute the auction function
+   */
+  function executeLiquidatingBuy(
+    ILendPoolAddressesProvider addressesProvider,
+    mapping(address => DataTypes.ReserveData) storage reservesData,
+    mapping(address => DataTypes.NftData) storage nftsData,
+    DataTypes.ExecuteLendPoolStates memory poolStates,
+    DataTypes.ExecuteLiquidatingBuyParams memory params
+  ) external {
+    require(params.onBehalfOf != address(0), Errors.VL_INVALID_ONBEHALFOF_ADDRESS);
+
+    LiquidatingBuyLocalVars memory vars;
+    vars.initiator = params.initiator;
+
+    vars.loanAddress = addressesProvider.getLendPoolLoan();
+    vars.reserveOracle = addressesProvider.getReserveOracle();
+    vars.nftOracle = addressesProvider.getNFTOracle();
+
+    vars.loanId = ILendPoolLoan(vars.loanAddress).getCollateralLoanId(params.nftAsset, params.nftTokenId);
+    require(vars.loanId != 0, Errors.LP_NFT_IS_NOT_USED_AS_COLLATERAL);
+
+    DataTypes.LoanData memory loanData = ILendPoolLoan(vars.loanAddress).getLoan(vars.loanId);
+
+    DataTypes.ReserveData storage reserveData = reservesData[loanData.reserveAsset];
+    DataTypes.NftData storage nftData = nftsData[loanData.nftAsset];
+
+    ValidationLogic.validateAuction(reserveData, nftData, loanData, params.liquidatingBuyPrice);
+
+    // update state MUST BEFORE get borrow amount which is depent on latest borrow index
+    reserveData.updateState();
+
+    //TODO: write a new liquidating buy price function
+    (vars.borrowAmount, vars.thresholdPrice, vars.liquidatingBuyPrice) = GenericLogic.calculateLoanLiquidatingBuyPrice(
+      vars.loanId,
+      loanData.reserveAsset,
+      reserveData,
+      loanData.nftAsset,
+      nftData,
+      vars.loanAddress,
+      vars.reserveOracle,
+      vars.nftOracle
+    );
+
+    // loan's accumulated debt must exceed threshold (heath factor below 1.0)
+    require(vars.borrowAmount > vars.thresholdPrice, Errors.LP_BORROW_NOT_EXCEED_LIQUIDATION_THRESHOLD);
+
+    // liquidatingBuyPrice price must greater than borrow debt
+    require(params.liquidatingBuyPrice >= vars.borrowAmount, Errors.LPL_BID_PRICE_LESS_THAN_BORROW);
+
+    // bid price must greater than liquidate price
+    require(params.liquidatingBuyPrice >= vars.liquidatingBuyPrice, Errors.LPL_BID_PRICE_LESS_THAN_LIQUIDATION_PRICE);
+
+    if (params.liquidatingBuyPrice > vars.borrowAmount) {
+      vars.remainAmount = params.liquidatingBuyPrice - vars.borrowAmount;
+    }
+
+    ILendPoolLoan(vars.loanAddress).liquidatingBuyLoan(
+      vars.initiator,
+      vars.loanId,
+      nftData.bNftAddress,
+      params.onBehalfOf,
+      params.liquidatingBuyPrice,
+      vars.borrowAmount,
+      reserveData.variableBorrowIndex
+    );
+
+    // lock highest bidder bid price amount to lend pool
+    IERC20Upgradeable(loanData.reserveAsset).safeTransferFrom(vars.initiator, address(this), params.liquidatingBuyPrice);
+
+    IDebtToken(reserveData.debtTokenAddress).burn(
+      loanData.borrower,
+      vars.borrowAmount,
+      reserveData.variableBorrowIndex
+    );
+
+    // transfer remain amount to borrower
+    if (vars.remainAmount > 0) {
+      IERC20Upgradeable(loanData.reserveAsset).safeTransfer(loanData.borrower, vars.remainAmount);
+    }
+
+    // transfer erc721 to bidder
+    IERC721Upgradeable(loanData.nftAsset).safeTransferFrom(address(this), params.onBehalfOf, params.nftTokenId);
+
+    // update interest rate according latest borrow amount (utilizaton)
+    reserveData.updateInterestRates(loanData.reserveAsset, address(0), 0, 0);
+
+    emit LiquidatingBuy(
+      vars.initiator,
+      loanData.reserveAsset,
+      params.liquidatingBuyPrice,
+      vars.remainAmount,
       params.nftAsset,
       params.nftTokenId,
       params.onBehalfOf,

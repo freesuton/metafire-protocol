@@ -72,6 +72,21 @@ interface ILendPoolLoan {
   );
 
   /**
+   * @dev Emitted when a loan is liquidating bought by the liquidator
+   * @param user The address initiating the action
+   */
+  event LoanLiquidatingBought(
+    address indexed user,
+    uint256 indexed loanId,
+    address nftAsset,
+    uint256 nftTokenId,
+    uint256 amount,
+    uint256 borrowIndex,
+    address buyer,
+    uint256 price
+  );
+
+  /**
    * @dev Emitted when a loan is redeemed
    * @param user The address initiating the action
    */
@@ -205,6 +220,27 @@ interface ILendPoolLoan {
     address initiator,
     uint256 loanId,
     address bNftAddress,
+    uint256 borrowAmount,
+    uint256 borrowIndex
+  ) external;
+
+
+  /**
+   * @dev Liquidating buy the given loan
+   * @param initiator The address of the user initiating the auction
+   * @param loanId The loan getting burned
+   * @param bNftAddress The address of bNFT
+   * @param onBehalfOf The address receiving the loan
+   * @param bidPrice The bid price of this auction
+   * @param borrowAmount The borrow amount of this auction
+   * @param borrowIndex The borrow index of this auction
+   */
+  function liquidatingBuyLoan(
+    address initiator,
+    uint256 loanId,
+    address bNftAddress,
+    address onBehalfOf,
+    uint256 bidPrice,
     uint256 borrowAmount,
     uint256 borrowIndex
   ) external;

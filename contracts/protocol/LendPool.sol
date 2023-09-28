@@ -123,6 +123,7 @@ contract LendPool is
    * @param onBehalfOf The address that will receive the mTokens, same as msg.sender if the user
    *   wants to receive them on his own wallet, or a different address if the beneficiary of mTokens
    *   is a different wallet
+   * @param period The index of period of the deposit
    * @param referralCode Code used to register the integrator originating the operation, for potential rewards.
    *   0 if the action is executed directly by the user, without any middle-man
    **/
@@ -155,6 +156,7 @@ contract LendPool is
    * @param to Address that will receive the underlying, same as msg.sender if the user
    *   wants to receive it on his own wallet, or a different address if the beneficiary is a
    *   different wallet
+   * @param period The index of period of the deposit
    * @return The final amount withdrawn
    **/
   function withdraw(
@@ -358,6 +360,36 @@ contract LendPool is
           amount: amount
         })
       );
+  }
+
+  /**
+   * @dev Function to liquidate buy a non-healthy NFT loan whose liquidation factor is beyond 1.
+   * - The caller (liquidator) buy collateral asset of the user getting liquidated, and receives
+   *   the collateral asset
+   * @param nftAsset The address of the underlying NFT used as collateral
+   * @param nftTokenId The token ID of the underlying NFT used as collateral
+   * @param liquidatingBuyPrice The price of the liquidating buy
+   * @param onBehalfOf Address of the user who will get the underlying NFT, same as msg.sender if the user
+   **/
+  function liquidatingBuy(
+    address nftAsset,
+    uint256 nftTokenId,
+    uint256 liquidatingBuyPrice,
+    address onBehalfOf
+  ) external override nonReentrant whenNotPaused {
+    LiquidateLogic.executeLiquidatingBuy(
+      _addressesProvider,
+      _reserves,
+      _nfts,
+      _buildLendPoolVars(),
+      DataTypes.ExecuteLiquidatingBuyParams({
+        initiator: _msgSender(),
+        nftAsset: nftAsset,
+        nftTokenId: nftTokenId,
+        liquidatingBuyPrice: liquidatingBuyPrice,
+        onBehalfOf: onBehalfOf
+      })
+    );
   }
 
   function onERC721Received(

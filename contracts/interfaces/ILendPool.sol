@@ -95,6 +95,18 @@ interface ILendPool {
     uint256 loanId
   );
 
+  event LiquidatingBuy(
+    address user,
+    address indexed reserve,
+    uint256 liquidatingBuyPrice,
+    uint256 remainAmount,
+    address indexed nftAsset,
+    uint256 nftTokenId,
+    address onBehalfOf,
+    address indexed borrower,
+    uint256 loanId
+  );
+
   /**
    * @dev Emitted on redeem()
    * @param user The address of the user initiating the redeem(), providing the funds
@@ -303,6 +315,20 @@ interface ILendPool {
     uint256 nftTokenId,
     uint256 amount
   ) external returns (uint256);
+
+  /**
+   * @dev Function to liquidating buy a non-healthy position collateral-wise
+   * @param nftAsset The address of the underlying NFT used as collateral
+   * @param nftTokenId The token ID of the underlying NFT used as collateral
+   * @param liquidatingBuyPrice The bid price of the liquidator want to buy the underlying NFT
+   * @param onBehalfOf Address of the user who will get the underlying NFT, same as msg.sender if the user
+   **/
+  function liquidatingBuy(
+    address nftAsset,
+    uint256 nftTokenId,
+    uint256 liquidatingBuyPrice,
+    address onBehalfOf
+  ) external;
 
   /**
    * @dev Validates and finalizes an mToken transfer

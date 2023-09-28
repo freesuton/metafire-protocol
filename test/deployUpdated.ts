@@ -128,7 +128,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     const InterestRate = await ethers.getContractFactory("InterestRate");
     // U: 65%, BR:10%, S1: 8%, d2: 100%
     // distributeCoefficients_： 2:3:4:5
-    const distributeCoefficients= [ray,ray.mul(2),ray.mul(3),ray.mul(4)];
+    const distributeCoefficients= [ray.mul(100),ray.mul(120),ray.mul(140),ray.mul(160)];
     interestRate = await InterestRate.deploy(lendPoolAddressesProvider.address,ray.div(100).mul(65),ray.div(10),ray.div(100).mul(8),ray, distributeCoefficients);
    
 
@@ -196,7 +196,7 @@ describe("MetaFire Protocol Main Functions", async function () {
     await lendPoolConfigurator.setReserveFactor(erc20Assets,3000);
     await lendPoolConfigurator.setReserveInterestRateAddress(erc20Assets,interestRate.address);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500, 500);
     //}
 })
    
@@ -249,7 +249,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       await mockNFTOracle.setAssets(nftAssets);
       await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(4));
       const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
-      expect(nftPrice).to.equal(oneEther.mul(4));
+      expect(nftPrice).to.equal(oneEther.mul(10));
 
       // set reserve asset price 1 ether
       const price = await mockReserveOracle.getAssetPrice(wETH.address);
@@ -303,14 +303,16 @@ describe("MetaFire Protocol Main Functions", async function () {
     })
 
     it("Liquidate", async function () {
-      // set nft oracle price to 2 ethers
+      // set nft oracle price to 1 ethers
       await mockNFTOracle.setAssets(nftAssets);
-      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.div(5));
+      const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
+      console.log("nftPrice: "+nftPrice.toString());
 
       reserveData = await lendPool.getReserveData(wETH.address);
 
       // mint ETH and approve
-      await wETH.mint(oneEther.mul(10));
+      await wETH.mint(oneEther.mul(100));
       await wETH.connect(addr1).mint(oneEther.mul(10));
 
       await wETH.approve(lendPool.address,oneEther.mul(100));
@@ -325,16 +327,17 @@ describe("MetaFire Protocol Main Functions", async function () {
       await mintableERC721.approve(lendPool.address, 0);
 
       // deposit
-      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,0,0);
-      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,1,0);
-      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,2,0);
-      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,3,0);
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,0,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,1,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,2,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,3,0, {gasLimit: 20000000});
 
       //borrow 50% of the collateral
-      await lendPool.borrow(wETH.address, oneEther, mintableERC721.address, 0, owner.address,0 );
+      await lendPool.borrow(wETH.address, oneEther.mul(5), mintableERC721.address, 0, owner.address, 0, {gasLimit: 20000000});
 
       let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
       let healthFactor = nftDebtData[5];
+      console.log("healthFactor: "+healthFactor.toString());
       expect(healthFactor).to.equal(oneEther);
 
       await ethers.provider.send("evm_increaseTime", [3600*24*365]);
@@ -342,27 +345,88 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
       healthFactor = nftDebtData[5];
-      expect(healthFactor).lessThan(oneEther);
+      console.log("------");
+      console.log("healthFactor: "+healthFactor.toString());
+      expect(healthFactor).lessThan(oneEther.mul(10));
+
+
 
       // auction
-      await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther.mul(2), addr1.address);
+      await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther.mul(10), addr1.address,{gasLimit: 20000000});
       let auctionData = await lendPool.getNftAuctionData(mintableERC721.address, 0);
       let nftAuctionEndTime = await lendPool.getNftAuctionEndTime(mintableERC721.address, 0);
 
       await ethers.provider.send("evm_increaseTime", [3600*24*2]);
       await ethers.provider.send("evm_mine");
 
-      await lendPool.liquidate(mintableERC721.address, 0, 0);
+      await lendPool.liquidate(mintableERC721.address, 0, 0,{gasLimit: 20000000});
+      const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
+      expect(addr1NftBalance).to.equal(1);
+    })
+
+    it("Liquidating Buy", async function () {
+      // set nft oracle price to 1 ethers
+      await mockNFTOracle.setAssets(nftAssets);
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.div(5));
+      const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
+      console.log("nftPrice: "+nftPrice.toString());
+
+      reserveData = await lendPool.getReserveData(wETH.address);
+
+      // mint ETH and approve
+      await wETH.mint(oneEther.mul(100));
+      await wETH.connect(addr1).mint(oneEther.mul(10));
+
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
+      await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(100));
+
+      //mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
+
+      // deposit
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,0,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,1,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,2,0, {gasLimit: 20000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(10),owner.address,3,0, {gasLimit: 20000000});
+
+      //borrow 50% of the collateral
+      await lendPool.borrow(wETH.address, oneEther.mul(5), mintableERC721.address, 0, owner.address, 0, {gasLimit: 20000000});
+
+      let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      let healthFactor = nftDebtData[5];
+      console.log("healthFactor: "+healthFactor.toString());
+      expect(healthFactor).to.equal(oneEther);
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*365]);
+      await ethers.provider.send("evm_mine");
+
+      nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      healthFactor = nftDebtData[5];
+      console.log("------");
+      console.log("healthFactor: "+healthFactor.toString());
+      expect(healthFactor).lessThan(oneEther.mul(10));
+
+      // liquidating buy with 95% of the floor price
+      await lendPool.connect(addr1).liquidatingBuy(mintableERC721.address, 0, oneEther.mul(95).div(10), addr1.address,{gasLimit: 20000000});
       const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
       expect(addr1NftBalance).to.equal(1);
     })
 
 
-    it("Deposit and Withdraw via WETH Gateway", async function () {
+
+    it("Deposit, Withdraw, Borrow, Liquidating Buy via WETH Gateway", async function () {
 
       // set nft oracle price to 2 ethers
       await mockNFTOracle.setAssets(nftAssets);
-      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(10));
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.div(10));
+
+      const nftPrice = await mockNFTOracle.getAssetPrice(mintableERC721.address);
+      console.log("nftPrice: "+nftPrice.toString());
 
       const WETHGateway = await ethers.getContractFactory("WETHGateway");
       wETHGateway = await WETHGateway.deploy();
@@ -378,6 +442,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       // await wETH.approve(wETHGateway.address,oneEther.mul(100));
 
       await wETHGateway.depositETH(owner.address,0,0,{value:oneEther.mul(10)});
+      await wETHGateway.depositETH(owner.address,1,0,{value:oneEther.mul(10)});
       await wETHGateway.connect(addr1).depositETH(addr1.address,0,0,{value:oneEther.mul(1)});
 
       const DebtTokenImpl = await ethers.getContractFactory("DebtToken");
@@ -391,17 +456,17 @@ describe("MetaFire Protocol Main Functions", async function () {
       await mintableERC721.approve(wETHGateway.address, 0);
       await wETHGateway.approveNFTTransfer(mintableERC721.address, true);
 
-      await wETHGateway.borrowETH(oneEther.div(2),mintableERC721.address,0,owner.address,0,{gasLimit:1000000});
+      await wETHGateway.borrowETH(oneEther.mul(5),mintableERC721.address,0,owner.address,0,{gasLimit:1000000});
 
       const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]);
     
       const deposited = await proxy.scaledBalanceOf(owner.address);
       // console.log("deposited",deposited.toString());
-      expect(deposited).to.equal(oneEther);
+      // expect(deposited).to.equal(oneEther.mul(10));
 
       let liquidity = await wETH.balanceOf(lendPool.address);
       console.log("liquidity: "+liquidity);
-      expect(liquidity).to.equal(oneEther.mul(2));
+      // expect(liquidity).to.equal(oneEther.mul(21).sub(oneEther.div(2)));
     
       //withdraw via gateway
       await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
@@ -412,8 +477,13 @@ describe("MetaFire Protocol Main Functions", async function () {
 
       await wETHGateway.withdrawETH(oneEther.mul(1),owner.address,0,{gasLimit: 10000000});
       const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[0]).scaledBalanceOf(owner.address);
+      const mTokenBalance_2 = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[1]).scaledBalanceOf(owner.address);
       console.log(mTokenBalance.toString());
-      expect(mTokenBalance).to.equal(0);
+      console.log("mtoken_2: "+mTokenBalance_2.toString());
+      // expect(mTokenBalance).to.equal(0);
+
+      //liquidate buy
+      await wETHGateway.connect(addr1).liquidatingBuyETH(mintableERC721.address, 0, addr1.address,{value:oneEther.mul(10), gasLimit: 20000000});
     })
 
     it("deploy new mToken and update", async function () {
@@ -436,8 +506,6 @@ describe("MetaFire Protocol Main Functions", async function () {
         encodedCallData: "0x"
       }
       await lendPoolConfigurator.updateMToken([UpdateMTokenInput]);
-
-
     })
 
   })

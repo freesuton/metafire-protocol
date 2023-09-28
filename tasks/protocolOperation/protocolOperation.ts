@@ -31,7 +31,7 @@ task("deposit-via-gateway", " Init the proxy contracts")
     const [owner] = await hre.ethers.getSigners();
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const WETH9Mocked = await hre.ethers.getContractFactory("WETH9Mocked");
@@ -52,7 +52,7 @@ task("mint-nft", " Init the proxy contracts")
     const [owner] = await hre.ethers.getSigners();
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const MintableERC721 = await hre.ethers.getContractFactory("MintableERC721");
@@ -71,7 +71,7 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const [owner] = await hre.ethers.getSigners();
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
 
@@ -79,7 +79,7 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
     const mintableERC721 = MintableERC721.attach(taskArgs.nftaddress);
 
     // await mintableERC721.mint(5,{gasLimit:2000000});
-    await mintableERC721.approve(jsonData.wETHGatewayAddress, 25, {gasLimit:1000000});
+    // await mintableERC721.approve(jsonData.wETHGatewayAddress, 5, {gasLimit:1000000});
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
@@ -89,7 +89,36 @@ task("borrow-nft-via-gateway", " Borrow fund via gateway")
 
     // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
     // await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
-    const tx = await wETHGateway.borrowETH(oneEther.div(20),taskArgs.nftaddress,25,owner.address,0,{gasLimit:2000000});
+    const tx = await wETHGateway.borrowETH(oneEther.div(1000),taskArgs.nftaddress,1,owner.address,0,{gasLimit:500000});
+    console.log(tx);
+
+});
+
+
+task("withdraw-via-gateway", " Borrow fund via gateway")
+  .setAction(async ( taskArgs , hre) => {
+
+    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
+    const [owner] = await hre.ethers.getSigners();
+
+    // Load logic address
+    const path = './tasks/deploys/mainnetContractAddresses.json';
+    const jsonData = loadJsonFile(path);
+
+
+
+    const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
+    const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);
+
+    // const DebtToken = await hre.ethers.getContractFactory("DebtToken");
+    // const debtToken = DebtToken.attach(jsonData.debtTokenAddress);
+
+    // await debtToken.approveDelegation(wETHGateway.address,oneEther.mul(100));
+    // await wETHGateway.approveNFTTransfer(taskArgs.nftaddress, true);
+    const MToken = await hre.ethers.getContractFactory("BurnLockMToken");
+    const mToken = MToken.attach("0x9bd84f3310408A90cB04385ad8A39F4222CD1475");
+    await mToken.approve(wETHGateway.address,oneEther.mul(100));
+    const tx = await wETHGateway.withdrawETH(oneEther.div(1000),owner.address,0,{gasLimit:1000000});
     console.log(tx);
 
 });
@@ -102,7 +131,7 @@ task("update-library", " Update  library contract for a proxy")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const BorrowLogic = await hre.ethers.getContractFactory("BorrowLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress}});
@@ -113,7 +142,7 @@ task("update-library", " Update  library contract for a proxy")
 
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // // load the json file
         jsonData.borrowLogicAddress = borrowLogic.address;
@@ -126,7 +155,7 @@ task("update-impl", " Update implementation contract for a proxy")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const LendPool = await hre.ethers.getContractFactory("LendPool", {
@@ -149,7 +178,7 @@ task("update-impl", " Update implementation contract for a proxy")
 
 
     if(taskArgs.update){
-        const path = './tasks/deploys/contractAddresses.json';
+        const path = './tasks/deploys/mainnetContractAddresses.json';
         console.log("Start to update addresses");
         // // load the json file
         jsonData.lendPoolAddressII = lendPool.address;
@@ -164,7 +193,7 @@ task("whitelist-nft", " add nft asset to the whitelist")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const nftAssets = [taskArgs.nftaddress];
@@ -187,7 +216,7 @@ task("whitelist-nft", " add nft asset to the whitelist")
     await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
 
     // set NFT configuration
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500);
+    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500, 500);
 
     //set max limit
     await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
@@ -205,7 +234,7 @@ task("repay-via-gateway", "Repay loan via gateway")
   .setAction(async ( taskArgs , hre) => {
 
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
@@ -228,7 +257,7 @@ task("auction-via-gateway", "Repay loan via gateway")
     const [owner] = await hre.ethers.getSigners();
     
     // Load logic address
-    const path = './tasks/deploys/contractAddresses.json';
+    const path = './tasks/deploys/mainnetContractAddresses.json';
     const jsonData = loadJsonFile(path);
 
     const oneEther = hre.ethers.BigNumber.from("1000000000000000000");

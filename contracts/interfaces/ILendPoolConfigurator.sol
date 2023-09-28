@@ -12,6 +12,7 @@ interface ILendPoolConfigurator {
     uint256 baseLTV;
     uint256 liquidationThreshold;
     uint256 liquidationBonus;
+    uint256 liquidatingBuyBonus;
     uint256 redeemDuration;
     uint256 auctionDuration;
     uint256 redeemFine;
@@ -105,12 +106,14 @@ interface ILendPoolConfigurator {
    * @param ltv The loan to value of the asset when used as NFT
    * @param liquidationThreshold The threshold at which loans using this asset as NFT will be considered undercollateralized
    * @param liquidationBonus The bonus liquidators receive to liquidate this asset
+   * @param liquidatingBuyBonus The bonus liquidators receive to buy this asset
    **/
   event NftConfigurationChanged(
     address indexed asset,
     uint256 ltv,
     uint256 liquidationThreshold,
-    uint256 liquidationBonus
+    uint256 liquidationBonus,
+    uint256 liquidatingBuyBonus
   );
 
   /**

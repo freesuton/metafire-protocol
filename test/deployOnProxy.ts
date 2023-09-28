@@ -310,46 +310,46 @@ describe("MetaFire Protocol Main Functions", async function () {
   describe("Deposit and Withdraw", async function () {
   
     let reserveData;
-    // it("Deposit and Withdraw", async function () {
+    it("Deposit and Withdraw", async function () {
       
-    //   const lendPool = aLendPoolProxy;
-    //   reserveData = await lendPool.getReserveData(wETH.address);
+      const lendPool = aLendPoolProxy;
+      reserveData = await lendPool.getReserveData(wETH.address);
 
-    //   // console.log(reserveData);
-    //   await wETH.mint(oneEther.mul(100));
-    //   await wETH.approve(lendPool.address,oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
-    //   // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
+      // console.log(reserveData);
+      await wETH.mint(oneEther.mul(100));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(100));
+      // await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(100));
 
-    //   for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-    //     // instantiate mtoken proxy contract
-    //     const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
-    //     // deposit
-    //     await lendPool.deposit(wETH.address,oneEther.mul(i+1),owner.address,i,0);
-    //     const deposited = await proxy.scaledBalanceOf(owner.address);
-    //     // console.log("deposited",deposited.toString());
-    //     expect(deposited).to.equal(oneEther.mul(i+1));
-    //   }
+      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+        // instantiate mtoken proxy contract
+        const proxy = burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]);
+        // deposit
+        await lendPool.deposit(wETH.address,oneEther.mul(i+1),owner.address,i,0);
+        const deposited = await proxy.scaledBalanceOf(owner.address);
+        // console.log("deposited",deposited.toString());
+        expect(deposited).to.equal(oneEther.mul(i+1));
+      }
 
-    //   let liquidity = await wETH.balanceOf(lendPool.address);
-    //   console.log("liquidity: "+liquidity);
-    //   expect(liquidity).to.equal(oneEther.mul(10));
+      let liquidity = await wETH.balanceOf(lendPool.address);
+      console.log("liquidity: "+liquidity);
+      expect(liquidity).to.equal(oneEther.mul(10));
 
-    //   reserveData = await lendPool.getReserveData(wETH.address);
+      reserveData = await lendPool.getReserveData(wETH.address);
 
-    //   await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
-    //   await ethers.provider.send("evm_mine");
+      await ethers.provider.send("evm_increaseTime", [ONE_MONTH  * 14]);
+      await ethers.provider.send("evm_mine");
 
       
-    //   for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
-    //     await lendPool.withdraw(wETH.address,oneEther.mul(i+1),owner.address,i);
-    //     const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]).scaledBalanceOf(owner.address);
-    //     // console.log(mTokenBalance.toString());
-    //     expect(mTokenBalance).to.equal(0);
-    //   }
-    // })
+      for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
+        await lendPool.withdraw(wETH.address,oneEther.mul(i+1),owner.address,i);
+        const mTokenBalance = await burnLockMTokenImpl.attach(reserveData.mTokenAddresses[i]).scaledBalanceOf(owner.address);
+        // console.log(mTokenBalance.toString());
+        expect(mTokenBalance).to.equal(0);
+      }
+    })
 
     it("Interest calculation of Deposit, Borrow, Repay", async function () {
 
@@ -413,60 +413,61 @@ describe("MetaFire Protocol Main Functions", async function () {
 
     })
 
-    // it("Liquidate", async function () {
-    //   // set nft oracle price to 2 ethers
-    //   await mockNFTOracle.setAssets(nftAssets);
-    //   await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2));
+    it("Liquidate", async function () {
+      // set nft oracle price to 2 ethers
+      await mockNFTOracle.initialize(owner.address,oneEther.div(10).mul(2),oneEther.div(10),30,10,600);
+      await mockNFTOracle.setAssets(nftAssets,{gasLimit:10000000});
+      await mockNFTOracle.setAssetData(mintableERC721.address, oneEther.mul(2), {gasLimit:10000000});
 
-    //   reserveData = await lendPool.getReserveData(wETH.address);
+      reserveData = await lendPool.getReserveData(wETH.address);
 
-    //   // mint ETH and approve
-    //   await wETH.mint(oneEther.mul(10));
-    //   await wETH.connect(addr1).mint(oneEther.mul(10));
+      // mint ETH and approve
+      await wETH.mint(oneEther.mul(10));
+      await wETH.connect(addr1).mint(oneEther.mul(10));
 
-    //   await wETH.approve(lendPool.address,oneEther.mul(100));
-    //   await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
-    //   await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
-    //   await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(lendPool.address,oneEther.mul(100));
+      await wETH.approve(reserveData.mTokenAddresses[0],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[1],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[2],oneEther.mul(1000));
+      await wETH.approve(reserveData.mTokenAddresses[3],oneEther.mul(1000));
+      await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(100));
 
-    //   //mint NFT
-    //   await mintableERC721.mint(0);
-    //   await mintableERC721.approve(lendPool.address, 0);
+      //mint NFT
+      await mintableERC721.mint(0);
+      await mintableERC721.approve(lendPool.address, 0);
 
-    //   // deposit
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,0,0);
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,1,0);
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,2,0);
-    //   await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,3,0);
+      // deposit
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,0,0,{gasLimit:10000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,1,0,{gasLimit:10000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,2,0,{gasLimit:10000000});
+      await lendPool.deposit(wETH.address,oneEther.mul(1),owner.address,3,0,{gasLimit:10000000});
 
-    //   //borrow 50% of the collateral
-    //   await lendPool.borrow(wETH.address, oneEther, mintableERC721.address, 0, owner.address,0 );
+      //borrow 50% of the collateral
+      await lendPool.borrow(wETH.address, oneEther, mintableERC721.address, 0, owner.address, 0, {gasLimit:20000000} );
 
-    //   let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
-    //   let healthFactor = nftDebtData[5];
-    //   expect(healthFactor).to.equal(oneEther);
+      let nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      let healthFactor = nftDebtData[5];
+      expect(healthFactor).to.equal(oneEther);
 
-    //   await ethers.provider.send("evm_increaseTime", [3600*24*365]);
-    //   await ethers.provider.send("evm_mine");
+      await ethers.provider.send("evm_increaseTime", [3600*24*365]);
+      await ethers.provider.send("evm_mine");
 
-    //   nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
-    //   healthFactor = nftDebtData[5];
-    //   expect(healthFactor).lessThan(oneEther);
+      nftDebtData = await lendPool.getNftDebtData(mintableERC721.address, 0);
+      healthFactor = nftDebtData[5];
+      expect(healthFactor).lessThan(oneEther);
 
-    //   // auction
-    //   await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther.mul(2), addr1.address);
-    //   let auctionData = await lendPool.getNftAuctionData(mintableERC721.address, 0);
-    //   let nftAuctionEndTime = await lendPool.getNftAuctionEndTime(mintableERC721.address, 0);
+      // auction
+      await lendPool.connect(addr1).auction(mintableERC721.address, 0, oneEther.mul(2), addr1.address,{gasLimit:20000000});
+      let auctionData = await lendPool.getNftAuctionData(mintableERC721.address, 0);
+      let nftAuctionEndTime = await lendPool.getNftAuctionEndTime(mintableERC721.address, 0);
 
-    //   await ethers.provider.send("evm_increaseTime", [3600*24*2]);
-    //   await ethers.provider.send("evm_mine");
+      await ethers.provider.send("evm_increaseTime", [3600*24*2]);
+      await ethers.provider.send("evm_mine");
 
-    //   await lendPool.liquidate(mintableERC721.address, 0, 0);
-    //   const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
-    //   expect(addr1NftBalance).to.equal(1);
-    // })
+      await lendPool.liquidate(mintableERC721.address, 0, 0,{gasLimit:20000000});
+      const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
+      expect(addr1NftBalance).to.equal(1);
+    })
 
 
     // it("Deposit and Withdraw via WETH Gateway", async function () {
