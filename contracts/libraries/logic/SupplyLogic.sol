@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.8.4;
 
-import {IMToken} from "../../interfaces/IMToken.sol";
+import {IBurnLockMToken} from "../../interfaces/IBurnLockMToken.sol";
 
 import {Errors} from "../helpers/Errors.sol";
 import {DataTypes} from "../types/DataTypes.sol";
@@ -70,7 +70,7 @@ library SupplyLogic {
 
     IERC20Upgradeable(params.asset).safeTransferFrom(params.initiator, address(this), params.amount);
 
-    IMToken(mToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndices[period]);
+    IBurnLockMToken(mToken).mint(params.onBehalfOf, params.amount, reserve.liquidityIndices[period]);
 
     emit Deposit(params.initiator, params.asset, params.amount, params.onBehalfOf,uint8(params.period) ,params.referralCode);
   }
@@ -91,7 +91,7 @@ library SupplyLogic {
     address mToken = reserve.mTokenAddresses[period];
     require(mToken != address(0), Errors.VL_INVALID_RESERVE_ADDRESS);
 
-    uint256 userBalance = IMToken(mToken).balanceOf(params.initiator);
+    uint256 userBalance = IBurnLockMToken(mToken).balanceOf(params.initiator,params.period);
 
     uint256 amountToWithdraw = params.amount;
 
@@ -105,7 +105,7 @@ library SupplyLogic {
 
     reserve.updateInterestRates(params.asset, mToken, 0, amountToWithdraw);
 
-    IMToken(mToken).burn(params.initiator, params.to, amountToWithdraw, reserve.liquidityIndices[period]);
+    IBurnLockMToken(mToken).burn(params.initiator, params.to, amountToWithdraw, reserve.liquidityIndices[period]);
 
     IERC20Upgradeable(params.asset).safeTransfer(params.to, amountToWithdraw);
 

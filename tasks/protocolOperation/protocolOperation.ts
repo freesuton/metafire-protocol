@@ -209,17 +209,17 @@ task("whitelist-nft", " add nft asset to the whitelist")
     const BNFTRegistry = await hre.ethers.getContractFactory("BNFTRegistry");
     const bNFTRegistry = BNFTRegistry.attach(jsonData.bNFTRegistryProxyAddress);
 
-    const tx = await bNFTRegistry.createBNFT(taskArgs.nftaddress, {gasLimit: 1000000});
-    console.log(tx);
+    // const tx = await bNFTRegistry.createBNFT(taskArgs.nftaddress);
+    // console.log(tx);
     // init NFT
     const initNftInput: any = [[taskArgs.nftaddress]];
-    await lendPoolConfigurator.batchInitNft(initNftInput, {gasLimit: 2000000});
+    // await lendPoolConfigurator.batchInitNft(initNftInput);
 
-    // set NFT configuration
-    await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 5000, 5000, 500, 500);
+    // // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus(auction), liquidatingBuyBonus
+    // await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 6000, 8000, 1000, 500);
 
-    //set max limit
-    await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,500,500);
+    // //set max limit
+    // await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,100000,100000);
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
     const wETHGateway = WETHGateway.attach(jsonData.wETHGatewayAddress);

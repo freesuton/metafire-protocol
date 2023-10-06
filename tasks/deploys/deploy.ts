@@ -515,7 +515,7 @@ task("contraction-configuration", " Init the proxy contracts")
     await aLendPoolConfiguratorProxy.setReserveFactor(erc20Assets,3000);
     await aLendPoolConfiguratorProxy.setReserveInterestRateAddress(erc20Assets,jsonData.interestRateAddress);
     // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus(auction), liquidatingBuyBonus
-    await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 8000, 1000, 500);
+    await aLendPoolConfiguratorProxy.configureNftAsCollateral(nftAssets, 5000, 7000, 1000, 500);
     // (nftaddress, redeemDuration-hours, auctionDuration-hours,redeemFine percentage: 1% = 100)
     await aLendPoolConfiguratorProxy.configureNftAsAuction(erc20Assets, 24,24, 500);
     //}
