@@ -286,11 +286,17 @@ describe("MetaFire Protocol Main Functions", async function () {
       const borrowRate = reserveData[4].mul(100).div(ray);
       expect(borrowRate).to.equal(16);
 
+
+
+
       for(let i = 0; i < reserveData.mTokenAddresses.length; i++){
         const liquidityRate = reserveData[3][i].mul(100).div(ray);
         console.log("Current Liquidity Rate of mToken"+i+": " + reserveData[3][i]);
         // expect(liquidityRate).to.equal(2* (i+1));
       }
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*150]);
+      await ethers.provider.send("evm_mine");
 
       await lendPool.repay(mintableERC721.address, 0, oneEther.div(10000000));
       let balanceofNFT = await mintableERC721.balanceOf(owner.address);
@@ -299,6 +305,17 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.repay(mintableERC721.address, 0, oneEther.mul(5));
       balanceofNFT = await mintableERC721.balanceOf(owner.address);
       expect(balanceofNFT).to.equal(1);
+      
+      await wETH.connect(addr1).mint(oneEther.mul(100));
+      await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(1000));
+      // await wETH.approve(lendPool.address,oneEther.mul(1000));
+      await lendPool.connect(addr1).deposit(wETH.address,oneEther.mul(2),addr1.address,0,0);
+
+      await ethers.provider.send("evm_increaseTime", [3600*24*150]);
+      await ethers.provider.send("evm_mine");
+      
+      await lendPool.connect(addr1).withdraw(wETH.address,oneEther.mul(2),addr1.address,0);
+
 
     })
 
