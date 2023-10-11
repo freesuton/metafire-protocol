@@ -13,6 +13,7 @@ import "./tasks/configures/configure";
 import "./tasks/dataGetter/dataGetter";
 // import "./tasks/configures/migrateOracle";
 import "./tasks/protocolOperation/protocolOperation";
+import "./tasks/update/updateContracts";
 import "hardhat-gas-reporter";
 
 const proxyUrl = "http://127.0.0.1:7890" 

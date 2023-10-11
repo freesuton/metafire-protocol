@@ -381,6 +381,8 @@ describe("MetaFire Protocol Main Functions", async function () {
       await lendPool.liquidate(mintableERC721.address, 0, 0,{gasLimit: 20000000});
       const addr1NftBalance = await mintableERC721.balanceOf(addr1.address);
       expect(addr1NftBalance).to.equal(1);
+
+      // const mtokenBalanceOfGate = await reserveData.mTokenAddresses[0]
     })
 
     it("Liquidating Buy", async function () {
