@@ -103,14 +103,14 @@ task("deploy-updated-token-withdraw-contracts", "Deploy updated  mtoken and with
 
 
 
-    if(taskArgs.update){
-        console.log("Start to update addresses");
-        // load the json file
-        jsonData.supplyLogicV2Address = supplyLogic.address;
-        jsonData.burnLockMTokenImplV2Address = burnLockMTokenImpl.address;
+    // if(taskArgs.update){
+    //     console.log("Start to update addresses");
+    //     // load the json file
+    //     jsonData.supplyLogicV2Address = supplyLogic.address;
+    //     jsonData.burnLockMTokenImplV2Address = burnLockMTokenImpl.address;
 
-        saveJsonFile(path, jsonData);
-    }
+    //     saveJsonFile(path, jsonData);
+    // }
 });
 
 
