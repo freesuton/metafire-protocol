@@ -119,7 +119,7 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
       amountToWithdraw = userBalance;
     }
 
-    mWETH.transferFrom(msg.sender, address(this), amountToWithdraw);
+    mWETH.transferFrom(msg.sender, address(this), amountToWithdraw, period);
 
     cachedPool.withdraw(address(WETH), amountToWithdraw, address(this), period);
     WETH.withdraw(amountToWithdraw);
