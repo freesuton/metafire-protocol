@@ -317,6 +317,13 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     _transfer(from, to, amount, true, period);
   }
 
+  function transferFrom(address from, address to, uint256 value, DataTypes.Period period) public returns (bool) {
+      address spender = _msgSender();
+      _spendAllowance(from, spender, value);
+      _transfer(from, to, value, period);
+      return true;
+  }
+
   // function getUnlockedAmount(address sender) public view returns (uint256) {
   //   uint256 unlockedAmount;
   //   for (uint256 i = 0; i < _deposits[sender].length; i++) {

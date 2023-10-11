@@ -295,6 +295,7 @@ describe("MetaFire Protocol Main Functions", async function () {
         // expect(liquidityRate).to.equal(2* (i+1));
       }
 
+  
       await ethers.provider.send("evm_increaseTime", [3600*24*150]);
       await ethers.provider.send("evm_mine");
 
@@ -306,6 +307,7 @@ describe("MetaFire Protocol Main Functions", async function () {
       balanceofNFT = await mintableERC721.balanceOf(owner.address);
       expect(balanceofNFT).to.equal(1);
       
+      // test withdraw 
       await wETH.connect(addr1).mint(oneEther.mul(100));
       await wETH.connect(addr1).approve(lendPool.address,oneEther.mul(1000));
       // await wETH.approve(lendPool.address,oneEther.mul(1000));
