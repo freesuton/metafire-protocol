@@ -78,6 +78,13 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
     }
   }
 
+  /**
+  * @dev approve single NFT collection transfer from gateway to lendPool contract
+  */
+  function approveNFTTransfer(address nftAsset, bool approved) external onlyOwner{
+    IERC721Upgradeable(nftAsset).setApprovalForAll(address(_getLendPool()), approved);
+  }
+
   function authorizeCallerWhitelist(address[] calldata callers, bool flag) external nonReentrant onlyOwner {
     for (uint256 i = 0; i < callers.length; i++) {
       _callerWhitelists[callers[i]] = flag;
@@ -336,12 +343,7 @@ contract WETHGateway is IWETHGateway, ERC721HolderUpgradeable, EmergencyTokenRec
     return (extraAmount);
   }
 
-  /**
-   * @dev approve NFT transfer from gateway to lendPool contract
-  */
-  function approveNFTTransfer(address nftAsset, bool approved) external onlyOwner{
-    IERC721Upgradeable(nftAsset).setApprovalForAll(address(_getLendPool()), approved);
-  }
+
   
   /** 
    * @dev transfer ETH to an address, revert if it fails.
