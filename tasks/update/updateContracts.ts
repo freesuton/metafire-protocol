@@ -89,7 +89,7 @@ task("deploy-updated-token-withdraw-contracts", "Deploy updated  mtoken and with
     const [owner, addr1] = await hre.ethers.getSigners();
 
     
-    const SupplyLogic = await hre.ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: "0x0Fb2648097c80022938440767457a54937f5aef4" }});
+    const SupplyLogic = await hre.ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress}});
     supplyLogic = await SupplyLogic.deploy();
     await supplyLogic.deployed();
 
@@ -103,14 +103,14 @@ task("deploy-updated-token-withdraw-contracts", "Deploy updated  mtoken and with
 
 
 
-    // if(taskArgs.update){
-    //     console.log("Start to update addresses");
-    //     // load the json file
-    //     jsonData.supplyLogicV2Address = supplyLogic.address;
-    //     jsonData.burnLockMTokenImplV2Address = burnLockMTokenImpl.address;
+    if(taskArgs.update){
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.supplyLogicV2Address = supplyLogic.address;
+        jsonData.burnLockMTokenImplV2Address = burnLockMTokenImpl.address;
 
-    //     saveJsonFile(path, jsonData);
-    // }
+        saveJsonFile(path, jsonData);
+    }
 });
 
 task("deploy-lendpoolv2", "Deploy lendPool contract v2")
@@ -121,11 +121,11 @@ task("deploy-lendpoolv2", "Deploy lendPool contract v2")
 
     const LendPool = await hre.ethers.getContractFactory("LendPool", {
         libraries: {
-          SupplyLogic: "0x07D88814c0ea8E6Ec476aCD1e6Fae5c245AAe151",
-          BorrowLogic: "0xdF840D5De27502368301553c465a422cc5C26160",
-          LiquidateLogic: "0x56eA8b7CBF7634Ae036Bd26ad37FeEDE5fB573Ad",
-          ReserveLogic: "0xde6d9B797BE9fB5261C1A4dca953f4C20B322144",
-          NftLogic: "0x8e0A0B008046C1862cb7D43103e41817Ed67809E"
+            SupplyLogic: jsonData.supplyLogicV2Address,
+            BorrowLogic: jsonData.borrowLogicAddress,
+            LiquidateLogic: jsonData.liquidateLogicAddress,
+            ReserveLogic: jsonData.reserveLogicAddress,
+            NftLogic: jsonData.nftLogicAddress
         },
       });
     lendPool = await LendPool.deploy();
@@ -133,13 +133,13 @@ task("deploy-lendpoolv2", "Deploy lendPool contract v2")
 
     console.log("LendPoolV2 deployed to:", lendPool.address);
 
-    // if(taskArgs.update){
-    //     console.log("Start to update addresses");
-    //     // load the json file
-    //     jsonData.lendPoolV2Address = lendPool.address;
-    //     
-    //     saveJsonFile(path, jsonData);
-    // }
+    if(taskArgs.update){
+        console.log("Start to update addresses");
+        // load the json file
+        jsonData.lendPoolV2Address = lendPool.address;
+        
+        saveJsonFile(path, jsonData);
+    }
 
 });
 
