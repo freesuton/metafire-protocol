@@ -185,34 +185,24 @@ task("deploy-gatewayv2", "Deploy WETH Gateway")
 });
 
 
-
-
 task("update-to-mtokenv2", "Update new mToken implementation and update the logic")
-  // .addParam("address", "The NFT address")
   .setAction(async ( {} , hre) => {
 
-
-    const oneEther = hre.ethers.BigNumber.from("1000000000000000000");
-    const ray = hre.ethers.BigNumber.from("1000000000000000000000000000");
-
-
-    const [owner] = await hre.ethers.getSigners();
-
-    // const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
-    // burnLockMTokenImpl = BurnLockMTokenImpl.attach("0xC8C7CE123c3e7bDdD6F8dD4Ea814aBeb227acAeb");
+    const path = './tasks/deploys/mainnetContractAddresses.json';
+    const jsonData = loadJsonFile(path);
 
     // load the configurator
     const LendPoolConfigurator = await hre.ethers.getContractFactory("LendPoolConfigurator", {
         libraries: {
-          ConfiguratorLogic: "0xb4fEeDf83cD7d06d5320C34Dbb9F765D3C63D391",
+          ConfiguratorLogic: jsonData.configuratorLogicAddress,
         },
       });
-    lendPoolConfigurator = LendPoolConfigurator.attach("0x2c3c6C68C3D2816CaA0d0A3690EEc878B8dB8b3B");
+    lendPoolConfigurator = LendPoolConfigurator.attach(jsonData.lendPoolConfiguratorProxyAddress);
 
 
     const UpdateMTokenInput = {
-      asset: "0xaF4Cc8E4B6b079426E9aCc4e2958E8e1eAfAdBD3",
-      implementation:  "0xC8C7CE123c3e7bDdD6F8dD4Ea814aBeb227acAeb",
+      asset: jsonData.wETHAddress,
+      implementation:  jsonData.burnLockMTokenImplV2Address,
       encodedCallData: "0x"
     }
 
