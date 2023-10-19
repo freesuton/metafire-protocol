@@ -11,11 +11,13 @@
       "oracle_address": "0x9f2ba149c2A0Ee76043d83558C4E79E9F3E5731B",
       "floor": "3.8997"
     },
+    // whitelisted
     "0xa3aee8bce55beea1951ef834b99f3ac60d1abeeb": {
       "name": "VeeFriends",
       "oracle_address": "0x35bf6767577091E7f04707c0290b3f889e968307",
       "floor": "1.5628"
     },
+    // whitelisted
     "0xe785e82358879f061bc3dcac6f0444462d4b5330": {
       "name": "World of Women",
       "oracle_address": "0xDdf0B85C600DAF9e308AFed9F597ACA212354764",
@@ -45,11 +47,13 @@
       "oracle_address": "0x01B6710B01cF3dd8Ae64243097d91aFb03728Fdd",
       "floor": "44.8459"
     },
+    // whitelisted
     "0x1cb1a5e65610aeff2551a50f76a87a7d3fb649c6": {
       "name": "Cryptoadz",
       "oracle_address": "0xFaA8F6073845DBe5627dAA3208F78A3043F99bcA",
       "floor": "0.53729539"
     },
+    // whitelisted
     "0x1a92f7381b9f03921564a437210bb9396471050c": {
       "name": "Cool Cats",
       "oracle_address": "0xF49f8F5b931B0e4B4246E4CcA7cD2083997Aa83d",
@@ -61,6 +65,7 @@
       "oracle_address": "0x021264d59DAbD26E7506Ee7278407891Bb8CDCCc",
       "floor": "1.2501"
     },
+    // whitelisted
     "0xed5af388653567af2f388e6224dc7c4b3241c544": {
       "name": "BEANZ OFFICIAL",
       "oracle_address": "0xA97477aB5ab6ED2f6A2B5Cbe59D71e88ad334b90",
