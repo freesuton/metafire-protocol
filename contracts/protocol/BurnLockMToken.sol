@@ -218,6 +218,14 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
     return _treasury;
   }
 
+
+  /**
+   * @dev Set the address of the MetaFire treasury, receiving the fees on this mToken
+   */
+  function setTreasury(address treasuryAddress) external onlyPoolAdmin {
+    _treasury = treasuryAddress;
+  }
+
   /**
    * @dev Returns the address of the underlying asset of this mToken
    **/
@@ -362,4 +370,5 @@ contract BurnLockMToken is Initializable, IBurnLockMToken, IncentivizedERC20 {
   function setLockPeriod(uint256 lockPeriod) external onlyPoolAdmin {
     LOCK_PERIOD = lockPeriod;
   }
+
 }
