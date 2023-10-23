@@ -89,25 +89,25 @@ task("deploy-updated-token-withdraw-contracts", "Deploy updated  mtoken and with
     const [owner, addr1] = await hre.ethers.getSigners();
 
     
-    const SupplyLogic = await hre.ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress}});
-    supplyLogic = await SupplyLogic.deploy();
-    await supplyLogic.deployed();
+    // const SupplyLogic = await hre.ethers.getContractFactory("SupplyLogic", {libraries: {ValidationLogic: jsonData.validationLogicAddress}});
+    // supplyLogic = await SupplyLogic.deploy();
+    // await supplyLogic.deployed();
 
     const BurnLockMTokenImpl = await hre.ethers.getContractFactory("BurnLockMToken");
     burnLockMTokenImpl = await BurnLockMTokenImpl.deploy();
     await burnLockMTokenImpl.deployed();
     
 
-    console.log("SupplyLogicV2 deployed to:", supplyLogic.address);
-    console.log("BurnLockMTokenImplV2 deployed to:", burnLockMTokenImpl.address);
+    // console.log("SupplyLogicV2 deployed to:", supplyLogic.address);
+    console.log("BurnLockMTokenImplV3 deployed to:", burnLockMTokenImpl.address);
 
 
 
     if(taskArgs.update){
         console.log("Start to update addresses");
         // load the json file
-        jsonData.supplyLogicV2Address = supplyLogic.address;
-        jsonData.burnLockMTokenImplV2Address = burnLockMTokenImpl.address;
+        // jsonData.supplyLogicV2Address = supplyLogic.address;
+        jsonData.burnLockMTokenImplV3Address = burnLockMTokenImpl.address;
 
         saveJsonFile(path, jsonData);
     }
@@ -185,7 +185,7 @@ task("deploy-gatewayv2", "Deploy WETH Gateway")
 });
 
 
-task("update-to-mtokenv2", "Update new mToken implementation and update the logic")
+task("update-to-mtokenv3", "Update new mToken implementation and update the logic")
   .setAction(async ( {} , hre) => {
 
     const path = './tasks/deploys/mainnetContractAddresses.json';
@@ -202,7 +202,7 @@ task("update-to-mtokenv2", "Update new mToken implementation and update the logi
 
     const UpdateMTokenInput = {
       asset: jsonData.wETHAddress,
-      implementation:  jsonData.burnLockMTokenImplV2Address,
+      implementation:  jsonData.burnLockMTokenImplV3Address,
       encodedCallData: "0x"
     }
 
