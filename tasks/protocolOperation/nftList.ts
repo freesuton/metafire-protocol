@@ -66,7 +66,7 @@
       "floor": "1.2501"
     },
     // whitelisted
-    "0xed5af388653567af2f388e6224dc7c4b3241c544": {
+    "0x306b1ea3ecdf94aB739F1910bbda052Ed4A9f949": {
       "name": "BEANZ OFFICIAL",
       "oracle_address": "0xA97477aB5ab6ED2f6A2B5Cbe59D71e88ad334b90",
       "floor": "0.21797198"
