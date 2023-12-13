@@ -8,11 +8,6 @@ async function main() {
     let owner: SignerWithAddress;
     let addr1: SignerWithAddress;
     
-    // Libraries
-    //   let metaFireERC721: any;
-
-
-
 
     [owner, addr1] = await ethers.getSigners();
 
