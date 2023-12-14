@@ -32,7 +32,7 @@ describe("MetaFire Token", function () {
 
   describe("Deployment", function () {
     // Write tests for the deployment and initialization of the contract
-    it("Check Config", async function () {
+    it("Deploy Token", async function () {
         const MetaFireToken = await ethers.getContractFactory("MetaFireToken");
         const metaFireToken = await MetaFireToken.deploy();
         await metaFireToken.deployed();
@@ -41,6 +41,37 @@ describe("MetaFire Token", function () {
         await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
         // await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
     });
+
+    it("Proxy pattern for token", async function () {
+      const MetaFireToken = await ethers.getContractFactory("MetaFireToken");
+      const metaFireToken = await MetaFireToken.deploy();
+      await metaFireToken.deployed();
+
+      /**
+     * Deploy proxy contracts
+     */
+      const MetaFireProxyAdmin = await ethers.getContractFactory("MetaFireProxyAdmin");
+      const metaFireProxyAdmin = await MetaFireProxyAdmin.deploy();
+      await metaFireProxyAdmin.deployed();
+
+      const MetaFireUpgradeableProxy = await ethers.getContractFactory("MetaFireUpgradeableProxy");
+
+      const tokenProxy = await MetaFireUpgradeableProxy.deploy(metaFireToken.address, metaFireProxyAdmin.address, "0x");
+      await tokenProxy.deployed();
+
+      const tokenProxyAsMetaFireToken = await MetaFireToken.attach(tokenProxy.address);
+      await tokenProxyAsMetaFireToken.initialize(owner.address, oneEther);
+
+      const balance = await tokenProxyAsMetaFireToken.balanceOf(owner.address);
+      console.log(oneEther);
+      console.log(balance);
+
+      expect(balance).to.equal(oneEther);
+  
+      // console.log("MetaFireToken deployed to:" + metaFireToken.address);
+      // await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
+      // await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
+  });
   });
 
 

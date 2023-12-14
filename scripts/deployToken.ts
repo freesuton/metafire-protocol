@@ -20,8 +20,6 @@ async function main() {
     console.log("MetaFireToken deployed to:" + metaFireToken.address);
     await metaFireToken.initialize(owner.address, oneEther);
 
-
-
 }
 
 // We recommend this pattern to be able to use async/await everywhere
