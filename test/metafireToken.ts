@@ -67,10 +67,6 @@ describe("MetaFire Token", function () {
       console.log(balance);
 
       expect(balance).to.equal(oneEther);
-  
-      // console.log("MetaFireToken deployed to:" + metaFireToken.address);
-      // await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
-      // await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
   });
   });
 
