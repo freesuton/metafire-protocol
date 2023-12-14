@@ -23,9 +23,6 @@ describe("MetaFire Token", function () {
     
 
     // Deploy and init needed contracts
-    
-
-
 
   });
   
@@ -41,6 +38,8 @@ describe("MetaFire Token", function () {
         await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
         // await metaFireToken.initialize(owner.address, oneEther, {gasLimit: 10000000});
     });
+
+
 
     it("Proxy pattern for token", async function () {
       const MetaFireToken = await ethers.getContractFactory("MetaFireToken");
@@ -63,8 +62,6 @@ describe("MetaFire Token", function () {
       await tokenProxyAsMetaFireToken.initialize(owner.address, oneEther);
 
       const balance = await tokenProxyAsMetaFireToken.balanceOf(owner.address);
-      console.log(oneEther);
-      console.log(balance);
 
       expect(balance).to.equal(oneEther);
   });
@@ -72,6 +69,33 @@ describe("MetaFire Token", function () {
 
 
 
+  describe("Vault Deployment", function () {
+    // Write tests for the deployment and initialization of the contract
+    it("Deploy Vault", async function () {
+
+      //deploy token
+      const MetaFireToken = await ethers.getContractFactory("MetaFireToken");
+      const metaFireToken = await MetaFireToken.deploy();
+      await metaFireToken.deployed();
+
+      await metaFireToken.initialize(owner.address, oneEther.mul(1000000));
+
+
+
+      // deploy token vault
+      const MetaFireTokenVault = await ethers.getContractFactory("MetaFireTokenVault");
+      const metaFireTokenVault = await MetaFireTokenVault.deploy();
+      await metaFireTokenVault.deployed();
+
+      // give allooowance to vault
+      await metaFireToken.approve(metaFireTokenVault.address, oneEther.mul(1000000));
+
+      // lock 1 million tokens
+      await metaFireTokenVault.initialize(owner.address, metaFireToken.address, oneEther.mul(1000000));
+      
+    });
+
+  });
 
 
 

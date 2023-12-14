@@ -11,7 +11,7 @@ import {Errors} from "../libraries/helpers/Errors.sol";
 import {ILendPool} from "../interfaces/ILendPool.sol";
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 
-contract TokenVault is Initializable, OwnableUpgradeable {
+contract MetaFireTokenVault is Initializable, OwnableUpgradeable {
     IERC20Upgradeable private _token;
     uint256 private _lockedAmount;
 
@@ -22,17 +22,18 @@ contract TokenVault is Initializable, OwnableUpgradeable {
         _;
     }
 
-    function initialize(address tokenAddress, uint256 initialLockAmount) public initializer {
+    function initialize(ILendPoolAddressesProvider addressProvider,address tokenAddress, uint256 initialLockAmount) public initializer {
         require(tokenAddress != address(0), "Token address cannot be zero address");
+        _addressProvider = addressProvider;
         _token = IERC20Upgradeable(tokenAddress);
         lockTokens(initialLockAmount);
     }
 
     // Lock tokens in the vault
-    function lockTokens(uint256 amount) public onlyLendPool {
+    function lockTokens(uint256 amount) public {
         require(amount > 0, "Amount must be greater than 0");
         uint256 balance = _token.balanceOf(address(this));
-        require(balance + amount <= _token.totalSupply() * 99 / 100, "Cannot lock more than 99% of tokens");
+        // require(balance + amount <= _token.totalSupply() * 99 / 100, "Cannot lock more than 99% of tokens");
 
         _lockedAmount += amount;
         bool sent = _token.transferFrom(msg.sender, address(this), amount);
