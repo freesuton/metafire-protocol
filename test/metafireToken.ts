@@ -93,6 +93,9 @@ describe("MetaFire Token", function () {
       // lock 1 million tokens
       await metaFireTokenVault.initialize(owner.address, metaFireToken.address, oneEther.mul(1000000));
       
+      // check vault balance
+      const balance = await metaFireToken.balanceOf(metaFireTokenVault.address);
+      expect(balance).to.equal(oneEther.mul(1000000));
     });
 
   });
