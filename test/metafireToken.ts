@@ -80,6 +80,10 @@ describe("MetaFire Token", function () {
 
       await metaFireToken.initialize(owner.address, oneEther.mul(1000000));
 
+      // check total supply
+      const totalSupply = await metaFireToken.totalSupply();
+      expect(totalSupply).to.equal(oneEther.mul(1000000));
+
 
 
       // deploy token vault
