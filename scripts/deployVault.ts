@@ -19,15 +19,22 @@ async function main() {
 
     const ADDRESS_PROVIDER_ADDRESS = jsonData.lendPoolAddressesProviderAddress;
     const METAFIRE_TOKEN_ADDRESS = jsonData.MetaFireTokenProxy;
+    const ADMIN_ADDRESS = jsonData.metaFireProxyAdminAddress;
 
     //get token contract:
     const MetaFireToken = await ethers.getContractFactory("MetaFireToken");
     const metaFireToken = await MetaFireToken.attach(METAFIRE_TOKEN_ADDRESS);
 
-    // deploy token vault
+
+    // deploy token vault logic
     const MetaFireTokenVault = await ethers.getContractFactory("MetaFireTokenVault");
     const metaFireTokenVault = await MetaFireTokenVault.deploy();
     await metaFireTokenVault.deployed();
+
+    //deploy token vault proxy
+    const MetaFireUpgradeableProxy = await ethers.getContractFactory("MetaFireUpgradeableProxy");
+    const tokenVaultProxy = await MetaFireUpgradeableProxy.deploy(metaFireTokenVault.address, ADMIN_ADDRESS, "0x");
+    await tokenVaultProxy.deployed();
 
     // give allooowance to vault
     await metaFireToken.approve(metaFireTokenVault.address, oneEther.mul(1000000));

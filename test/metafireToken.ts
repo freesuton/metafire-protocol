@@ -113,6 +113,12 @@ describe("MetaFire Token", function () {
       await expect(metaFireTokenVault.connect(addr1).transferLockedTokens(addr2.address, oneEther.mul(990000))).to.be.revertedWith("100");
       // check if admin can transfer tokens
       await metaFireTokenVault.transferLockedTokens(addr2.address, oneEther.mul(990000));
+      // check if balance is 0
+      const balanceAfterTransfer = await metaFireToken.balanceOf(metaFireTokenVault.address);
+      expect(balanceAfterTransfer).to.equal(0);
+      // check if addr2 has the tokens
+      const balanceAddr2 = await metaFireToken.balanceOf(addr2.address);
+      expect(balanceAddr2).to.equal(oneEther.mul(990000));
 
     });
 
