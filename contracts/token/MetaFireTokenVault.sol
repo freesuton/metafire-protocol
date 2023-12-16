@@ -17,11 +17,10 @@ contract MetaFireTokenVault is Initializable, OwnableUpgradeable {
 
     ILendPoolAddressesProvider internal _addressProvider;
 
-    modifier onlyLendPool() {
-        require(_msgSender() == address(_getLendPool()), Errors.CT_CALLER_MUST_BE_LEND_POOL);
+    modifier onlyPoolAdmin() {
+        require(_addressProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
         _;
     }
-
     function initialize(ILendPoolAddressesProvider addressProvider,address tokenAddress, uint256 initialLockAmount) public initializer {
         require(tokenAddress != address(0), "Token address cannot be zero address");
         _addressProvider = addressProvider;
@@ -41,7 +40,7 @@ contract MetaFireTokenVault is Initializable, OwnableUpgradeable {
     }
 
     // Allow the admin to transfer locked tokens
-    function transferLockedTokens(address to, uint256 amount) public onlyLendPool {
+    function transferLockedTokens(address to, uint256 amount) public onlyPoolAdmin {
         require(amount <= _lockedAmount, "Insufficient locked tokens");
         _lockedAmount -= amount;
         bool sent = _token.transfer(to, amount);

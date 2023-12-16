@@ -73,6 +73,13 @@ describe("MetaFire Token", function () {
     // Write tests for the deployment and initialization of the contract
     it("Deploy Vault", async function () {
 
+      //deploy address proovider
+      const LendPoolAddressesProvider = await ethers.getContractFactory("LendPoolAddressesProvider");
+      const lendPoolAddressesProvider = await LendPoolAddressesProvider.deploy("ETH");
+      await lendPoolAddressesProvider.deployed();
+      // set an address as pool admin
+      await lendPoolAddressesProvider.setPoolAdmin(owner.address);
+
       //deploy token
       const MetaFireToken = await ethers.getContractFactory("MetaFireToken");
       const metaFireToken = await MetaFireToken.deploy();
@@ -91,15 +98,22 @@ describe("MetaFire Token", function () {
       const metaFireTokenVault = await MetaFireTokenVault.deploy();
       await metaFireTokenVault.deployed();
 
+
       // give allooowance to vault
       await metaFireToken.approve(metaFireTokenVault.address, oneEther.mul(1000000));
 
-      // lock 1 million tokens
-      await metaFireTokenVault.initialize(owner.address, metaFireToken.address, oneEther.mul(1000000));
+      // lock 990 thousand tokens
+      await metaFireTokenVault.initialize(lendPoolAddressesProvider.address, metaFireToken.address, oneEther.mul(990000));
       
       // check vault balance
       const balance = await metaFireToken.balanceOf(metaFireTokenVault.address);
-      expect(balance).to.equal(oneEther.mul(1000000));
+      expect(balance).to.equal(oneEther.mul(990000));
+
+      //Check if addresses other than the administrator can transfer tokens
+      await expect(metaFireTokenVault.connect(addr1).transferLockedTokens(addr2.address, oneEther.mul(990000))).to.be.revertedWith("100");
+      // check if admin can transfer tokens
+      await metaFireTokenVault.transferLockedTokens(addr2.address, oneEther.mul(990000));
+
     });
 
   });
