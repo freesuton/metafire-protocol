@@ -94,7 +94,7 @@ task("init-registered-nft", "init registered nft asset to the registry")
     // // 1% -> 100     address, ltv, liquidationThreshold, liquidationBonus(auction), liquidatingBuyBonus
     await lendPoolConfigurator.configureNftAsCollateral(nftAssets, 6000, 8000, 1000, 500);
 
-    // //set max limit
+    // //set (asset, maxSupply, maxTokenId)
     await lendPoolConfigurator.setNftMaxSupplyAndTokenId(nftAssets,100000,100000);
 
     const WETHGateway = await hre.ethers.getContractFactory("WETHGateway");
