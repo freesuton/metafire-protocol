@@ -29,19 +29,19 @@ contract NFTLinkOracleGetter is INFTOracleGetter, Initializable{
 
     /**
      * @dev Get NFT floor price from Oralce
-     * @param asset of the NFT Oralce
+     * @param asset of the NFT Oralce 
      */
     function getAssetPrice( address asset) override external view returns ( uint256 ){
         // address oracleAddress = _oracleAddresses[asset];
         require( oracleAddress != address(0), "NFTOracleGetter: Oracle address is not set");
   
-        uint256 nftFloorPrice = INFTOracle( oracleAddress ).getAssetPrice();
+        uint256 nftFloorPrice = INFTOracle( oracleAddress ).getAssetPrice(asset);
 
         require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0 or less than 0");
         return uint256(nftFloorPrice);
     }
 
-    function setOracle(address asset, address oracleAddress) external onlyPoolAdmin {
+    function setOracle(address oracleAddress) external onlyPoolAdmin {
         _oracleAddresses = oracleAddress;
     }
 }
