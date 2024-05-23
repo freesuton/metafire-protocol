@@ -12,15 +12,17 @@ contract NFTLinkOracleGetter is INFTOracleGetter, Initializable {
 
     ILendPoolAddressesProvider internal _addressesProvider;
     INFTOracle internal _nftOracle;
+    bool internal _enforcePriceCheck;
 
     modifier onlyPoolAdmin() {
         require(_addressesProvider.getPoolAdmin() == msg.sender, Errors.CALLER_NOT_POOL_ADMIN);
         _;
     }
 
-    function initialize(ILendPoolAddressesProvider provider, address oracleAddress) public initializer {
+    function initialize(ILendPoolAddressesProvider provider, address oracleAddress, bool enforcePriceCheck) public initializer {
         _addressesProvider = provider;
         _nftOracle = INFTOracle(oracleAddress);
+        _enforcePriceCheck = enforcePriceCheck;
     }
 
     /* CAUTION: Price unit is ETH based (WEI, 18 decimals) */
@@ -32,9 +34,15 @@ contract NFTLinkOracleGetter is INFTOracleGetter, Initializable {
      */
     function getAssetPrice(address asset) override external view returns (uint256) {
         require(asset != address(0), "NFTOracleGetter: Oracle address is not set");
-  
+
         uint256 nftFloorPrice = _nftOracle.getAssetPrice(asset);
-        require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0 or less than 0");
+        if (_enforcePriceCheck) {
+            require(nftFloorPrice > 0, "NFTOracleGetter: NFT price is 0 or less than 0");
+        }
         return nftFloorPrice;
+    }
+
+    function setEnforcePriceCheck(bool enforcePriceCheck) external onlyPoolAdmin {
+        _enforcePriceCheck = enforcePriceCheck;
     }
 }
