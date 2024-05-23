@@ -8,7 +8,7 @@ import {Initializable} from "@openzeppelin/contracts-upgradeable/proxy/utils/Ini
 import {ILendPoolAddressesProvider} from "../interfaces/ILendPoolAddressesProvider.sol";
 import {Errors} from "../libraries/helpers/Errors.sol";
 
-contract NFTLinkOracleGetter is INFTOracleGetter, Initializable {
+contract NFTOracleGetterVii is INFTOracleGetter, Initializable {
 
     ILendPoolAddressesProvider internal _addressesProvider;
     INFTOracle internal _nftOracle;
